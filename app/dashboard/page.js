@@ -21,6 +21,7 @@ import { getActivityStats, getCompanyStatusStats, getConversionRates, getAgentPe
 import { getCompanies } from '@/lib/companies';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { createRepresentative, updateRepresentative } from '@/lib/representatives';
+import { subscribeToRepresentatives, handleRepresentativeUpdate, unsubscribeFromChannel } from '@/lib/realtime';
 
 export default function Dashboard() {
   const [representatives, setRepresentatives] = useState([]);
@@ -44,6 +45,7 @@ export default function Dashboard() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const ITEMS_PER_PAGE = 50;
+  const [realtimeSubscription, setRealtimeSubscription] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
     company_ids: [], // Array for multi-select
@@ -60,11 +62,42 @@ export default function Dashboard() {
     fetchCompanies();
     fetchUsers();
     getCurrentUser();
+    
+    // Set up real-time subscription
+    const subscription = subscribeToRepresentatives((payload) => {
+      handleRepresentativeUpdate(payload, representatives, setRepresentatives);
+      // Also refresh stats when data changes
+      fetchStats();
+    });
+    setRealtimeSubscription(subscription);
+    
+    // Cleanup subscription on unmount
+    return () => {
+      unsubscribeFromChannel(subscription);
+    };
   }, [currentPage]);
 
   useEffect(() => {
     fetchData();
   }, [filters]);
+
+  const fetchStats = async () => {
+    try {
+      const [statsResult, statusResult, conversionResult, performanceResult] = await Promise.all([
+        getActivityStats(),
+        getCompanyStatusStats(),
+        getConversionRates(),
+        getAgentPerformance()
+      ]);
+
+      setStats(statsResult.data || {});
+      setStatusStats(statusResult.data || {});
+      setConversionRates(conversionResult.data || []);
+      setAgentPerformance(performanceResult.data || []);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   const getCurrentUser = async () => {
     const user = await getCurrentUserWithRole();
@@ -85,21 +118,16 @@ export default function Dashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [repsResult, statsResult, statusResult, conversionResult, performanceResult] = await Promise.all([
+      const [repsResult] = await Promise.all([
         getRepresentatives(currentPage, ITEMS_PER_PAGE, filters),
-        getActivityStats(),
-        getCompanyStatusStats(),
-        getConversionRates(),
-        getAgentPerformance()
       ]);
 
       setRepresentatives(repsResult.data || []);
       setTotalCount(repsResult.count || 0);
       setTotalPages(Math.ceil((repsResult.count || 0) / ITEMS_PER_PAGE));
-      setStats(statsResult.data || {});
-      setStatusStats(statusResult.data || {});
-      setConversionRates(conversionResult.data || []);
-      setAgentPerformance(performanceResult.data || []);
+      
+      // Fetch stats separately
+      await fetchStats();
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {

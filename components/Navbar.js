@@ -95,7 +95,9 @@ export default function Navbar() {
     // Cleanup function
     return () => {
       console.log('Unsubscribing from notifications');
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   };
   const requestNotificationPermission = async () => {

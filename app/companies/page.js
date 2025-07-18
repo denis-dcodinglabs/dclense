@@ -16,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies } from '@/lib/companies';
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
+import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } from '@/lib/realtime';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },
@@ -45,6 +46,7 @@ export default function CompaniesPage() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
+  const [realtimeSubscription, setRealtimeSubscription] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
     status: '',
@@ -56,6 +58,17 @@ export default function CompaniesPage() {
     fetchData();
     fetchUsers();
     getCurrentUser();
+    
+    // Set up real-time subscription
+    const subscription = subscribeToCompanies((payload) => {
+      handleCompanyUpdate(payload, companies, setCompanies);
+    });
+    setRealtimeSubscription(subscription);
+    
+    // Cleanup subscription on unmount
+    return () => {
+      unsubscribeFromChannel(subscription);
+    };
   }, [currentPage, filters]);
 
   const getCurrentUser = async () => {
