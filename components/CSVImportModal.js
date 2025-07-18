@@ -19,7 +19,7 @@ const COMPANY_FIELDS = [
   { key: 'website', label: 'Website', required: false },
   { key: 'source', label: 'Source', required: false },
   { key: 'number_of_employees', label: 'Number of Employees', required: false },
-  { key: 'status', label: 'Status', required: false },
+  { key: 'status', label: 'Status (No Reply, Not Interested, Not Now - Revisit Later, Pending Connection, Company Not a Fit, Contacted, Declined, Client)', required: false },
   { key: 'notes', label: 'Notes', required: false },
   { key: 'last_activity_date', label: 'Last Activity Date', required: false },
   { key: 'assigned_to', label: 'Assigned To (Email)', required: false }
@@ -271,7 +271,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         case 'role': return 'CEO';
         case 'location': return 'New York, NY';
         case 'number_of_employees': return '100';
-        case 'status': return 'Contacted';
+        case 'status': return 'Pending Connection';
         case 'outcome': return 'Interested';
         case 'contact_date': return '2024-01-15';
         default: return '';
