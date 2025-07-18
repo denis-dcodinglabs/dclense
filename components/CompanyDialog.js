@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { getUsers } from '@/lib/users';
 
 const STATUS_OPTIONS = [
-  { value: 'no_status', label: 'No Status' },
+  { value: '', label: 'No Status' },
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
   { value: 'Not Now - Revisit Later', label: 'Not Now - Revisit Later' },
@@ -53,10 +53,10 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
         website: company.website || '',
         source: company.source || '',
         number_of_employees: company.number_of_employees || '',
-        status: company.status || 'no_status',
+        status: company.status || '',
         notes: company.notes || '',
         last_activity_date: company.last_activity_date ? company.last_activity_date.split('T')[0] : '',
-        assigned_to: company.assigned_to || 'unassigned',
+        assigned_to: company.assigned_to || '',
         mark_unread: false
       });
     } else {
@@ -68,10 +68,10 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
         website: '',
         source: '',
         number_of_employees: '',
-        status: 'no_status',
+        status: '',
         notes: '',
         last_activity_date: '',
-        assigned_to: 'unassigned',
+        assigned_to: '',
         mark_unread: true
       });
     }
@@ -100,10 +100,9 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
     if (validateForm()) {
       const submitData = {
         ...formData,
-        status: formData.status === 'no_status' ? null : formData.status,
         number_of_employees: formData.number_of_employees || null,
         last_activity_date: formData.last_activity_date || null,
-        assigned_to: formData.assigned_to === 'unassigned' ? null : formData.assigned_to
+        assigned_to: formData.assigned_to || null
       };
       onSave(submitData);
     }
