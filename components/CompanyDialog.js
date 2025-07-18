@@ -100,7 +100,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
     if (validateForm()) {
       const submitData = {
         ...formData,
-        status: formData.status === 'no_status' ? null : formData.status,
+        status: formData.status === 'no_status' ? '' : formData.status,
         number_of_employees: formData.number_of_employees || null,
         last_activity_date: formData.last_activity_date || null,
         assigned_to: formData.assigned_to === 'unassigned' ? null : formData.assigned_to
