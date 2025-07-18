@@ -36,69 +36,74 @@ export default function Navbar() {
   const setupNotificationSubscription = async (userId) => {
     const { supabase } = await import('@/lib/supabase');
     
-    const subscription = supabase
-      .channel(`notification_count_${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`
-        },
-        (payload) => {
-          console.log('New notification received:', payload.new);
-          setUnreadCount(prev => {
-            console.log('Incrementing count from', prev, 'to', prev + 1);
-            return prev + 1;
-          });
-          
-          // Show browser notification or toast
-          showBrowserNotification(
-            payload.new.title,
-            payload.new.message
-          );
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`
-        },
-        (payload) => {
-          console.log('Notification updated:', payload);
-          // Refetch count for updates (mark as read/unread)
-          fetchUnreadCount(userId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`
-        },
-        (payload) => {
-          console.log('Notification deleted:', payload);
-          // Refetch count for deletions
-          fetchUnreadCount(userId);
-        }
-      )
-      .subscribe((status) => {
-        console.log('Notification subscription status:', status);
-      });
+    try {
+      const subscription = supabase
+        .channel(`notification_count_${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`
+          },
+          (payload) => {
+            console.log('New notification received:', payload.new);
+            setUnreadCount(prev => prev + 1);
+            
+            // Show browser notification or toast
+            showBrowserNotification(
+              payload.new.title,
+              payload.new.message
+            );
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`
+          },
+          (payload) => {
+            console.log('Notification updated:', payload);
+            // Refetch count for updates (mark as read/unread)
+            fetchUnreadCount(userId);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`
+          },
+          (payload) => {
+            console.log('Notification deleted:', payload);
+            // Refetch count for deletions
+            fetchUnreadCount(userId);
+          }
+        )
+        .subscribe((status) => {
+          console.log('Notification subscription status:', status);
+          if (status === 'CHANNEL_ERROR') {
+            console.error('Failed to subscribe to notifications');
+          }
+        });
 
-    // Cleanup function
-    return () => {
-      console.log('Unsubscribing from notifications');
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    };
+      // Cleanup function
+      return () => {
+        console.log('Unsubscribing from notifications');
+        if (subscription) {
+          supabase.removeChannel(subscription);
+        }
+      };
+    } catch (error) {
+      console.error('Error setting up notification subscription:', error);
+      return () => {}; // Return empty cleanup function
+    }
   };
   const requestNotificationPermission = async () => {
     if ('Notification' in window) {

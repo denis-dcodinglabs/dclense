@@ -67,9 +67,11 @@ export default function CompaniesPage() {
     
     // Cleanup subscription on unmount
     return () => {
-      unsubscribeFromChannel(subscription);
+      if (subscription) {
+        unsubscribeFromChannel(subscription);
+      }
     };
-  }, [currentPage, filters]);
+  }, []);
 
   const getCurrentUser = async () => {
     const user = await getCurrentUserWithRole();

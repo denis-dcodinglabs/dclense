@@ -73,9 +73,11 @@ export default function Dashboard() {
     
     // Cleanup subscription on unmount
     return () => {
-      unsubscribeFromChannel(subscription);
+      if (subscription) {
+        unsubscribeFromChannel(subscription);
+      }
     };
-  }, [currentPage]);
+  }, []);
 
   useEffect(() => {
     fetchData();
