@@ -89,7 +89,7 @@ export default function Navbar() {
         .subscribe((status) => {
           console.log('Notification subscription status:', status);
           if (status === 'CHANNEL_ERROR') {
-            console.error('Failed to subscribe to notifications - this may be due to RLS policies');
+            console.warn('Failed to subscribe to notifications - this may be due to RLS policies. Falling back to periodic updates.');
             // Fallback: just fetch count periodically instead of real-time
             const interval = setInterval(() => {
               fetchUnreadCount(userId);
