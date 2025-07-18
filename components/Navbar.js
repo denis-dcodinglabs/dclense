@@ -34,9 +34,9 @@ export default function Navbar() {
   }, []);
 
   const setupNotificationSubscription = async (userId) => {
-    const { supabase } = await import('@/lib/supabase');
-    
     try {
+      const { supabase } = await import('@/lib/supabase');
+    
       const subscription = supabase
         .channel(`notification_count_${userId}`)
         .on(
@@ -89,7 +89,13 @@ export default function Navbar() {
         .subscribe((status) => {
           console.log('Notification subscription status:', status);
           if (status === 'CHANNEL_ERROR') {
-            console.error('Failed to subscribe to notifications');
+            console.error('Failed to subscribe to notifications - this may be due to RLS policies');
+            // Fallback: just fetch count periodically instead of real-time
+            const interval = setInterval(() => {
+              fetchUnreadCount(userId);
+            }, 30000); // Check every 30 seconds
+            
+            return () => clearInterval(interval);
           }
         });
 
@@ -102,6 +108,11 @@ export default function Navbar() {
       };
     } catch (error) {
       console.error('Error setting up notification subscription:', error);
+      // Fallback: fetch count periodically
+      const interval = setInterval(() => {
+        fetchUnreadCount(userId);
+      }, 30000);
+      
       return () => {}; // Return empty cleanup function
     }
   };
