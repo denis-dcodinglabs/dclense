@@ -24,10 +24,9 @@ const STATUS_OPTIONS = [
   { value: 'read_only', label: 'Read Only' },
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
-  { value: 'Not Now - Revisit Later', label: 'Not Now - Revisit Later' },
-  { value: 'Pending Connection', label: 'Pending Connection' },
-  { value: 'Company Not a Fit', label: 'Company Not a Fit' },
   { value: 'Contacted', label: 'Contacted' },
+  { value: 'Not a Fit', label: 'Not a Fit' },
+  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
   { value: 'Declined', label: 'Declined' },
   { value: 'Client', label: 'Client' }
 ];
