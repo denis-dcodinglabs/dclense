@@ -18,6 +18,8 @@ const getStatusBadgeColor = (status) => {
       return 'bg-green-100 text-green-800 border-green-200';
     case 'Converted':
       return 'bg-green-100 text-green-800 border-green-200';
+    case 'Pending Connection':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     case 'Declined':
       return 'bg-red-100 text-red-800 border-red-200';
     case 'Not Interested':
