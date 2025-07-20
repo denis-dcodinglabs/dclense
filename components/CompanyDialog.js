@@ -10,14 +10,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { getUsers } from '@/lib/users';
 
 const STATUS_OPTIONS = [
-  { value: 'no_status', label: 'No Status' },
+  { value: 'No Status', label: 'No Status' },
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
   { value: 'Contacted', label: 'Contacted' },
   { value: 'Not a Fit', label: 'Not a Fit' },
   { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
   { value: 'Declined', label: 'Declined' },
-  { value: 'Client', label: 'Client' }
+  { value: 'Client', label: 'Client' },
+  { value: 'Pending Connection', label: 'Pending Connection' }
 ];
 
 export default function CompanyDialog({ isOpen, onClose, onSave, company = null, loading = false }) {
@@ -67,7 +68,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
         website: '',
         source: '',
         number_of_employees: '',
-        status: 'no_status',
+        status: 'No Status',
         notes: '',
         last_activity_date: '',
         assigned_to: 'unassigned',
@@ -99,7 +100,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
     if (validateForm()) {
       const submitData = {
         ...formData,
-        status: formData.status === 'no_status' ? null : formData.status,
+        status: formData.status === 'No Status' ? null : formData.status,
         number_of_employees: formData.number_of_employees || null,
         last_activity_date: formData.last_activity_date || null,
         assigned_to: formData.assigned_to === 'unassigned' ? null : formData.assigned_to
