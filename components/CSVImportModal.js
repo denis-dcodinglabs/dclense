@@ -32,7 +32,7 @@ const REPRESENTATIVE_FIELDS = [
   { key: 'role', label: 'Role', required: false },
   { key: 'linkedin_profile_url', label: 'LinkedIn Profile URL', required: false },
   { key: 'contact_source', label: 'Contact Source', required: false },
-  { key: 'connection_status', label: 'Connection Status', required: false },
+  { key: 'status', label: 'Status', required: false },
   { key: 'contact_date', label: 'Contact Date', required: false },
   { key: 'outcome', label: 'Outcome', required: false },
   { key: 'notes', label: 'Notes', required: false },
