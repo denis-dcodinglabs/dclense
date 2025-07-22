@@ -714,7 +714,11 @@ export default function Dashboard() {
                                         className="text-blue-600 hover:text-blue-800 transition-colors"
                                         title="Open LinkedIn Profile"
                                       >
-                                        <Linkedin className="h-4 w-4" />
+                                        <img 
+                                          src="/linkedinicon.webp" 
+                                          alt="LinkedIn" 
+                                          className="h-4 w-4 hover:opacity-80 transition-opacity"
+                                        />
                                       </button>
                                     )}
                                   </div>
