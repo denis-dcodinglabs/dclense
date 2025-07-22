@@ -51,6 +51,7 @@ export default function Dashboard() {
     company_ids: [], // Array for multi-select
     assigned_to: '',
     unread_filter: '',
+    status: '',
     rep_position: '',
     exported_filter: '',
     sort_field: 'created_at',
@@ -138,7 +139,8 @@ export default function Dashboard() {
   };
 
   const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    const filterValue = value === 'all' || value === 'all_assignees' || value === 'all_read_status' || value === 'all_positions' || value === 'all_exported_status' ? '' : value;
+    setFilters(prev => ({ ...prev, [key]: filterValue }));
     setCurrentPage(1); // Reset to first page when filtering
   };
 
@@ -383,6 +385,19 @@ export default function Dashboard() {
                   />
                 </div>
                 
+                <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
                 <Select value={filters.assigned_to} onValueChange={(value) => handleFilterChange('assigned_to', value === 'all_assignees' ? '' : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by assignee" />
