@@ -76,7 +76,7 @@ export default function CompaniesPage() {
         unsubscribeFromChannel(subscription);
       }
     };
-  }, []);
+  }, [currentPage, filters]);
 
   const getCurrentUser = async () => {
     const user = await getCurrentUserWithRole();
