@@ -226,7 +226,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
           
           // Handle special field transformations
           if (field.key === 'number_of_employees' && value && importType === 'companies') {
-            value = parseInt(value) || null;
+            value = value || null;
           }
           if ((field.key === 'assigned_to' || field.key === 'contacted_by') && value) {
             // This would need to be resolved to user ID in the backend
