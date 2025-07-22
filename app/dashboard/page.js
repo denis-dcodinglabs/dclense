@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Linkedin } from 'lucide-react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Globe } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import RepresentativeDialog from '@/components/RepresentativeDialog';
@@ -711,10 +711,10 @@ export default function Dashboard() {
                                             : `https://${rep.linkedin_profile_url}`;
                                           window.open(url, '_blank', 'noopener,noreferrer');
                                         }}
-                                        className="text-blue-600 hover:text-blue-800 transition-colors"
+                                        className="text-blue-600 hover:text-blue-800 transition-colors p-1 hover:bg-blue-50 rounded"
                                         title="Open LinkedIn Profile"
                                       >
-                                        <Linkedin className="h-4 w-4" />
+                                        <Globe className="h-4 w-4" />
                                       </button>
                                     )}
                                   </div>
