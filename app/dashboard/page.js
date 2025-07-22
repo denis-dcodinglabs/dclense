@@ -25,8 +25,6 @@ import { subscribeToRepresentatives, handleRepresentativeUpdate, unsubscribeFrom
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },
-  { value: 'unread_only', label: 'Unread Only' },
-  { value: 'read_only', label: 'Read Only' },
   { value: 'No Status', label: 'No Status' },
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
@@ -36,6 +34,12 @@ const STATUS_OPTIONS = [
   { value: 'Declined', label: 'Declined' },
   { value: 'Client', label: 'Client' },
   { value: 'Pending Connection', label: 'Pending Connection' },
+];
+
+const READ_STATUS_OPTIONS = [
+  { value: 'all_read_status', label: 'All' },
+  { value: 'unread_only', label: 'Unread Only' },
+  { value: 'read_only', label: 'Read Only' },
 ];
 
 export default function Dashboard() {
@@ -65,8 +69,8 @@ export default function Dashboard() {
     search: '',
     company_ids: [], // Array for multi-select
     assigned_to: '',
-    unread_filter: '',
     status: '',
+    unread_filter: '',
     rep_position: '',
     exported_filter: '',
     sort_field: 'created_at',
@@ -427,14 +431,16 @@ export default function Dashboard() {
                   </SelectContent>
                 </Select>
 
-                <Select value={filters.unread_filter} onValueChange={(value) => handleFilterChange('unread_filter', value === 'all_read_status' ? '' : value)}>
+                <Select value={filters.unread_filter} onValueChange={(value) => handleFilterChange('unread_filter', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by read status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all_read_status">All</SelectItem>
-                    <SelectItem value="unread_only">Unread Only</SelectItem>
-                    <SelectItem value="read_only">Read Only</SelectItem>
+                    {READ_STATUS_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
