@@ -23,6 +23,21 @@ import { getCurrentUserWithRole } from '@/lib/auth';
 import { createRepresentative, updateRepresentative } from '@/lib/representatives';
 import { subscribeToRepresentatives, handleRepresentativeUpdate, unsubscribeFromChannel } from '@/lib/realtime';
 
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All Statuses' },
+  { value: 'unread_only', label: 'Unread Only' },
+  { value: 'read_only', label: 'Read Only' },
+  { value: 'No Status', label: 'No Status' },
+  { value: 'No Reply', label: 'No Reply' },
+  { value: 'Not Interested', label: 'Not Interested' },
+  { value: 'Contacted', label: 'Contacted' },
+  { value: 'Not a Fit', label: 'Not a Fit' },
+  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
+  { value: 'Declined', label: 'Declined' },
+  { value: 'Client', label: 'Client' },
+  { value: 'Pending Connection', label: 'Pending Connection' },
+];
+
 export default function Dashboard() {
   const [representatives, setRepresentatives] = useState([]);
   const [stats, setStats] = useState({});
