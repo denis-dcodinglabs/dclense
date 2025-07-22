@@ -18,6 +18,8 @@ const getStatusBadgeColor = (status) => {
       return 'bg-green-100 text-green-800 border-green-200';
     case 'Converted':
       return 'bg-green-100 text-green-800 border-green-200';
+    case 'Pending Connection':
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     case 'Declined':
       return 'bg-red-100 text-red-800 border-red-200';
     case 'Not Interested':
@@ -168,9 +170,9 @@ export default function RepresentativeDetailModal({ isOpen, onClose, representat
                         {representative.outcome}
                       </Badge>
                     )}
-                    {representative.connection_status && !representative.outcome && (
+                    {representative.status && !representative.outcome && (
                       <Badge className="bg-blue-100 text-blue-800 border-blue-200 border">
-                        {representative.connection_status}
+                        {representative.status}
                       </Badge>
                     )}
                   </div>
@@ -202,9 +204,9 @@ export default function RepresentativeDetailModal({ isOpen, onClose, representat
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Connection Status</label>
+                    <label className="text-sm font-medium text-gray-500">Status</label>
                     <div className="mt-1 text-gray-900">
-                      {representative.connection_status || 'N/A'}
+                      {representative.status || 'N/A'}
                     </div>
                   </div>
 

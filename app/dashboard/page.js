@@ -683,10 +683,10 @@ export default function Dashboard() {
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               rep.outcome === 'Client' ? 'bg-green-100 text-green-800' :
                               rep.outcome === 'Declined' ? 'bg-red-100 text-red-800' :
-                              rep.connection_status ? 'bg-blue-100 text-blue-800' :
+                              rep.status ? 'bg-blue-100 text-blue-800' :
                               'bg-gray-100 text-gray-800'
                             }`}>
-                              {rep.outcome || rep.connection_status || 'No Status'}
+                              {rep.outcome || rep.status || 'No Status'}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">

@@ -18,7 +18,7 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
     role: '',
     linkedin_profile_url: '',
     contact_source: '',
-    connection_status: '',
+    status: '',
     contact_date: '',
     follow_up_dates: [],
     reminder_date: '',
@@ -47,7 +47,7 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
         role: representative.role || '',
         linkedin_profile_url: representative.linkedin_profile_url || '',
         contact_source: representative.contact_source || '',
-        connection_status: representative.connection_status || '',
+        status: representative.status || '',
         contact_date: representative.contact_date ? representative.contact_date.split('T')[0] : '',
         follow_up_dates: representative.follow_up_dates || [],
         reminder_date: representative.reminder_date ? representative.reminder_date.split('T')[0] : '',
@@ -65,7 +65,7 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
         role: '',
         linkedin_profile_url: '',
         contact_source: '',
-        connection_status: '',
+      status: '',
         contact_date: '',
         follow_up_dates: [],
         reminder_date: '',
@@ -223,6 +223,26 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
                 placeholder="Enter contact source"
               />
             </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="No Status">No Status</SelectItem>
+                  <SelectItem value="No Reply">No Reply</SelectItem>
+                  <SelectItem value="Not Interested">Not Interested</SelectItem>
+                  <SelectItem value="Contacted">Contacted</SelectItem>
+                  <SelectItem value="Not a Fit">Not a Fit</SelectItem>
+                  <SelectItem value="Asked to Reach Out Later">Asked to Reach Out Later</SelectItem>
+                  <SelectItem value="Declined">Declined</SelectItem>
+                  <SelectItem value="Client">Client</SelectItem>
+                  <SelectItem value="Pending Connection">Pending Connection</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -236,16 +256,6 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="connection_status">Connection Status</Label>
-              <Input
-                id="connection_status"
-                value={formData.connection_status}
-                onChange={(e) => handleInputChange('connection_status', e.target.value)}
-                placeholder="Enter connection status"
-              />
-            </div>
-            
             <div className="space-y-2">
               <Label htmlFor="contact_date">Contact Date</Label>
               <Input

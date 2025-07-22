@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies } from '@/lib/companies';
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
@@ -22,13 +23,15 @@ const STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },
   { value: 'unread_only', label: 'Unread Only' },
   { value: 'read_only', label: 'Read Only' },
+  { value: 'No Status', label: 'No Status' },
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
   { value: 'Contacted', label: 'Contacted' },
   { value: 'Not a Fit', label: 'Not a Fit' },
   { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
   { value: 'Declined', label: 'Declined' },
-  { value: 'Client', label: 'Client' }
+  { value: 'Client', label: 'Client' },
+  { value: 'Pending Connection', label: 'Pending Connection' }
 ];
 
 export default function CompaniesPage() {
@@ -51,7 +54,9 @@ export default function CompaniesPage() {
     search: '',
     status: '',
     assigned_to: '',
-    unread_filter: ''
+    unread_filter: '',
+    sort_field: 'created_at',
+    sort_order: 'desc'
   });
 
   useEffect(() => {
@@ -71,7 +76,7 @@ export default function CompaniesPage() {
         unsubscribeFromChannel(subscription);
       }
     };
-  }, []);
+  }, [currentPage, filters]);
 
   const getCurrentUser = async () => {
     const user = await getCurrentUserWithRole();
@@ -199,13 +204,13 @@ export default function CompaniesPage() {
         return 'bg-green-100 text-green-800 border-green-200';
       case 'Contacted':
         return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'Pending Connection':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'Declined':
         return 'bg-red-100 text-red-800 border-red-200';
       case 'Not Interested':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       default:
-    // Mark company as read when editing
-    markCompanyAsRead(company.id);
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -297,6 +302,51 @@ export default function CompaniesPage() {
                     <SelectItem value="read_only">Read Only</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sorting Controls */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg">Sort Options</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Label className="text-sm font-medium text-gray-700">Sort by:</Label>
+                  <Select value={filters.sort_field} onValueChange={(value) => handleFilterChange('sort_field', value)}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="company_name">Company Name</SelectItem>
+                      <SelectItem value="status">Status</SelectItem>
+                      <SelectItem value="created_at">Created At</SelectItem>
+                      <SelectItem value="updated_at">Modified At</SelectItem>
+                      <SelectItem value="last_activity_date">Last Activity</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-center space-x-1">
+                  <Button
+                    variant={filters.sort_order === 'asc' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleFilterChange('sort_order', 'asc')}
+                    className="px-3"
+                  >
+                    ↑ ASC
+                  </Button>
+                  <Button
+                    variant={filters.sort_order === 'desc' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleFilterChange('sort_order', 'desc')}
+                    className="px-3"
+                  >
+                    ↓ DESC
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
