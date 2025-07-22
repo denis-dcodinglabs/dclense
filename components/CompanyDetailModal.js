@@ -165,7 +165,7 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
                     {company.number_of_employees && (
                       <div className="flex items-center text-sm text-gray-600">
                         <Users className="h-4 w-4 mr-1" />
-                        {company.number_of_employees}
+                        {company.number_of_employees} employees
                       </div>
                     )}
                   </div>

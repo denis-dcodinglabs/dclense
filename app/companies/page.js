@@ -450,7 +450,7 @@ export default function CompaniesPage() {
                                   </button>
                                 </div>
                                 <div className="text-sm text-gray-500">
-                                  {company.number_of_employees || 'Size unknown'}
+                                  {company.number_of_employees ? `${company.number_of_employees} employees` : 'Size unknown'}
                                 </div>
                               </div>
                             </div>
