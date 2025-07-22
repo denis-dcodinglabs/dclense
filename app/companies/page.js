@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Upload, Download, Edit, Trash2, Search, Filter, Linkedin, ExternalLink } from 'lucide-react';
+import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import CompanyDialog from '@/components/CompanyDialog';
