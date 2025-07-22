@@ -320,9 +320,9 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
                                 {rep.outcome}
                               </Badge>
                             )}
-                            {rep.connection_status && !rep.outcome && (
+                            {rep.status && !rep.outcome && (
                               <Badge className="text-xs bg-gray-100 text-gray-800">
-                                {rep.connection_status}
+                                {rep.status}
                               </Badge>
                             )}
                           </div>

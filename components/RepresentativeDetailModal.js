@@ -170,9 +170,9 @@ export default function RepresentativeDetailModal({ isOpen, onClose, representat
                         {representative.outcome}
                       </Badge>
                     )}
-                    {representative.connection_status && !representative.outcome && (
+                    {representative.status && !representative.outcome && (
                       <Badge className="bg-blue-100 text-blue-800 border-blue-200 border">
-                        {representative.connection_status}
+                        {representative.status}
                       </Badge>
                     )}
                   </div>

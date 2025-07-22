@@ -36,7 +36,7 @@ const REPRESENTATIVE_EXPORT_FIELDS = [
   { key: 'company_name', label: 'Company Name' },
   { key: 'linkedin_profile_url', label: 'LinkedIn Profile URL' },
   { key: 'contact_source', label: 'Contact Source' },
-  { key: 'connection_status', label: 'Connection Status' },
+  { key: 'status', label: 'Status' },
   { key: 'contact_date', label: 'Contact Date' },
   { key: 'outcome', label: 'Outcome' },
   { key: 'notes', label: 'Notes' },
