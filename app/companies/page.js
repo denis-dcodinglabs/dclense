@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Upload, Download, Edit, Trash2, Search, Filter } from 'lucide-react';
+import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import CompanyDialog from '@/components/CompanyDialog';
@@ -442,12 +442,33 @@ export default function CompaniesPage() {
                               </div>
                               <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900">
-                                  <button
-                                    onClick={() => handleCompanyClick(company.id)}
-                                    className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
-                                  >
-                                    {company.company_name}
-                                  </button>
+                                  <div className="flex items-center space-x-2">
+                                    <button
+                                      onClick={() => handleCompanyClick(company.id)}
+                                      className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
+                                    >
+                                      {company.company_name}
+                                    </button>
+                                    {company.linkedin_url && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const url = company.linkedin_url.startsWith('http') 
+                                            ? company.linkedin_url 
+                                            : `https://${company.linkedin_url}`;
+                                          window.open(url, '_blank', 'noopener,noreferrer');
+                                        }}
+                                        className="text-blue-600 hover:text-blue-800 transition-colors"
+                                        title="Open LinkedIn Profile"
+                                      >
+                                        <img 
+                                          src="/linkedinicon.webp" 
+                                          alt="LinkedIn" 
+                                          className="h-4 w-4 hover:opacity-80 transition-opacity"
+                                        />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                                 <div className="text-sm text-gray-500">
                                   {company.number_of_employees ? `${company.number_of_employees} employees` : 'Size unknown'}
