@@ -204,9 +204,9 @@ export default function RepresentativeDetailModal({ isOpen, onClose, representat
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Connection Status</label>
+                    <label className="text-sm font-medium text-gray-500">Status</label>
                     <div className="mt-1 text-gray-900">
-                      {representative.connection_status || 'N/A'}
+                      {representative.status || 'N/A'}
                     </div>
                   </div>
 
