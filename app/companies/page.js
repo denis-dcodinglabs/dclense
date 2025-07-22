@@ -21,8 +21,6 @@ import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } fro
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },
-  { value: 'unread_only', label: 'Unread Only' },
-  { value: 'read_only', label: 'Read Only' },
   { value: 'No Status', label: 'No Status' },
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
