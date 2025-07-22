@@ -53,7 +53,9 @@ export default function CompaniesPage() {
     search: '',
     status: '',
     assigned_to: '',
-    unread_filter: ''
+    unread_filter: '',
+    sort_field: 'created_at',
+    sort_order: 'desc'
   });
 
   useEffect(() => {
@@ -299,6 +301,51 @@ export default function CompaniesPage() {
                     <SelectItem value="read_only">Read Only</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sorting Controls */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-lg">Sort Options</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Label className="text-sm font-medium text-gray-700">Sort by:</Label>
+                  <Select value={filters.sort_field} onValueChange={(value) => handleFilterChange('sort_field', value)}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="company_name">Company Name</SelectItem>
+                      <SelectItem value="status">Status</SelectItem>
+                      <SelectItem value="created_at">Created At</SelectItem>
+                      <SelectItem value="updated_at">Modified At</SelectItem>
+                      <SelectItem value="last_activity_date">Last Activity</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-center space-x-1">
+                  <Button
+                    variant={filters.sort_order === 'asc' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleFilterChange('sort_order', 'asc')}
+                    className="px-3"
+                  >
+                    ↑ ASC
+                  </Button>
+                  <Button
+                    variant={filters.sort_order === 'desc' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleFilterChange('sort_order', 'desc')}
+                    className="px-3"
+                  >
+                    ↓ DESC
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
