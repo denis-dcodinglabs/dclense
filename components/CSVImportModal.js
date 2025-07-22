@@ -116,7 +116,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
 
   const handleTemplateSelect = (templateId) => {
     setSelectedTemplate(templateId);
-    if (templateId && templateId !== 'no-template-selected') {
+    if (templateId && templateId !== 'new') {
       const template = templates.find(t => t.id === templateId);
       if (template) {
         setFieldMappings(template.field_mappings || {});
@@ -396,7 +396,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                         <SelectValue placeholder="Select a saved template" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="no-template-selected">No template</SelectItem>
+                        <SelectItem value="">No template</SelectItem>
                         {templates.map((template) => (
                           <SelectItem key={template.id} value={template.id}>
                             {template.template_name} ({Object.keys(template.field_mappings || {}).length} mappings)
@@ -405,7 +405,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                       </SelectContent>
                     </Select>
                     
-                    {selectedTemplate && selectedTemplate !== 'no-template-selected' && (
+                    {selectedTemplate && selectedTemplate !== '' && (
                       <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                         <p className="text-sm text-green-800">
                           ✅ Template "{templates.find(t => t.id === selectedTemplate)?.template_name}" applied successfully!
@@ -431,7 +431,6 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                   <Label className="font-medium">
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
-                    
                     
                     
                     
