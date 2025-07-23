@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink } from 'lucide-react';
+import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink, Settings, Eye, EyeOff } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import CompanyDialog from '@/components/CompanyDialog';
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies } from '@/lib/companies';
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
@@ -32,6 +33,14 @@ const STATUS_OPTIONS = [
   { value: 'Pending Connection', label: 'Pending Connection' }
 ];
 
+const TABLE_COLUMNS = [
+  { key: 'company', label: 'Company', required: true },
+  { key: 'location', label: 'Location', required: false },
+  { key: 'status', label: 'Status', required: false },
+  { key: 'assigned_to', label: 'Assigned To', required: false },
+  { key: 'representatives', label: 'Representatives', required: false }
+];
+
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
@@ -48,6 +57,13 @@ export default function CompaniesPage() {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
   const [realtimeSubscription, setRealtimeSubscription] = useState(null);
+  const [visibleColumns, setVisibleColumns] = useState({
+    company: true,
+    location: true,
+    status: true,
+    assigned_to: true,
+    representatives: true
+  });
   const [filters, setFilters] = useState({
     search: '',
     status: '',
@@ -196,6 +212,13 @@ export default function CompaniesPage() {
     }
   };
 
+  const handleColumnToggle = (columnKey, checked) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [columnKey]: checked
+    }));
+  };
+
   const getStatusBadgeColor = (status) => {
     switch (status) {
       case 'Client':
@@ -338,7 +361,65 @@ export default function CompaniesPage() {
           {/* Action Buttons */}
           <Card className="mb-6">
             <CardContent className="pt-6">
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Customize Table
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64" align="start">
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-3">Show/Hide Columns</h4>
+                          <div className="space-y-3">
+                            {TABLE_COLUMNS.map((column) => (
+                              <div key={column.key} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={column.key}
+                                  checked={visibleColumns[column.key]}
+                                  onCheckedChange={(checked) => handleColumnToggle(column.key, checked)}
+                                  disabled={column.required}
+                                />
+                                <Label 
+                                  htmlFor={column.key} 
+                                  className={`text-sm ${column.required ? 'text-gray-500' : 'cursor-pointer'}`}
+                                >
+                                  {column.label}
+                                  {column.required && ' (Required)'}
+                                </Label>
+                                {visibleColumns[column.key] ? (
+                                  <Eye className="h-3 w-3 text-green-600" />
+                                ) : (
+                                  <EyeOff className="h-3 w-3 text-gray-400" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="pt-3 border-t">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setVisibleColumns({
+                              company: true,
+                              location: true,
+                              status: true,
+                              assigned_to: true,
+                              representatives: true
+                            })}
+                            className="w-full"
+                          >
+                            Show All Columns
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex space-x-3">
                 <Button variant="outline" onClick={() => setImportModalOpen(true)}>
                   <Upload className="h-4 w-4 mr-2" />
                   Import Companies CSV
@@ -353,6 +434,7 @@ export default function CompaniesPage() {
                     Add Company
                   </Button>
                 )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -411,18 +493,26 @@ export default function CompaniesPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Company
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                          Location
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Assigned To
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Representatives
-                        </th>
+                        {visibleColumns.location && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                            Location
+                          </th>
+                        )}
+                        {visibleColumns.status && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                        )}
+                        {visibleColumns.assigned_to && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Assigned To
+                          </th>
+                        )}
+                        {visibleColumns.representatives && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Representatives
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -503,27 +593,35 @@ export default function CompaniesPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-28">
-                            {company.location || 'N/A'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {company.status ? (
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(company.status)}`}>
-                                {company.status}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 text-sm">No status</span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {company.assigned_user ? 
-                              `${company.assigned_user.first_name} ${company.assigned_user.last_name}` : 
-                              <span className="text-gray-400">Unassigned</span>
-                            }
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {company.representatives?.length || 0} reps
-                          </td>
+                          {visibleColumns.location && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-28">
+                              {company.location || 'N/A'}
+                            </td>
+                          )}
+                          {visibleColumns.status && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {company.status ? (
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(company.status)}`}>
+                                  {company.status}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400 text-sm">No status</span>
+                              )}
+                            </td>
+                          )}
+                          {visibleColumns.assigned_to && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {company.assigned_user ? 
+                                `${company.assigned_user.first_name} ${company.assigned_user.last_name}` : 
+                                <span className="text-gray-400">Unassigned</span>
+                              }
+                            </td>
+                          )}
+                          {visibleColumns.representatives && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {company.representatives?.length || 0} reps
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
