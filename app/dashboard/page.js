@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation';
 import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2 } from 'lucide-react';
 import { Settings, Eye, EyeOff } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -62,6 +63,7 @@ const READ_STATUS_OPTIONS = [
 
 export default function Dashboard() {
   const router = useRouter()
+  const searchParams = useSearchParams();
   const [representatives, setRepresentatives] = useState([]);
   const [stats, setStats] = useState({});
   const [statusStats, setStatusStats] = useState({});
@@ -117,6 +119,13 @@ export default function Dashboard() {
     fetchUsers();
     getCurrentUser();
     
+    // Check for repId in URL parameters
+    const repIdFromUrl = searchParams.get('repId');
+    if (repIdFromUrl) {
+      setSelectedRepId(repIdFromUrl);
+      setRepDetailModalOpen(true);
+    }
+    
     // Set up real-time subscription
     const subscription = subscribeToRepresentatives((payload) => {
       handleRepresentativeUpdate(payload, representatives, setRepresentatives);
@@ -131,7 +140,7 @@ export default function Dashboard() {
         unsubscribeFromChannel(subscription);
       }
     };
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchData();
