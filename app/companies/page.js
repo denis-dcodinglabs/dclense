@@ -508,7 +508,7 @@ export default function CompaniesPage() {
                             />
                           </th>
                         )}
-                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky bg-gray-50 z-10 ${canDelete ? 'left-20' : 'left-0'}`}>
+                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10 ${canDelete ? 'left-20' : 'left-0'}`}>
                           Company
                         </th>
                         {visibleColumns.industry && (
@@ -567,14 +567,14 @@ export default function CompaniesPage() {
                       {companies.map((company) => (
                         <tr key={company.id} className={`hover:bg-gray-50 ${company.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
                           {canDelete && (
-                            <td className="px-6 py-4 sticky left-0 bg-white z-10">
+                            <td className={`px-6 py-4 sticky left-0 z-10 ${company.mark_unread ? 'bg-blue-50' : 'bg-white'}`}>
                               <Checkbox
                                 checked={selectedCompanies.includes(company.id)}
                                 onCheckedChange={(checked) => handleSelectCompany(company.id, checked)}
                               />
                             </td>
                           )}
-                          <td className={`px-6 py-4 whitespace-nowrap sticky bg-white z-10 ${canDelete ? 'left-20' : 'left-0'}`}>
+                          <td className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-20' : 'left-0'} ${company.mark_unread ? 'bg-blue-50' : 'bg-white'}`}>
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
                                 <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
