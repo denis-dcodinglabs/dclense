@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink, Settings, Eye, EyeOff, Building2, Calendar, User } from 'lucide-react';
+import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2 } from 'lucide-react';
 import { Settings, Eye, EyeOff } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
@@ -258,17 +258,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleBulkAssignToMe = async () => {
-    if (selectedRepresentatives.length === 0) return;
-    
-    if (window.confirm(`Are you sure you want to assign ${selectedRepresentatives.length} representatives to yourself?`)) {
-      const { error } = await bulkAssignToMe(selectedRepresentatives, currentUser.id);
-      if (!error) {
-        setSelectedRepresentatives([]);
-        fetchData();
-      }
-    }
-  };
   const handleSelectRepresentative = (repId, checked) => {
     if (checked) {
       setSelectedRepresentatives([...selectedRepresentatives, repId]);
