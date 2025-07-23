@@ -231,20 +231,6 @@ export default function CompaniesPage() {
                 </p>
               </div>
               <div className="flex space-x-3">
-                <Button variant="outline" onClick={() => setImportModalOpen(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Companies CSV
-                </Button>
-                <Button variant="outline" onClick={() => setExportModalOpen(true)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-                {canEdit && (
-                  <Button onClick={handleAddCompany} className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Company
-                  </Button>
-                )}
               </div>
             </div>
           </div>
@@ -345,6 +331,28 @@ export default function CompaniesPage() {
                     ↓ DESC
                   </Button>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <div className="flex space-x-3">
+                <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Companies CSV
+                </Button>
+                <Button variant="outline" onClick={() => setExportModalOpen(true)}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+                {canEdit && (
+                  <Button onClick={handleAddCompany} className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Company
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
