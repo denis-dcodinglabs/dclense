@@ -35,8 +35,14 @@ const STATUS_OPTIONS = [
 
 const TABLE_COLUMNS = [
   { key: 'company', label: 'Company', required: true },
+  { key: 'industry', label: 'Industry', required: false },
   { key: 'location', label: 'Location', required: false },
+  { key: 'source', label: 'Source', required: false },
+  { key: 'linkedin_url', label: 'LinkedIn URL', required: false },
+  { key: 'website', label: 'Website', required: false },
+  { key: 'number_of_employees', label: 'Number of Employees', required: false },
   { key: 'status', label: 'Status', required: false },
+  { key: 'last_activity_date', label: 'Last Activity Date', required: false },
   { key: 'assigned_to', label: 'Assigned To', required: false },
   { key: 'representatives', label: 'Representatives', required: false }
 ];
@@ -59,8 +65,14 @@ export default function CompaniesPage() {
   const [realtimeSubscription, setRealtimeSubscription] = useState(null);
   const [visibleColumns, setVisibleColumns] = useState({
     company: true,
+    industry: true,
     location: true,
+    source: true,
+    linkedin_url: true,
+    website: true,
+    number_of_employees: true,
     status: true,
+    last_activity_date: true,
     assigned_to: true,
     representatives: true
   });
@@ -405,8 +417,14 @@ export default function CompaniesPage() {
                             size="sm"
                             onClick={() => setVisibleColumns({
                               company: true,
+                              industry: true,
                               location: true,
+                              source: true,
+                              linkedin_url: true,
+                              website: true,
+                              number_of_employees: true,
                               status: true,
+                              last_activity_date: true,
                               assigned_to: true,
                               representatives: true
                             })}
@@ -493,14 +511,44 @@ export default function CompaniesPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Company
                         </th>
+                        {visibleColumns.industry && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Industry
+                          </th>
+                        )}
                         {visibleColumns.location && (
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                             Location
                           </th>
                         )}
+                        {visibleColumns.source && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Source
+                          </th>
+                        )}
+                        {visibleColumns.linkedin_url && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            LinkedIn
+                          </th>
+                        )}
+                        {visibleColumns.website && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Website
+                          </th>
+                        )}
+                        {visibleColumns.number_of_employees && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                            Employees
+                          </th>
+                        )}
                         {visibleColumns.status && (
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
+                          </th>
+                        )}
+                        {visibleColumns.last_activity_date && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Last Activity
                           </th>
                         )}
                         {visibleColumns.assigned_to && (
@@ -593,9 +641,70 @@ export default function CompaniesPage() {
                               </div>
                             </div>
                           </td>
+                          {visibleColumns.industry && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                              {company.industry || 'N/A'}
+                            </td>
+                          )}
                           {visibleColumns.location && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-28">
                               {company.location || 'N/A'}
+                            </td>
+                          )}
+                          {visibleColumns.source && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                              {company.source || 'N/A'}
+                            </td>
+                          )}
+                          {visibleColumns.linkedin_url && (
+                            <td className="px-4 py-4 text-sm truncate max-w-32">
+                              {company.linkedin_url ? (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const url = company.linkedin_url.startsWith('http') 
+                                      ? company.linkedin_url 
+                                      : `https://${company.linkedin_url}`;
+                                    window.open(url, '_blank', 'noopener,noreferrer');
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 transition-colors flex items-center"
+                                  title="Open LinkedIn Profile"
+                                >
+                                  <img 
+                                    src="/linkedinicon.webp" 
+                                    alt="LinkedIn" 
+                                    className="h-4 w-4 hover:opacity-80 transition-opacity"
+                                  />
+                                </button>
+                              ) : (
+                                <span className="text-gray-400">N/A</span>
+                              )}
+                            </td>
+                          )}
+                          {visibleColumns.website && (
+                            <td className="px-4 py-4 text-sm truncate max-w-32">
+                              {company.website ? (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const url = company.website.startsWith('http') 
+                                      ? company.website 
+                                      : `https://${company.website}`;
+                                    window.open(url, '_blank', 'noopener,noreferrer');
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                                  title="Visit Website"
+                                >
+                                  Visit
+                                </button>
+                              ) : (
+                                <span className="text-gray-400">N/A</span>
+                              )}
+                            </td>
+                          )}
+                          {visibleColumns.number_of_employees && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-28">
+                              {company.number_of_employees || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.status && (
@@ -607,6 +716,11 @@ export default function CompaniesPage() {
                               ) : (
                                 <span className="text-gray-400 text-sm">No status</span>
                               )}
+                            </td>
+                          )}
+                          {visibleColumns.last_activity_date && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                              {company.last_activity_date ? new Date(company.last_activity_date).toLocaleDateString() : 'N/A'}
                             </td>
                           )}
                           {visibleColumns.assigned_to && (
