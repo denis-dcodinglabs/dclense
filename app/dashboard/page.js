@@ -140,7 +140,7 @@ export default function Dashboard() {
         unsubscribeFromChannel(subscription);
       }
     };
-  }, [searchParams]);
+  }, []);
 
   useEffect(() => {
     fetchData();
