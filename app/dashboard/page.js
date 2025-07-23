@@ -1017,28 +1017,6 @@ export default function Dashboard() {
                               )}
                             </td>
                           )}
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-center space-x-3">
-                              {canEdit && (
-                                <button
-                                  onClick={() => handleEditRepresentative(rep)}
-                                  className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
-                                  title="Edit Representative"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </button>
-                              )}
-                              {canDelete && (
-                                <button
-                                  onClick={() => handleDeleteRepresentative(rep)}
-                                  className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
-                                  title="Delete Representative"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
                         </tr>
                       ))}
                     </tbody>
