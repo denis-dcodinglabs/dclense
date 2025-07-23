@@ -565,16 +565,16 @@ export default function CompaniesPage() {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {companies.map((company) => (
-                        <tr key={company.id} className={`hover:bg-gray-50 ${company.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
+                        <tr key={company.id} className={`group hover:bg-gray-50 ${company.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
                           {canDelete && (
-                            <td className={`px-6 py-4 sticky left-0 z-10 ${company.mark_unread ? 'bg-blue-50 hover:bg-gray-50' : 'bg-white hover:bg-gray-50'}`}>
+                            <td className={`px-6 py-4 sticky left-0 z-10 ${company.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}>
                               <Checkbox
                                 checked={selectedCompanies.includes(company.id)}
                                 onCheckedChange={(checked) => handleSelectCompany(company.id, checked)}
                               />
                             </td>
                           )}
-                          <td className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-12' : 'left-0'} ${company.mark_unread ? 'bg-blue-50 hover:bg-gray-50' : 'bg-white hover:bg-gray-50'}`}>
+                          <td className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-14' : 'left-0'} ${company.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}>
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
                                 <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
@@ -642,22 +642,22 @@ export default function CompaniesPage() {
                             </div>
                           </td>
                           {visibleColumns.industry && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {company.industry || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.location && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-28">
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-28 group-hover:bg-gray-50">
                               {company.location || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.source && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {company.source || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.linkedin_url && (
-                            <td className="px-4 py-4 text-sm truncate max-w-32">
+                            <td className="px-4 py-4 text-sm truncate max-w-32 group-hover:bg-gray-50">
                               {company.linkedin_url ? (
                                 <button
                                   onClick={(e) => {
@@ -682,7 +682,7 @@ export default function CompaniesPage() {
                             </td>
                           )}
                           {visibleColumns.website && (
-                            <td className="px-4 py-4 text-sm truncate max-w-32">
+                            <td className="px-4 py-4 text-sm truncate max-w-32 group-hover:bg-gray-50">
                               {company.website ? (
                                 <button
                                   onClick={(e) => {
@@ -703,12 +703,12 @@ export default function CompaniesPage() {
                             </td>
                           )}
                           {visibleColumns.number_of_employees && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-28">
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-28 group-hover:bg-gray-50">
                               {company.number_of_employees || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.status && (
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
                               {company.status ? (
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(company.status)}`}>
                                   {company.status}
@@ -719,12 +719,12 @@ export default function CompaniesPage() {
                             </td>
                           )}
                           {visibleColumns.last_activity_date && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {company.last_activity_date ? new Date(company.last_activity_date).toLocaleDateString() : 'N/A'}
                             </td>
                           )}
                           {visibleColumns.assigned_to && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
                               {company.assigned_user ? 
                                 `${company.assigned_user.first_name} ${company.assigned_user.last_name}` : 
                                 <span className="text-gray-400">Unassigned</span>
@@ -732,7 +732,7 @@ export default function CompaniesPage() {
                             </td>
                           )}
                           {visibleColumns.representatives && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
                               {company.representatives?.length || 0} reps
                             </td>
                           )}
