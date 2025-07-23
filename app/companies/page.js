@@ -508,7 +508,7 @@ export default function CompaniesPage() {
                             />
                           </th>
                         )}
-                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10 ${canDelete ? 'left-20' : 'left-0'}`}>
+                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10 ${canDelete ? 'left-14' : 'left-0'}`}>
                           Company
                         </th>
                         {visibleColumns.industry && (
