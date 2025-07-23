@@ -309,20 +309,6 @@ export default function Dashboard() {
                 </p>
               </div>
               <div className="flex space-x-3">
-                <Button variant="outline" onClick={() => setImportModalOpen(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Representatives CSV
-                </Button>
-                <Button variant="outline" onClick={() => setExportModalOpen(true)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-                {canEdit && (
-                  <Button onClick={handleAddRepresentative} className="bg-blue-600 hover:bg-blue-700">
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Add Representative
-                  </Button>
-                )}
               </div>
             </div>
 
@@ -584,6 +570,28 @@ export default function Dashboard() {
                     </Button>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <div className="flex justify-end space-x-3">
+                <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Representatives CSV
+                </Button>
+                <Button variant="outline" onClick={() => setExportModalOpen(true)}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+                {canEdit && (
+                  <Button onClick={handleAddRepresentative} className="bg-blue-600 hover:bg-blue-700">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Representative
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
