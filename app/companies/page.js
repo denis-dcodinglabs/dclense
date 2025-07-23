@@ -497,18 +497,18 @@ export default function CompaniesPage() {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                  <table className="min-w-full divide-y divide-gray-200 relative">
                     <thead className="bg-gray-50">
                       <tr>
                         {canDelete && (
-                          <th className="px-6 py-3 text-left">
+                          <th className="px-6 py-3 text-left sticky left-0 bg-gray-50 z-10">
                             <Checkbox
                               checked={selectedCompanies.length === companies.length}
                               onCheckedChange={handleSelectAll}
                             />
                           </th>
                         )}
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky bg-gray-50 z-10 ${canDelete ? 'left-20' : 'left-0'}`}>
                           Company
                         </th>
                         {visibleColumns.industry && (
@@ -567,14 +567,14 @@ export default function CompaniesPage() {
                       {companies.map((company) => (
                         <tr key={company.id} className={`hover:bg-gray-50 ${company.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
                           {canDelete && (
-                            <td className="px-6 py-4">
+                            <td className="px-6 py-4 sticky left-0 bg-white z-10">
                               <Checkbox
                                 checked={selectedCompanies.includes(company.id)}
                                 onCheckedChange={(checked) => handleSelectCompany(company.id, checked)}
                               />
                             </td>
                           )}
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className={`px-6 py-4 whitespace-nowrap sticky bg-white z-10 ${canDelete ? 'left-20' : 'left-0'}`}>
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
                                 <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
