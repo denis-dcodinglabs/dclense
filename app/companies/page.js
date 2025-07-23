@@ -65,12 +65,12 @@ export default function CompaniesPage() {
   const [realtimeSubscription, setRealtimeSubscription] = useState(null);
   const [visibleColumns, setVisibleColumns] = useState({
     company: true,
-    industry: true,
-    location: true,
-    source: true,
-    linkedin_url: true,
-    website: true,
-    number_of_employees: true,
+    industry: false,
+    location: false,
+    source: false,
+    linkedin_url: false,
+    website: false,
+    number_of_employees: false,
     status: true,
     last_activity_date: true,
     assigned_to: true,
