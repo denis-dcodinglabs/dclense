@@ -676,9 +676,6 @@ export default function Dashboard() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Assigned To
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -703,7 +700,8 @@ export default function Dashboard() {
                               </div>
                               <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900">
-                                  <div className="flex items-center space-x-2">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
                                     <button
                                       onClick={() => handleRepresentativeClick(rep.id)}
                                       className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
@@ -736,6 +734,27 @@ export default function Dashboard() {
                                 </div>
                               </div>
                             </div>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                      {canEdit && (
+                                        <button
+                                          onClick={() => handleEditRepresentative(rep)}
+                                          className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
+                                          title="Edit Representative"
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </button>
+                                      )}
+                                      {canDelete && (
+                                        <button
+                                          onClick={() => handleDeleteRepresentative(rep)}
+                                          className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
+                                          title="Delete Representative"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </button>
+                                      )}
+                                    </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">{rep.company?.company_name}</div>
@@ -782,30 +801,6 @@ export default function Dashboard() {
                                 Assign to me
                               </Button>
                             }
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-2">
-                              {canEdit && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditRepresentative(rep)}
-                                  className="text-blue-600 hover:text-blue-900"
-                                >
-                                  Edit
-                                </Button>
-                              )}
-                              {canDelete && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteRepresentative(rep)}
-                                  className="text-red-600 hover:text-red-900"
-                                >
-                                  Delete
-                                </Button>
-                              )}
-                            </div>
                           </td>
                         </tr>
                       ))}
