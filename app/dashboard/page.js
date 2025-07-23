@@ -1099,7 +1099,7 @@ export default function Dashboard() {
           {/* Representative Detail Modal */}
           <RepresentativeDetailModal
             isOpen={repDetailModalOpen}
-            onClose={() => setRepDetailModalOpen(false)}
+            onClose={handleCloseDetailModal}
             representativeId={selectedRepId}
           />
 
