@@ -805,6 +805,31 @@ export default function Dashboard() {
                         {visibleColumns.outcome && (
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                             Outcome
+                          </th>
+                        )}
+                        {visibleColumns.reminder && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Reminder
+                          </th>
+                        )}
+                        {visibleColumns.contacted_by && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Contacted By
+                          </th>
+                        )}
+                        {visibleColumns.assigned_to && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Assigned To
+                          </th>
+                        )}
+                        {visibleColumns.notes && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Notes
+                          </th>
+                        )}
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -884,7 +909,7 @@ export default function Dashboard() {
                                   )}
                                 </div>
                               </div>
-                            </div></div>
+                            </div>
                           </td>
                           {visibleColumns.company && (
                             <td className="px-6 py-4 whitespace-nowrap">
