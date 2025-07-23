@@ -709,14 +709,27 @@ export default function Dashboard() {
                 <span className="text-sm text-blue-800">
                   {selectedRepresentatives.length} representatives selected
                 </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected
-                </Button>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkAssignToMe}
+                    className="bg-green-600 text-white hover:bg-green-700 border-green-600"
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Assign Selected to Me
+                  </Button>
+                  {canDelete && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
