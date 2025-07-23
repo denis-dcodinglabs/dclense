@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2 } from 'lucide-react';
+import { Settings, Eye, EyeOff } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import RepresentativeDialog from '@/components/RepresentativeDialog';
@@ -14,6 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getRepresentatives, deleteRepresentative, assignToMe } from '@/lib/representatives';
 import { bulkDeleteRepresentatives } from '@/lib/representatives';
 import { getActivityStats, getCompanyStatusStats, getConversionRates, getAgentPerformance } from '@/lib/analytics';
@@ -33,6 +35,22 @@ const STATUS_OPTIONS = [
   { value: 'Declined', label: 'Declined' },
   { value: 'Client', label: 'Client' },
   { value: 'Pending Connection', label: 'Pending Connection' },
+];
+
+const TABLE_COLUMNS = [
+  { key: 'name', label: 'Name', required: true },
+  { key: 'company', label: 'Company', required: false },
+  { key: 'role', label: 'Role', required: false },
+  { key: 'contact_source', label: 'Contact Source', required: false },
+  { key: 'linkedin_profile_url', label: 'LinkedIn Profile URL', required: false },
+  { key: 'contact_date', label: 'Contact Date', required: false },
+  { key: 'follow_up_dates', label: 'Follow-up Dates', required: false },
+  { key: 'status', label: 'Status', required: false },
+  { key: 'outcome', label: 'Outcome', required: false },
+  { key: 'reminder', label: 'Reminder', required: false },
+  { key: 'contacted_by', label: 'Contacted By', required: false },
+  { key: 'assigned_to', label: 'Assigned To', required: false },
+  { key: 'notes', label: 'Notes', required: false }
 ];
 
 const READ_STATUS_OPTIONS = [
@@ -64,6 +82,21 @@ export default function Dashboard() {
   const [totalCount, setTotalCount] = useState(0);
   const ITEMS_PER_PAGE = 50;
   const [realtimeSubscription, setRealtimeSubscription] = useState(null);
+  const [visibleColumns, setVisibleColumns] = useState({
+    name: true,
+    company: true,
+    role: true,
+    contact_source: false,
+    linkedin_profile_url: false,
+    contact_date: false,
+    follow_up_dates: false,
+    status: true,
+    outcome: false,
+    reminder: true,
+    contacted_by: false,
+    assigned_to: true,
+    notes: false
+  });
   const [filters, setFilters] = useState({
     search: '',
     company_ids: [], // Array for multi-select
@@ -175,6 +208,13 @@ export default function Dashboard() {
   const clearCompanyFilter = () => {
     setFilters(prev => ({ ...prev, company_ids: [] }));
     setCurrentPage(1);
+  };
+
+  const handleColumnToggle = (columnKey, checked) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [columnKey]: checked
+    }));
   };
 
   const handlePreviousPage = () => {
@@ -576,7 +616,73 @@ export default function Dashboard() {
           {/* Action Buttons */}
           <Card className="mb-6">
             <CardContent className="pt-6">
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Customize Table
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64" align="start">
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-3">Show/Hide Columns</h4>
+                          <div className="space-y-3">
+                            {TABLE_COLUMNS.map((column) => (
+                              <div key={column.key} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={column.key}
+                                  checked={visibleColumns[column.key]}
+                                  onCheckedChange={(checked) => handleColumnToggle(column.key, checked)}
+                                  disabled={column.required}
+                                />
+                                <Label 
+                                  htmlFor={column.key} 
+                                  className={`text-sm ${column.required ? 'text-gray-500' : 'cursor-pointer'}`}
+                                >
+                                  {column.label}
+                                  {column.required && ' (Required)'}
+                                </Label>
+                                {visibleColumns[column.key] ? (
+                                  <Eye className="h-3 w-3 text-green-600" />
+                                ) : (
+                                  <EyeOff className="h-3 w-3 text-gray-400" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="pt-3 border-t">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setVisibleColumns({
+                              name: true,
+                              company: true,
+                              role: true,
+                              contact_source: true,
+                              linkedin_profile_url: true,
+                              contact_date: true,
+                              follow_up_dates: true,
+                              status: true,
+                              outcome: true,
+                              reminder: true,
+                              contacted_by: true,
+                              assigned_to: true,
+                              notes: true
+                            })}
+                            className="w-full"
+                          >
+                            Show All Columns
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex space-x-3">
                 <Button variant="outline" onClick={() => setImportModalOpen(true)}>
                   <Upload className="h-4 w-4 mr-2" />
                   Import Representatives CSV
@@ -591,6 +697,7 @@ export default function Dashboard() {
                     Add Representative
                   </Button>
                 )}
+              </div>
               </div>
             </CardContent>
           </Card>
@@ -660,7 +767,66 @@ export default function Dashboard() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Name
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {visibleColumns.company && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Company
+                          </th>
+                        )}
+                        {visibleColumns.role && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Role
+                          </th>
+                        )}
+                        {visibleColumns.contact_source && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Contact Source
+                          </th>
+                        )}
+                        {visibleColumns.linkedin_profile_url && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            LinkedIn
+                          </th>
+                        )}
+                        {visibleColumns.contact_date && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Contact Date
+                          </th>
+                        )}
+                        {visibleColumns.follow_up_dates && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Follow-up Dates
+                          </th>
+                        )}
+                        {visibleColumns.status && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                        )}
+                        {visibleColumns.outcome && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Outcome
+                          </th>
+                        )}
+                        {visibleColumns.reminder && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Reminder
+                          </th>
+                        )}
+                        {visibleColumns.contacted_by && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Contacted By
+                          </th>
+                        )}
+                        {visibleColumns.assigned_to && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Assigned To
+                          </th>
+                        )}
+                        {visibleColumns.notes && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Notes
+                          </th>
+                        )}
                           Company
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -755,7 +921,137 @@ export default function Dashboard() {
                                     </div>
                                     
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          {visibleColumns.company && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{rep.company?.company_name}</div>
+                              <div className="text-sm text-gray-500">{rep.company?.status}</div>
+                            </td>
+                          )}
+                          {visibleColumns.role && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {rep.role || 'N/A'}
+                            </td>
+                          )}
+                          {visibleColumns.contact_source && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                              {rep.contact_source || 'N/A'}
+                            </td>
+                          )}
+                          {visibleColumns.linkedin_profile_url && (
+                            <td className="px-4 py-4 text-sm truncate max-w-32">
+                              {rep.linkedin_profile_url ? (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const url = rep.linkedin_profile_url.startsWith('http') 
+                                      ? rep.linkedin_profile_url 
+                                      : `https://${rep.linkedin_profile_url}`;
+                                    window.open(url, '_blank', 'noopener,noreferrer');
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 transition-colors flex items-center"
+                                  title="Open LinkedIn Profile"
+                                >
+                                  <img 
+                                    src="/linkedinicon.webp" 
+                                    alt="LinkedIn" 
+                                    className="h-4 w-4 hover:opacity-80 transition-opacity"
+                                  />
+                                </button>
+                              ) : (
+                                <span className="text-gray-400">N/A</span>
+                              )}
+                            </td>
+                          )}
+                          {visibleColumns.contact_date && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                              {rep.contact_date ? new Date(rep.contact_date).toLocaleDateString() : 'N/A'}
+                            </td>
+                          )}
+                          {visibleColumns.follow_up_dates && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                              {rep.follow_up_dates && rep.follow_up_dates.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {rep.follow_up_dates.slice(0, 2).map((date, index) => (
+                                    <span key={index} className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded">
+                                      {new Date(date).toLocaleDateString()}
+                                    </span>
+                                  ))}
+                                  {rep.follow_up_dates.length > 2 && (
+                                    <span className="text-xs text-gray-500">+{rep.follow_up_dates.length - 2}</span>
+                                  )}
+                                </div>
+                              ) : (
+                                'N/A'
+                              )}
+                            </td>
+                          )}
+                          {visibleColumns.status && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                rep.outcome === 'Client' ? 'bg-green-100 text-green-800' :
+                                rep.outcome === 'Declined' ? 'bg-red-100 text-red-800' :
+                                rep.status ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {rep.outcome || rep.status || 'No Status'}
+                              </span>
+                            </td>
+                          )}
+                          {visibleColumns.outcome && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                              {rep.outcome || 'N/A'}
+                            </td>
+                          )}
+                          {visibleColumns.reminder && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {rep.reminder_date ? (
+                                <div className="flex items-center">
+                                  <div className={`w-3 h-3 rounded-full mr-2 ${
+                                    new Date(rep.reminder_date) <= new Date() ? 'bg-red-500' : 'bg-orange-500'
+                                  }`}></div>
+                                  <span className={`text-sm ${
+                                    new Date(rep.reminder_date) <= new Date() ? 'text-red-600 font-medium' : 'text-orange-600'
+                                  }`}>
+                                    {formatDate(rep.reminder_date)}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-gray-400 text-sm">No reminder</span>
+                              )}
+                            </td>
+                          )}
+                          {visibleColumns.contacted_by && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                              {rep.contacted_user ? 
+                                `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}` : 
+                                'N/A'
+                              }
+                            </td>
+                          )}
+                          {visibleColumns.assigned_to && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {rep.assigned_user ? 
+                                `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}` : 
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleAssignToMe(rep.id)}
+                                  className="text-blue-600 hover:text-blue-800"
+                                >
+                                  Assign to me
+                                </Button>
+                              }
+                            </td>
+                          )}
+                          {visibleColumns.notes && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32" title={rep.notes}>
+                              {rep.notes ? (
+                                rep.notes.length > 50 ? `${rep.notes.substring(0, 50)}...` : rep.notes
+                              ) : (
+                                'N/A'
+                              )}
+                            </td>
+                          )}
                             <div className="text-sm text-gray-900">{rep.company?.company_name}</div>
                             <div className="text-sm text-gray-500">{rep.company?.status}</div>
                           </td>
