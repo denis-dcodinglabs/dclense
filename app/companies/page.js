@@ -738,6 +738,13 @@ export default function CompaniesPage() {
                                 >
                                   <img 
                                     src="/linkedinicon.webp" 
+                              )
+                              }
+                          )
+                          }
+                      )
+                      )
+                      }
                     </tbody>
                   </table>
                 </div>
