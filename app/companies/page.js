@@ -639,7 +639,7 @@ export default function CompaniesPage() {
                                   )}
                                 </div>
                               </div>
-                            </div>
+                            </div></td>
                           <td className="sticky left-0 z-10 bg-white px-6 py-4 whitespace-nowrap border-r border-gray-200">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
