@@ -83,8 +83,6 @@ export default function Dashboard() {
   const [totalCount, setTotalCount] = useState(0);
   const ITEMS_PER_PAGE = 50;
   const [realtimeSubscription, setRealtimeSubscription] = useState(null);
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [visibleColumns, setVisibleColumns] = useState({
     name: true,
     company: true,
