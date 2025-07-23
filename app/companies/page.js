@@ -423,9 +423,6 @@ export default function CompaniesPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Representatives
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -448,38 +445,60 @@ export default function CompaniesPage() {
                                   </span>
                                 </div>
                               </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
-                                  <div className="flex items-center space-x-2">
-                                    <button
-                                      onClick={() => handleCompanyClick(company.id)}
-                                      className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
-                                    >
-                                      {company.company_name}
-                                    </button>
-                                    {company.linkedin_url && (
+                              <div className="ml-4 flex-1 flex items-center justify-between">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">
+                                    <div className="flex items-center space-x-2">
                                       <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          const url = company.linkedin_url.startsWith('http') 
-                                            ? company.linkedin_url 
-                                            : `https://${company.linkedin_url}`;
-                                          window.open(url, '_blank', 'noopener,noreferrer');
-                                        }}
-                                        className="text-blue-600 hover:text-blue-800 transition-colors"
-                                        title="Open LinkedIn Profile"
+                                        onClick={() => handleCompanyClick(company.id)}
+                                        className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
                                       >
-                                        <img 
-                                          src="/linkedinicon.webp" 
-                                          alt="LinkedIn" 
-                                          className="h-4 w-4 hover:opacity-80 transition-opacity"
-                                        />
+                                        {company.company_name}
                                       </button>
-                                    )}
+                                      {company.linkedin_url && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const url = company.linkedin_url.startsWith('http') 
+                                              ? company.linkedin_url 
+                                              : `https://${company.linkedin_url}`;
+                                            window.open(url, '_blank', 'noopener,noreferrer');
+                                          }}
+                                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                                          title="Open LinkedIn Profile"
+                                        >
+                                          <img 
+                                            src="/linkedinicon.webp" 
+                                            alt="LinkedIn" 
+                                            className="h-4 w-4 hover:opacity-80 transition-opacity"
+                                          />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {company.number_of_employees ? `${company.number_of_employees} employees` : 'Size unknown'}
                                   </div>
                                 </div>
-                                <div className="text-sm text-gray-500">
-                                  {company.number_of_employees ? `${company.number_of_employees} employees` : 'Size unknown'}
+                                <div className="flex items-center justify-center space-x-3">
+                                  {canEdit && (
+                                    <button
+                                      onClick={() => handleEditCompany(company)}
+                                      className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
+                                      title="Edit Company"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  {canDelete && (
+                                    <button
+                                      onClick={() => handleDeleteCompany(company)}
+                                      className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
+                                      title="Delete Company"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -504,30 +523,6 @@ export default function CompaniesPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {company.representatives?.length || 0} reps
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-2">
-                              {canEdit && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditCompany(company)}
-                                  className="text-blue-600 hover:text-blue-900"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {canDelete && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteCompany(company)}
-                                  className="text-red-600 hover:text-red-900"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
                           </td>
                         </tr>
                       ))}
