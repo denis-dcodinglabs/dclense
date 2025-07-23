@@ -322,6 +322,14 @@ export default function Dashboard() {
   const markRepresentativeAsRead = async (repId) => {
     const { error } = await updateRepresentative(repId, { mark_unread: false }, currentUser.id);
     if (!error) {
+  const handleCloseDetailModal = () => {
+    setDetailModalOpen(false);
+    setSelectedRepId(null);
+    
+    // Remove rep parameter from URL
+    router.push('/dashboard', { scroll: false });
+  };
+
       // Update local state to reflect the change
       setRepresentatives(prev => prev.map(rep => 
         rep.id === repId ? { ...rep, mark_unread: false } : rep
