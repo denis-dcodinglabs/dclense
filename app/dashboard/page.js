@@ -734,7 +734,7 @@ export default function Dashboard() {
                               </div>
                             </div>
                                     </div>
-                                    <div className="flex items-center justify-center space-x-1">
+                                    <div className="flex items-center justify-center space-x-3">
                                       {canEdit && (
                                         <button
                                           onClick={() => handleEditRepresentative(rep)}
