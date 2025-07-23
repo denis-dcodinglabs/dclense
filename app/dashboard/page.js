@@ -828,19 +828,7 @@ export default function Dashboard() {
                           </th>
                         )}
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Company
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Role
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Reminder
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Assigned To
+                          Actions
                         </th>
                       </tr>
                     </thead>
@@ -897,30 +885,9 @@ export default function Dashboard() {
                                 </div>
                                 <div className="text-sm text-gray-500">
                                   {rep.contact_date ? new Date(rep.contact_date).toLocaleDateString() : 'Not contacted'}
-                                </div><div className="flex items-center justify-center space-x-3">
-                                      {canEdit && (
-                                        <button
-                                          onClick={() => handleEditRepresentative(rep)}
-                                          className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
-                                          title="Edit Representative"
-                                        >
-                                          <Edit className="h-4 w-4" />
-                                        </button>
-                                      )}
-                                      {canDelete && (
-                                        <button
-                                          onClick={() => handleDeleteRepresentative(rep)}
-                                          className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
-                                          title="Delete Representative"
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </button>
-                                      )}
-                                    </div>
+                                </div>
                               </div>
                             </div>
-                                    </div>
-                                    
                           </td>
                           {visibleColumns.company && (
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -1053,53 +1020,27 @@ export default function Dashboard() {
                               )}
                             </td>
                           )}
-                            <div className="text-sm text-gray-900">{rep.company?.company_name}</div>
-                            <div className="text-sm text-gray-500">{rep.company?.status}</div>
-                          </td>
-                        )}
-                        {visibleColumns.role && (
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {rep.role || 'N/A'}
-                          </td>
-                        )}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              rep.outcome === 'Client' ? 'bg-green-100 text-green-800' :
-                              rep.outcome === 'Declined' ? 'bg-red-100 text-red-800' :
-                              rep.status ? 'bg-blue-100 text-blue-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {rep.outcome || rep.status || 'No Status'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {rep.reminder_date ? (
-                              <div className="flex items-center">
-                                <div className={`w-3 h-3 rounded-full mr-2 ${
-                                  new Date(rep.reminder_date) <= new Date() ? 'bg-red-500' : 'bg-orange-500'
-                                }`}></div>
-                                <span className={`text-sm ${
-                                  new Date(rep.reminder_date) <= new Date() ? 'text-red-600 font-medium' : 'text-orange-600'
-                                }`}>
-                                  {formatDate(rep.reminder_date)}
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-gray-400 text-sm">No reminder</span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {rep.assigned_user ? 
-                              `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}` : 
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleAssignToMe(rep.id)}
-                                className="text-blue-600 hover:text-blue-800"
-                              >
-                                Assign to me
-                              </Button>
-                            }
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-center space-x-3">
+                              {canEdit && (
+                                <button
+                                  onClick={() => handleEditRepresentative(rep)}
+                                  className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
+                                  title="Edit Representative"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button
+                                  onClick={() => handleDeleteRepresentative(rep)}
+                                  className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
+                                  title="Delete Representative"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
