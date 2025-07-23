@@ -730,11 +730,7 @@ export default function Dashboard() {
                                 </div>
                                 <div className="text-sm text-gray-500">
                                   {rep.contact_date ? new Date(rep.contact_date).toLocaleDateString() : 'Not contacted'}
-                                </div>
-                              </div>
-                            </div>
-                                    </div>
-                                    <div className="flex items-center justify-center space-x-3">
+                                </div><div className="flex items-center justify-center space-x-3">
                                       {canEdit && (
                                         <button
                                           onClick={() => handleEditRepresentative(rep)}
@@ -754,6 +750,10 @@ export default function Dashboard() {
                                         </button>
                                       )}
                                     </div>
+                              </div>
+                            </div>
+                                    </div>
+                                    
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">{rep.company?.company_name}</div>
