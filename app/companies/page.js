@@ -567,14 +567,14 @@ export default function CompaniesPage() {
                       {companies.map((company) => (
                         <tr key={company.id} className={`hover:bg-gray-50 ${company.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
                           {canDelete && (
-                            <td className={`px-6 py-4 sticky left-0 z-10 ${company.mark_unread ? 'bg-blue-50' : 'bg-white'}`}>
+                            <td className={`px-6 py-4 sticky left-0 z-10 ${company.mark_unread ? 'bg-blue-50 hover:bg-gray-50' : 'bg-white hover:bg-gray-50'}`}>
                               <Checkbox
                                 checked={selectedCompanies.includes(company.id)}
                                 onCheckedChange={(checked) => handleSelectCompany(company.id, checked)}
                               />
                             </td>
                           )}
-                          <td className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-20' : 'left-0'} ${company.mark_unread ? 'bg-blue-50' : 'bg-white'}`}>
+                          <td className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-20' : 'left-0'} ${company.mark_unread ? 'bg-blue-50 hover:bg-gray-50' : 'bg-white hover:bg-gray-50'}`}>
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
                                 <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
