@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2 } from 'lucide-react';
 import { Settings, Eye, EyeOff } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -82,6 +83,8 @@ export default function Dashboard() {
   const [totalCount, setTotalCount] = useState(0);
   const ITEMS_PER_PAGE = 50;
   const [realtimeSubscription, setRealtimeSubscription] = useState(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [visibleColumns, setVisibleColumns] = useState({
     name: true,
     company: true,
@@ -114,6 +117,13 @@ export default function Dashboard() {
     fetchCompanies();
     fetchUsers();
     getCurrentUser();
+    
+    // Check for representative ID in URL params
+    const repId = searchParams.get('rep');
+    if (repId) {
+      setSelectedRepresentativeId(repId);
+      setDetailModalOpen(true);
+    }
     
     // Set up real-time subscription
     const subscription = subscribeToRepresentatives((payload) => {
