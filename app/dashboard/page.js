@@ -258,6 +258,17 @@ export default function Dashboard() {
     }
   };
 
+  const handleBulkAssignToMe = async () => {
+    if (selectedRepresentatives.length === 0) return;
+    
+    if (window.confirm(`Are you sure you want to assign ${selectedRepresentatives.length} representatives to yourself?`)) {
+      const { error } = await bulkAssignToMe(selectedRepresentatives, currentUser.id);
+      if (!error) {
+        setSelectedRepresentatives([]);
+        fetchData();
+      }
+    }
+  };
   const handleSelectRepresentative = (repId, checked) => {
     if (checked) {
       setSelectedRepresentatives([...selectedRepresentatives, repId]);
