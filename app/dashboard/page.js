@@ -906,7 +906,7 @@ export default function Dashboard() {
                                   )}
                                 </div>
                               </div>
-                            </div></div>
+                            </div>
                           </td>
                           {visibleColumns.company && (
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -1040,6 +1040,9 @@ export default function Dashboard() {
                             </td>
                           )}
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
