@@ -338,7 +338,7 @@ export default function CompaniesPage() {
           {/* Action Buttons */}
           <Card className="mb-6">
             <CardContent className="pt-6">
-              <div className="flex space-x-3">
+              <div className="flex justify-end">
                 <Button variant="outline" onClick={() => setImportModalOpen(true)}>
                   <Upload className="h-4 w-4 mr-2" />
                   Import Companies CSV
