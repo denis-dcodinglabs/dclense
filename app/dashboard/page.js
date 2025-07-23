@@ -753,42 +753,42 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                  <table className="min-w-full divide-y divide-gray-200 relative">
                     <thead className="bg-gray-50">
                       <tr>
                         {canDelete && (
-                          <th className="px-6 py-3 text-left">
+                          <th className="px-6 py-3 text-left sticky left-0 bg-gray-50 z-10">
                             <Checkbox
                               checked={selectedRepresentatives.length === representatives.length}
                               onCheckedChange={handleSelectAll}
                             />
                           </th>
                         )}
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky bg-gray-50 z-10 ${canDelete ? 'left-14' : 'left-0'}`}>
                           Name
                         </th>
                         {visibleColumns.company && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
                             Company
                           </th>
                         )}
                         {visibleColumns.role && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
                             Role
                           </th>
                         )}
                         {visibleColumns.contact_source && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
                             Contact Source
                           </th>
                         )}
                         {visibleColumns.linkedin_profile_url && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
                             LinkedIn
                           </th>
                         )}
                         {visibleColumns.contact_date && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
                             Contact Date
                           </th>
                         )}
@@ -798,12 +798,12 @@ export default function Dashboard() {
                           </th>
                         )}
                         {visibleColumns.status && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
                             Status
                           </th>
                         )}
                         {visibleColumns.outcome && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
                             Outcome
                           </th>
                         )}
@@ -813,12 +813,12 @@ export default function Dashboard() {
                           </th>
                         )}
                         {visibleColumns.contacted_by && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
                             Contacted By
                           </th>
                         )}
                         {visibleColumns.assigned_to && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
                             Assigned To
                           </th>
                         )}
@@ -831,16 +831,16 @@ export default function Dashboard() {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {representatives.map((rep) => (
-                        <tr key={rep.id} className={`hover:bg-gray-50 ${rep.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
+                        <tr key={rep.id} className={`group hover:bg-gray-50 ${rep.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
                           {canDelete && (
-                            <td className="px-6 py-4">
+                            <td className={`px-6 py-4 whitespace-nowrap sticky left-0 z-10 ${rep.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}>
                               <Checkbox
                                 checked={selectedRepresentatives.includes(rep.id)}
                                 onCheckedChange={(checked) => handleSelectRepresentative(rep.id, checked)}
                               />
                             </td>
                           )}
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-14' : 'left-0'} ${rep.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}>
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
                                 <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
@@ -909,23 +909,23 @@ export default function Dashboard() {
                             </div></div>
                           </td>
                           {visibleColumns.company && (
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
                               <div className="text-sm text-gray-900">{rep.company?.company_name}</div>
                               <div className="text-sm text-gray-500">{rep.company?.status}</div>
                             </td>
                           )}
                           {visibleColumns.role && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
                               {rep.role || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.contact_source && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {rep.contact_source || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.linkedin_profile_url && (
-                            <td className="px-4 py-4 text-sm truncate max-w-32">
+                            <td className="px-4 py-4 text-sm truncate max-w-32 group-hover:bg-gray-50">
                               {rep.linkedin_profile_url ? (
                                 <button
                                   onClick={(e) => {
@@ -950,7 +950,7 @@ export default function Dashboard() {
                             </td>
                           )}
                           {visibleColumns.contact_date && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {rep.contact_date ? new Date(rep.contact_date).toLocaleDateString() : 'N/A'}
                             </td>
                           )}
@@ -973,7 +973,7 @@ export default function Dashboard() {
                             </td>
                           )}
                           {visibleColumns.status && (
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                 rep.outcome === 'Client' ? 'bg-green-100 text-green-800' :
                                 rep.outcome === 'Declined' ? 'bg-red-100 text-red-800' :
@@ -985,7 +985,7 @@ export default function Dashboard() {
                             </td>
                           )}
                           {visibleColumns.outcome && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {rep.outcome || 'N/A'}
                             </td>
                           )}
@@ -1008,7 +1008,7 @@ export default function Dashboard() {
                             </td>
                           )}
                           {visibleColumns.contacted_by && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {rep.contacted_user ? 
                                 `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}` : 
                                 'N/A'
@@ -1016,7 +1016,7 @@ export default function Dashboard() {
                             </td>
                           )}
                           {visibleColumns.assigned_to && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
                               {rep.assigned_user ? 
                                 `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}` : 
                                 <Button
