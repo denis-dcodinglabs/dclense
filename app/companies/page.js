@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink, Settings, Eye, EyeOff } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
@@ -48,6 +49,8 @@ const TABLE_COLUMNS = [
 ];
 
 export default function CompaniesPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +93,13 @@ export default function CompaniesPage() {
     fetchUsers();
     getCurrentUser();
     
+    // Check for companyId in URL parameters
+    const companyId = searchParams.get('companyId');
+    if (companyId) {
+      setSelectedCompanyId(companyId);
+      setDetailModalOpen(true);
+    }
+    
     // Set up real-time subscription
     const subscription = subscribeToCompanies((payload) => {
       handleCompanyUpdate(payload, companies, setCompanies);
@@ -102,7 +112,7 @@ export default function CompaniesPage() {
         unsubscribeFromChannel(subscription);
       }
     };
-  }, [currentPage, filters]);
+  }, [currentPage, filters, searchParams]);
 
   const getCurrentUser = async () => {
     const user = await getCurrentUserWithRole();
@@ -212,6 +222,7 @@ export default function CompaniesPage() {
     markCompanyAsRead(companyId);
     setSelectedCompanyId(companyId);
     setDetailModalOpen(true);
+    router.push(`/companies?companyId=${companyId}`, { scroll: false });
   };
 
   const markCompanyAsRead = async (companyId) => {
