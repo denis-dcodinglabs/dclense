@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'
 import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2 } from 'lucide-react';
 import { Settings, Eye, EyeOff } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -60,6 +61,7 @@ const READ_STATUS_OPTIONS = [
 ];
 
 export default function Dashboard() {
+  const router = useRouter()
   const [representatives, setRepresentatives] = useState([]);
   const [stats, setStats] = useState({});
   const [statusStats, setStatusStats] = useState({});
@@ -307,6 +309,7 @@ export default function Dashboard() {
     markRepresentativeAsRead(repId);
     setSelectedRepId(repId);
     setRepDetailModalOpen(true);
+    router.push(`/dashboard?repId=${repId}`, { scroll: false }); 
   };
 
   const markRepresentativeAsRead = async (repId) => {
