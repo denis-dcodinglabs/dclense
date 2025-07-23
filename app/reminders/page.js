@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Calendar, Bell, BellOff, Trash2, Eye, EyeOff, Building2, User, Clock, CheckCircle } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -51,6 +52,7 @@ const getUrgencyColor = (dateString) => {
 };
 
 export default function RemindersPage() {
+  const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
   const [reminders, setReminders] = useState({ representatives: [], companies: [] });
   const [notifications, setNotifications] = useState([]);
@@ -205,6 +207,10 @@ export default function RemindersPage() {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
+  const handleRepresentativeClick = (repId) => {
+    router.push(`/dashboard?repId=${repId}`);
+  };
+
   if (loading) {
     return (
       <ProtectedRoute>
@@ -291,9 +297,12 @@ export default function RemindersPage() {
                                 </div>
                               </div>
                               <div className="ml-3">
-                                <h3 className="text-lg font-medium text-gray-900">
+                                <button
+                                  onClick={() => handleRepresentativeClick(rep.id)}
+                                  className="text-lg font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
+                                >
                                   {rep.first_name} {rep.last_name}
-                                </h3>
+                                </button>
                                 <p className="text-sm text-gray-600">{rep.role}</p>
                                 {rep.company && (
                                   <p className="text-sm text-gray-500">

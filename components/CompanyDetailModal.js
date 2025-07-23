@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -64,6 +65,7 @@ const ClickableLink = ({ url, children, icon: Icon }) => {
 };
 
 export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
+  const router = useRouter();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -98,6 +100,12 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
   const handleClose = () => {
     setCompany(null);
     setError('');
+    
+    // Remove companyId from URL when closing modal
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.delete('companyId');
+    router.replace(currentUrl.pathname + currentUrl.search, { scroll: false });
+    
     onClose();
   };
 
