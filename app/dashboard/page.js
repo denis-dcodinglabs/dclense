@@ -1056,9 +1056,12 @@ export default function Dashboard() {
                             <div className="text-sm text-gray-900">{rep.company?.company_name}</div>
                             <div className="text-sm text-gray-500">{rep.company?.status}</div>
                           </td>
+                        )}
+                        {visibleColumns.role && (
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {rep.role || 'N/A'}
                           </td>
+                        )}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               rep.outcome === 'Client' ? 'bg-green-100 text-green-800' :
