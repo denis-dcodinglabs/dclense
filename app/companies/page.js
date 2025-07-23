@@ -574,7 +574,7 @@ export default function CompaniesPage() {
                               />
                             </td>
                           )}
-                          <td className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-10' : 'left-0'} ${company.mark_unread ? 'bg-blue-50 hover:bg-gray-50' : 'bg-white hover:bg-gray-50'}`}>
+                          <td className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-9' : 'left-0'} ${company.mark_unread ? 'bg-blue-50 hover:bg-gray-50' : 'bg-white hover:bg-gray-50'}`}>
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
                                 <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
