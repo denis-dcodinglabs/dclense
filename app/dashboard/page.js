@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Linkedin } from 'lucide-react';
-import { Trash2 } from 'lucide-react';
+import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import RepresentativeDialog from '@/components/RepresentativeDialog';
