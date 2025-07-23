@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,6 +66,7 @@ const ClickableLink = ({ url, children, icon: Icon }) => {
 };
 
 export default function RepresentativeDetailModal({ isOpen, onClose, representativeId }) {
+  const router = useRouter();
   const [representative, setRepresentative] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -108,6 +110,12 @@ export default function RepresentativeDetailModal({ isOpen, onClose, representat
   const handleClose = () => {
     setRepresentative(null);
     setError('');
+    
+    // Remove repId from URL when closing modal
+    const currentUrl = new URL(window.location);
+    currentUrl.searchParams.delete('repId');
+    router.replace(currentUrl.pathname + currentUrl.search, { scroll: false });
+    
     onClose();
   };
 
