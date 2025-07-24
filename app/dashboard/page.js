@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getRepresentatives, deleteRepresentative, assignToMe } from '@/lib/representatives';
 import { bulkDeleteRepresentatives } from '@/lib/representatives';
+import { bulkAssignToMe } from '@/lib/representatives';
 import { getActivityStats, getCompanyStatusStats, getConversionRates, getAgentPerformance } from '@/lib/analytics';
 import { getCompanies } from '@/lib/companies';
 import { getCurrentUserWithRole } from '@/lib/auth';
@@ -309,6 +310,16 @@ export default function Dashboard() {
   const handleAssignToMe = async (repId) => {
     const { error } = await assignToMe(repId, currentUser.id);
     if (!error) {
+      fetchData();
+    }
+  };
+
+  const handleBulkAssignToMe = async () => {
+    if (selectedRepresentatives.length === 0) return;
+    
+    const { error } = await bulkAssignToMe(selectedRepresentatives, currentUser.id);
+    if (!error) {
+      setSelectedRepresentatives([]);
       fetchData();
     }
   };
@@ -715,20 +726,32 @@ export default function Dashboard() {
           </Card>
 
           {/* Bulk Actions */}
-          {selectedRepresentatives.length > 0 && canDelete && (
+          {selectedRepresentatives.length > 0 && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-blue-800">
                   {selectedRepresentatives.length} representatives selected
                 </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected
-                </Button>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkAssignToMe}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    Assign selected to me
+                  </Button>
+                  {canDelete && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
