@@ -119,7 +119,14 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     if (templateId && templateId !== 'new') {
       const template = templates.find(t => t.id === templateId);
       if (template) {
-        setFieldMappings(template.field_mappings || {});
+        // Filter out "donotmap" values when loading template
+        const filteredMappings = {};
+        Object.entries(template.field_mappings || {}).forEach(([key, value]) => {
+          if (value !== 'donotmap') {
+            filteredMappings[key] = value;
+          }
+        });
+        setFieldMappings(filteredMappings);
         setTemplateName(template.template_name);
         setError('');
       }
@@ -179,10 +186,17 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
       return;
     }
 
+    // Create complete field mappings with "donotmap" for unmapped fields
+    const fields = importType === 'companies' ? COMPANY_FIELDS : REPRESENTATIVE_FIELDS;
+    const completeFieldMappings = {};
+    
+    fields.forEach(field => {
+      completeFieldMappings[field.key] = fieldMappings[field.key] || 'donotmap';
+    });
     const templateData = {
       template_name: templateName,
       template_type: importType,
-      field_mappings: fieldMappings
+      field_mappings: completeFieldMappings
     };
 
     const { data, error } = await saveCSVTemplate(templateData, currentUser.id);
@@ -217,7 +231,26 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     try {
       // Save template if requested
       if (saveTemplate && templateName.trim()) {
-        await handleSaveTemplate();
+        // Create complete field mappings with "donotmap" for unmapped fields
+        const fields = importType === 'companies' ? COMPANY_FIELDS : REPRESENTATIVE_FIELDS;
+        const completeFieldMappings = {};
+        
+        fields.forEach(field => {
+          completeFieldMappings[field.key] = fieldMappings[field.key] || 'donotmap';
+        });
+
+        const templateData = {
+          template_name: templateName,
+          template_type: importType,
+          field_mappings: completeFieldMappings
+        };
+
+        const { error: templateError } = await saveCSVTemplate(templateData, currentUser.id);
+        if (templateError) {
+          setError('Failed to save template');
+          setLoading(false);
+          return;
+        }
       }
 
       // Transform CSV data according to mappings
