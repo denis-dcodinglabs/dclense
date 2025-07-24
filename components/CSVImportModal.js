@@ -185,11 +185,15 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
       field_mappings: fieldMappings
     };
 
-    const { error } = await saveCSVTemplate(templateData, currentUser.id);
+    const { data, error } = await saveCSVTemplate(templateData, currentUser.id);
     if (error) {
       setError('Failed to save template');
     } else {
       await fetchTemplates();
+      // Update selected template to the newly created one
+      if (data) {
+        setSelectedTemplate(data.id);
+      }
     }
   };
 
@@ -418,6 +422,41 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
               </Card>
             )}
 
+            {/* Template Selection Dropdown */}
+            {templates.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Use Saved Template</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a saved template" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">No template</SelectItem>
+                        {templates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.template_name} ({Object.keys(template.field_mappings || {}).length} mappings)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {selectedTemplate && selectedTemplate !== '' && (
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <p className="text-sm text-green-800">
+                          ✅ Template "{templates.find(t => t.id === selectedTemplate)?.template_name}" applied successfully!
+                          Field mappings have been automatically set.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Map CSV Columns to Database Fields</h3>
               <p className="text-sm text-gray-500">
@@ -431,16 +470,6 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                   <Label className="font-medium">
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
-                    
-                    
-                    
-                    
-                    
-                    
-                  
-                    
-                    
-                    
                   </Label>
                   <Select
                     value={fieldMappings[field.key] || 'unmapped'}
