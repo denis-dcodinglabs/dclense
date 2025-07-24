@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -136,12 +136,12 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     }
   };
 
-  const handleFieldMapping = (dbField, csvColumn) => {
+  const handleFieldMapping = useCallback((dbField, csvColumn) => {
     setFieldMappings(prev => ({
       ...prev,
       [dbField]: csvColumn === 'unmapped' ? '' : csvColumn
     }));
-  };
+  }, []);
 
   const generatePreview = () => {
     if (!checkValidationAndSetError()) return;
