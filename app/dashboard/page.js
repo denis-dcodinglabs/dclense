@@ -734,13 +734,37 @@ export default function Dashboard() {
                   {selectedRepresentatives.length} representatives selected
                 </span>
                 <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleBulkAssignToMe}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <User className="h-4 w-4 mr-2" />
+                  {canEdit && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkMarkReadUnread(false)}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        Mark Read
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkMarkReadUnread(true)}
+                        className="text-orange-600 hover:text-orange-800"
+                      >
+                        Mark Unread
+                      </Button>
+                    </>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected
+                    </Button>
+                  )}
+                </div>
                     Assign Selected to Me
                   </Button>
                   <Button
