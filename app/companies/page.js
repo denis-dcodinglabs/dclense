@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies, bulkAssignCompaniesToMe } from '@/lib/companies';
+import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies, bulkAssignCompaniesToMe, bulkMarkCompaniesReadUnread } from '@/lib/companies';
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } from '@/lib/realtime';
