@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2, Eye, EyeOff, User } from 'lucide-react';
+import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2, User } from 'lucide-react';
 import { Settings, Eye, EyeOff } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
@@ -778,13 +779,7 @@ export default function Dashboard() {
                       Delete Selected
                     </Button>
                   )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleBulkAssignToMe}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
+                </div>
                     Assign Selected to Me
                   </Button>
                   <Button
@@ -795,7 +790,6 @@ export default function Dashboard() {
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete Selected
                   </Button>
-                </div>
                 </div>
               </div>
             </div>
