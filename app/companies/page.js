@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink, Settings, Eye, EyeOff } from 'lucide-react';
+import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink, Settings, Eye, EyeOff, User } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import CompanyDialog from '@/components/CompanyDialog';
@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies } from '@/lib/companies';
+import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies, bulkAssignCompaniesToMe } from '@/lib/companies';
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } from '@/lib/realtime';
@@ -161,6 +161,18 @@ export default function CompaniesPage() {
     
     if (window.confirm(`Are you sure you want to delete ${selectedCompanies.length} companies?`)) {
       const { error } = await bulkDeleteCompanies(selectedCompanies, currentUser.id);
+      if (!error) {
+        setSelectedCompanies([]);
+        fetchData();
+      }
+    }
+  };
+
+  const handleBulkAssignToMe = async () => {
+    if (selectedCompanies.length === 0) return;
+    
+    if (window.confirm(`Are you sure you want to assign ${selectedCompanies.length} companies to yourself?`)) {
+      const { error } = await bulkAssignCompaniesToMe(selectedCompanies, currentUser.id);
       if (!error) {
         setSelectedCompanies([]);
         fetchData();
@@ -469,20 +481,35 @@ export default function CompaniesPage() {
           </Card>
 
           {/* Bulk Actions */}
-          {selectedCompanies.length > 0 && canDelete && (
+          {selectedCompanies.length > 0 && (canDelete || canEdit) && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <span className="text-sm text-blue-800">
                   {selectedCompanies.length} companies selected
                 </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected
-                </Button>
+                <div className="flex space-x-2">
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleBulkAssignToMe}
+                      className="text-blue-600 hover:text-blue-800 border-blue-200 hover:border-blue-300"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Assign Selected to Me
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
