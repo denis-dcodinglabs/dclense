@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'
+import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2, User } from 'lucide-react';
 import { Settings, Eye, EyeOff } from 'lucide-react';
@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getRepresentatives, deleteRepresentative, assignToMe } from '@/lib/representatives';
-import { bulkDeleteRepresentatives, bulkAssignRepresentativesToMe } from '@/lib/representatives';
+import { bulkDeleteRepresentatives, bulkAssignRepresentativesToMe, bulkMarkRepresentativesReadUnread } from '@/lib/representatives';
 import { getActivityStats, getCompanyStatusStats, getConversionRates, getAgentPerformance } from '@/lib/analytics';
 import { getCompanies } from '@/lib/companies';
 import { getCurrentUserWithRole } from '@/lib/auth';
@@ -274,6 +274,19 @@ export default function Dashboard() {
     
     if (window.confirm(`Are you sure you want to assign ${selectedRepresentatives.length} representatives to yourself?`)) {
       const { error } = await bulkAssignRepresentativesToMe(selectedRepresentatives, currentUser.id);
+      if (!error) {
+        setSelectedRepresentatives([]);
+        fetchData();
+      }
+    }
+  };
+
+  const handleBulkMarkReadUnread = async (markAsRead) => {
+    if (selectedRepresentatives.length === 0) return;
+    
+    const action = markAsRead ? 'read' : 'unread';
+    if (window.confirm(`Are you sure you want to mark ${selectedRepresentatives.length} representatives as ${action}?`)) {
+      const { error } = await bulkMarkRepresentativesReadUnread(selectedRepresentatives, !markAsRead, currentUser.id);
       if (!error) {
         setSelectedRepresentatives([]);
         fetchData();
@@ -734,13 +747,39 @@ export default function Dashboard() {
                   {selectedRepresentatives.length} representatives selected
                 </span>
                 <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleBulkAssignToMe}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <User className="h-4 w-4 mr-2" />
+                  {canEdit && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkMarkReadUnread(true)}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Mark Read
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkMarkReadUnread(false)}
+                        className="text-orange-600 hover:text-orange-800"
+                      >
+                        <EyeOff className="h-4 w-4 mr-2" />
+                        Mark Unread
+                      </Button>
+                    </>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected
+                    </Button>
+                  )}
+                </div>
                     Assign Selected to Me
                   </Button>
                   <Button
