@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -119,14 +119,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     if (templateId && templateId !== 'new') {
       const template = templates.find(t => t.id === templateId);
       if (template) {
-        // Filter out "donotmap" values when loading template
-        const filteredMappings = {};
-        Object.entries(template.field_mappings || {}).forEach(([key, value]) => {
-          if (value !== 'donotmap') {
-            filteredMappings[key] = value;
-          }
-        });
-        setFieldMappings(filteredMappings);
+        setFieldMappings(template.field_mappings || {});
         setTemplateName(template.template_name);
         setError('');
       }
@@ -136,12 +129,12 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     }
   };
 
-  const handleFieldMapping = useCallback((dbField, csvColumn) => {
+  const handleFieldMapping = (dbField, csvColumn) => {
     setFieldMappings(prev => ({
       ...prev,
       [dbField]: csvColumn === 'unmapped' ? '' : csvColumn
     }));
-  }, []);
+  };
 
   const generatePreview = () => {
     if (!checkValidationAndSetError()) return;
@@ -186,17 +179,10 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
       return;
     }
 
-    // Create complete field mappings with "donotmap" for unmapped fields
-    const fields = importType === 'companies' ? COMPANY_FIELDS : REPRESENTATIVE_FIELDS;
-    const completeFieldMappings = {};
-    
-    fields.forEach(field => {
-      completeFieldMappings[field.key] = fieldMappings[field.key] || 'donotmap';
-    });
     const templateData = {
       template_name: templateName,
       template_type: importType,
-      field_mappings: completeFieldMappings
+      field_mappings: fieldMappings
     };
 
     const { data, error } = await saveCSVTemplate(templateData, currentUser.id);
@@ -231,26 +217,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     try {
       // Save template if requested
       if (saveTemplate && templateName.trim()) {
-        // Create complete field mappings with "donotmap" for unmapped fields
-        const fields = importType === 'companies' ? COMPANY_FIELDS : REPRESENTATIVE_FIELDS;
-        const completeFieldMappings = {};
-        
-        fields.forEach(field => {
-          completeFieldMappings[field.key] = fieldMappings[field.key] || 'donotmap';
-        });
-
-        const templateData = {
-          template_name: templateName,
-          template_type: importType,
-          field_mappings: completeFieldMappings
-        };
-
-        const { error: templateError } = await saveCSVTemplate(templateData, currentUser.id);
-        if (templateError) {
-          setError('Failed to save template');
-          setLoading(false);
-          return;
-        }
+        await handleSaveTemplate();
       }
 
       // Transform CSV data according to mappings
@@ -503,8 +470,6 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                   <Label className="font-medium">
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
-                    
-                    
                     
                     
                     
