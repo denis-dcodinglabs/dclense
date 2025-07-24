@@ -179,13 +179,6 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
       return;
     }
 
-    console.log('Saving template with data:', {
-      template_name: templateName,
-      template_type: importType,
-      field_mappings: fieldMappings,
-      created_by: currentUser?.id
-    });
-
     const templateData = {
       template_name: templateName,
       template_type: importType,
@@ -193,11 +186,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     };
 
     const { data, error } = await saveCSVTemplate(templateData, currentUser.id);
-    console.log('Save template result:', { data, error });
-    
     if (error) {
-      setError('Failed to save template: ' + (error.message || 'Unknown error'));
-      console.error('Template save error:', error);
+      setError('Failed to save template');
     } else {
       await fetchTemplates();
       // Update selected template to the newly created one
@@ -480,8 +470,6 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                   <Label className="font-medium">
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
-                    
-                    
                     
                     
                     

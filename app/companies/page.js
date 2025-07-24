@@ -23,7 +23,7 @@ import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } fro
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },
-  { value: 'no_status', label: 'No Status' },
+  { value: 'No Status', label: 'No Status' },
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
   { value: 'Contacted', label: 'Contacted' },
@@ -35,7 +35,7 @@ const STATUS_OPTIONS = [
 ];
 
 const INLINE_STATUS_OPTIONS = [
-  { value: 'no_status', label: 'No Status' },
+  { value: 'No Status', label: 'No Status' },
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
   { value: 'Contacted', label: 'Contacted' },
@@ -243,12 +243,8 @@ export default function CompaniesPage() {
   };
 
   const handleFilterChange = (key, value) => {
-    const filterValue = value === 'all' ? '' : value;
-    if (key === 'status' && value === 'no_status') {
-      setFilters(prev => ({ ...prev, [key]: 'No Status' }));
-    } else {
-      setFilters(prev => ({ ...prev, [key]: filterValue }));
-    }
+    const filterValue = value === 'all' || value === 'all_assignees' ? '' : value;
+    setFilters(prev => ({ ...prev, [key]: filterValue }));
     setCurrentPage(1);
   };
 
@@ -284,7 +280,7 @@ export default function CompaniesPage() {
   };
 
   const handleStatusChange = async (companyId, newStatus) => {
-    const statusValue = newStatus === 'no_status' ? null : newStatus;
+    const statusValue = newStatus === 'No Status' ? null : newStatus;
     const { error } = await updateCompany(companyId, { status: statusValue }, currentUser.id);
     if (!error) {
       // Update local state
@@ -366,7 +362,7 @@ export default function CompaniesPage() {
                     <SelectValue placeholder="Filter by assignee" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Assignees</SelectItem>
+                    <SelectItem value="all_assignees">All Assignees</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.first_name} {user.last_name}
@@ -379,7 +375,7 @@ export default function CompaniesPage() {
                     <SelectValue placeholder="Filter by read status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="all_read_status">All</SelectItem>
                     <SelectItem value="unread_only">Unread Only</SelectItem>
                     <SelectItem value="read_only">Read Only</SelectItem>
                   </SelectContent>
@@ -811,7 +807,7 @@ export default function CompaniesPage() {
                             <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
                               {canEdit ? (
                                 <Select 
-                                  value={company.status || 'no_status'} 
+                                  value={company.status || 'No Status'} 
                                   onValueChange={(value) => handleStatusChange(company.id, value)}
                                 >
                                   <SelectTrigger className="h-8 text-xs min-w-[140px]">
