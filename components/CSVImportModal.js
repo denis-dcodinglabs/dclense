@@ -491,7 +491,9 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="unmapped">Don't map</SelectItem>
-                      {csvData.headers.map((header) => (
+                      {csvData.headers
+                        .filter((header) => header.trim() !== '')
+                        .map((header) => (
                         <SelectItem key={header} value={header}>
                           {header}
                         </SelectItem>
