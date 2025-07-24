@@ -382,6 +382,14 @@ export default function Dashboard() {
         selectedRepresentatives,
         markUnread,
         currentUser.id,
+      );
+      if (!error) {
+        setSelectedRepresentatives([]);
+        fetchData();
+      }
+    }
+  };
+
   const handleStatusChange = async (representativeId, newStatus) => {
     const statusValue = newStatus === 'No Status' ? null : newStatus;
     const { error } = await updateRepresentative(representativeId, { status: statusValue }, currentUser.id);
@@ -390,14 +398,6 @@ export default function Dashboard() {
       setRepresentatives(prev => prev.map(rep => 
         rep.id === representativeId ? { ...rep, status: statusValue } : rep
       ));
-    }
-  };
-
-      );
-      if (!error) {
-        setSelectedRepresentatives([]);
-        fetchData();
-      }
     }
   };
 
@@ -484,6 +484,29 @@ export default function Dashboard() {
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const getStatusBadgeColor = (status) => {
+    switch (status) {
+      case "Client":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "Contacted":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "Not Interested":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "Declined":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "Not a Fit":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "Asked to Reach Out Later":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "Pending Connection":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "No Reply":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
   };
 
   const canEdit =
@@ -1362,12 +1385,6 @@ export default function Dashboard() {
                                   <span className="text-gray-400 text-sm">No status</span>
                                 )
                               )}
-                                        ? "bg-blue-100 text-blue-800"
-                                        : "bg-gray-100 text-gray-800"
-                                }`}
-                              >
-                                {rep.outcome || rep.status || "No Status"}
-                              </span>
                             </td>
                           )}
                           {visibleColumns.outcome && (
@@ -1380,14 +1397,14 @@ export default function Dashboard() {
                               {rep.reminder_date ? (
                                 <div className="flex items-center">
                                   <div
-                                    className={`w-3 h-3 rounded-full mr-2 ${
+                                    className={\`w-3 h-3 rounded-full mr-2 ${
                                       new Date(rep.reminder_date) <= new Date()
                                         ? "bg-red-500"
                                         : "bg-orange-500"
                                     }`}
                                   ></div>
                                   <span
-                                    className={`text-sm ${
+                                    className={\`text-sm ${
                                       new Date(rep.reminder_date) <= new Date()
                                         ? "text-red-600 font-medium"
                                         : "text-orange-600"
@@ -1406,14 +1423,14 @@ export default function Dashboard() {
                           {visibleColumns.contacted_by && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {rep.contacted_user
-                                ? `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
+                                ? \`${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
                                 : "N/A"}
                             </td>
                           )}
                           {visibleColumns.assigned_to && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
                               {rep.assigned_user ? (
-                                `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
+                                \`${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
                               ) : (
                                 <Button
                                   variant="outline"
@@ -1433,7 +1450,7 @@ export default function Dashboard() {
                             >
                               {rep.notes
                                 ? rep.notes.length > 50
-                                  ? `${rep.notes.substring(0, 50)}...`
+                                  ? \`${rep.notes.substring(0, 50)}...`
                                   : rep.notes
                                 : "N/A"}
                             </td>
