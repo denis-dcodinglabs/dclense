@@ -383,46 +383,40 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
 
         {step === 2 && (
           <div className="space-y-6">
-            {/* Template Selection */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Use Saved Template</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a saved template or create new mapping" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Create new mapping</SelectItem>
-                      {templates.map((template) => (
-                        <SelectItem key={template.id} value={template.id}>
-                          {template.template_name} ({Object.keys(template.field_mappings || {}).length} mappings)
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  {selectedTemplate && selectedTemplate !== '' && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-sm text-green-800">
-                        ✅ Template "{templates.find(t => t.id === selectedTemplate)?.template_name}" applied successfully!
-                        Field mappings have been automatically set.
-                      </p>
-                    </div>
-                  )}
-                  
-                  {templates.length === 0 && (
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm text-blue-800">
-                        💡 No saved templates yet. Create your first template by mapping fields below and checking "Save this mapping as a template".
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            {/* Template Selection Dropdown */}
+            {templates.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Use Saved Template</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a saved template" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">No template</SelectItem>
+                        {templates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.template_name} ({Object.keys(template.field_mappings || {}).length} mappings)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {selectedTemplate && selectedTemplate !== '' && (
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <p className="text-sm text-green-800">
+                          ✅ Template "{templates.find(t => t.id === selectedTemplate)?.template_name}" applied successfully!
+                          Field mappings have been automatically set.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Map CSV Columns to Database Fields</h3>
@@ -437,7 +431,6 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                   <Label className="font-medium">
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
-                    }
                     
                     
                     
@@ -472,9 +465,9 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Save Mapping as Template</CardTitle>
+                <p className="text-sm text-gray-600">Save this field mapping configuration for future imports</p>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-gray-600">Save this field mapping configuration for future imports to skip the mapping step.</p>
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -497,28 +490,6 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                     <p className="text-xs text-gray-500">
                       Give your template a descriptive name so you can easily find it later
                     </p>
-                  </div>
-                )}
-                
-                {/* Manual Save Template Button */}
-                {!saveTemplate && Object.keys(fieldMappings).length > 0 && (
-                  <div className="pt-3 border-t">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        if (templateName.trim()) {
-                          handleSaveTemplate();
-                        } else {
-                          setError('Please enter a template name first');
-                        }
-                      }}
-                      disabled={!templateName.trim()}
-                      className="w-full"
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Current Mapping as Template
-                    </Button>
                   </div>
                 )}
               </CardContent>
