@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink, Settings, Eye, EyeOff, User } from 'lucide-react';
+import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink, Settings, Eye, EyeOff, User, BookOpen, BookOpenCheck } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import CompanyDialog from '@/components/CompanyDialog';
