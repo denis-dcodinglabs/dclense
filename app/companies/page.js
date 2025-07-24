@@ -180,6 +180,19 @@ export default function CompaniesPage() {
     }
   };
 
+  const handleBulkMarkReadUnread = async (markUnread) => {
+    if (selectedCompanies.length === 0) return;
+    
+    const action = markUnread ? 'mark as unread' : 'mark as read';
+    if (window.confirm(`Are you sure you want to ${action} ${selectedCompanies.length} companies?`)) {
+      const { error } = await bulkMarkCompaniesReadUnread(selectedCompanies, markUnread, currentUser.id);
+      if (!error) {
+        setSelectedCompanies([]);
+        fetchData();
+      }
+    }
+  };
+
   const handleSaveCompany = async (companyData) => {
     setSaving(true);
     try {
@@ -498,6 +511,28 @@ export default function CompaniesPage() {
                       <User className="h-4 w-4 mr-2" />
                       Assign Selected to Me
                     </Button>
+                  )}
+                  {canEdit && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkMarkReadUnread(false)}
+                        className="text-green-600 hover:text-green-800 border-green-200 hover:border-green-300"
+                      >
+                        <BookOpenCheck className="h-4 w-4 mr-2" />
+                        Mark Read
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkMarkReadUnread(true)}
+                        className="text-orange-600 hover:text-orange-800 border-orange-200 hover:border-orange-300"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Mark Unread
+                      </Button>
+                    </>
                   )}
                   {canDelete && (
                     <Button
