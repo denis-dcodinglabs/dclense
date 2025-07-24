@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'
 import { useSearchParams } from 'next/navigation';
-import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2, User } from 'lucide-react';
 import { Settings, Eye, EyeOff } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getRepresentatives, deleteRepresentative, assignToMe } from '@/lib/representatives';
-import { bulkDeleteRepresentatives } from '@/lib/representatives';
+import { bulkDeleteRepresentatives, bulkAssignRepresentativesToMe } from '@/lib/representatives';
 import { getActivityStats, getCompanyStatusStats, getConversionRates, getAgentPerformance } from '@/lib/analytics';
 import { getCompanies } from '@/lib/companies';
 import { getCurrentUserWithRole } from '@/lib/auth';
@@ -262,6 +262,18 @@ export default function Dashboard() {
     
     if (window.confirm(`Are you sure you want to delete ${selectedRepresentatives.length} representatives?`)) {
       const { error } = await bulkDeleteRepresentatives(selectedRepresentatives, currentUser.id);
+      if (!error) {
+        setSelectedRepresentatives([]);
+        fetchData();
+      }
+    }
+  };
+
+  const handleBulkAssignToMe = async () => {
+    if (selectedRepresentatives.length === 0) return;
+    
+    if (window.confirm(`Are you sure you want to assign ${selectedRepresentatives.length} representatives to yourself?`)) {
+      const { error } = await bulkAssignRepresentativesToMe(selectedRepresentatives, currentUser.id);
       if (!error) {
         setSelectedRepresentatives([]);
         fetchData();
@@ -715,20 +727,31 @@ export default function Dashboard() {
           </Card>
 
           {/* Bulk Actions */}
-          {selectedRepresentatives.length > 0 && canDelete && (
+          {selectedRepresentatives.length > 0 && (canDelete || canEdit) && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-blue-800">
                   {selectedRepresentatives.length} representatives selected
                 </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected
-                </Button>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBulkAssignToMe}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Assign Selected to Me
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Selected
+                  </Button>
+                </div>
               </div>
             </div>
           )}
