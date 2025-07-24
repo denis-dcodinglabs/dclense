@@ -34,6 +34,18 @@ const STATUS_OPTIONS = [
   { value: 'Pending Connection', label: 'Pending Connection' }
 ];
 
+const INLINE_STATUS_OPTIONS = [
+  { value: 'No Status', label: 'No Status' },
+  { value: 'No Reply', label: 'No Reply' },
+  { value: 'Not Interested', label: 'Not Interested' },
+  { value: 'Contacted', label: 'Contacted' },
+  { value: 'Not a Fit', label: 'Not a Fit' },
+  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
+  { value: 'Declined', label: 'Declined' },
+  { value: 'Client', label: 'Client' },
+  { value: 'Pending Connection', label: 'Pending Connection' }
+];
+
 const TABLE_COLUMNS = [
   { key: 'company', label: 'Company', required: true },
   { key: 'industry', label: 'Industry', required: false },
@@ -265,6 +277,17 @@ export default function CompaniesPage() {
       ...prev,
       [columnKey]: checked
     }));
+  };
+
+  const handleStatusChange = async (companyId, newStatus) => {
+    const statusValue = newStatus === 'No Status' ? null : newStatus;
+    const { error } = await updateCompany(companyId, { status: statusValue }, currentUser.id);
+    if (!error) {
+      // Update local state
+      setCompanies(prev => prev.map(company => 
+        company.id === companyId ? { ...company, status: statusValue } : company
+      ));
+    }
   };
 
   const getStatusBadgeColor = (status) => {
@@ -782,12 +805,30 @@ export default function CompaniesPage() {
                           )}
                           {visibleColumns.status && (
                             <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
-                              {company.status ? (
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(company.status)}`}>
-                                  {company.status}
-                                </span>
+                              {canEdit ? (
+                                <Select 
+                                  value={company.status || 'No Status'} 
+                                  onValueChange={(value) => handleStatusChange(company.id, value)}
+                                >
+                                  <SelectTrigger className="h-8 text-xs min-w-[140px]">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {INLINE_STATUS_OPTIONS.map((option) => (
+                                      <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               ) : (
-                                <span className="text-gray-400 text-sm">No status</span>
+                                company.status ? (
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(company.status)}`}>
+                                    {company.status}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">No status</span>
+                                )
                               )}
                             </td>
                           )}
