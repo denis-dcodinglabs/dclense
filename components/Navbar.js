@@ -90,20 +90,26 @@ export default function Navbar() {
         )
         .subscribe((status) => {
           console.log('Notification subscription status:', status);
-          if (status === 'CHANNEL_ERROR') {
+          if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
             console.error('Failed to subscribe to notifications - this may be due to RLS policies');
             // Fallback: just fetch count periodically instead of real-time
             const interval = setInterval(() => {
               fetchUnreadCount(userId);
             }, 30000); // Check every 30 seconds
             
-            return () => clearInterval(interval);
+            // Store interval ID for cleanup
+            window.notificationFallbackInterval = interval;
           }
         });
 
       // Cleanup function
       return () => {
         console.log('Unsubscribing from notifications');
+        // Clear fallback interval if it exists
+        if (window.notificationFallbackInterval) {
+          clearInterval(window.notificationFallbackInterval);
+          window.notificationFallbackInterval = null;
+        }
         if (subscription) {
           supabase.removeChannel(subscription);
         }
@@ -115,7 +121,15 @@ export default function Navbar() {
         fetchUnreadCount(userId);
       }, 30000);
       
-      return () => {}; // Return empty cleanup function
+      // Store interval for cleanup
+      window.notificationFallbackInterval = interval;
+      
+      return () => {
+        if (window.notificationFallbackInterval) {
+          clearInterval(window.notificationFallbackInterval);
+          window.notificationFallbackInterval = null;
+        }
+      };
     }
   };
   const requestNotificationPermission = async () => {
