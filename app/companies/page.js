@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink, Settings, Eye, EyeOff } from 'lucide-react';
+import { Plus, Upload, Download, Edit, Trash2, Search, Filter, ExternalLink, Settings, Eye, EyeOff, User, BookOpen, BookOpenCheck } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import CompanyDialog from '@/components/CompanyDialog';
@@ -16,13 +16,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies } from '@/lib/companies';
+import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies, bulkAssignCompaniesToMe, bulkMarkCompaniesReadUnread } from '@/lib/companies';
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } from '@/lib/realtime';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },
+  { value: 'No Status', label: 'No Status' },
+  { value: 'No Reply', label: 'No Reply' },
+  { value: 'Not Interested', label: 'Not Interested' },
+  { value: 'Contacted', label: 'Contacted' },
+  { value: 'Not a Fit', label: 'Not a Fit' },
+  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
+  { value: 'Declined', label: 'Declined' },
+  { value: 'Client', label: 'Client' },
+  { value: 'Pending Connection', label: 'Pending Connection' }
+];
+
+const INLINE_STATUS_OPTIONS = [
   { value: 'No Status', label: 'No Status' },
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
@@ -168,6 +180,31 @@ export default function CompaniesPage() {
     }
   };
 
+  const handleBulkAssignToMe = async () => {
+    if (selectedCompanies.length === 0) return;
+    
+    if (window.confirm(`Are you sure you want to assign ${selectedCompanies.length} companies to yourself?`)) {
+      const { error } = await bulkAssignCompaniesToMe(selectedCompanies, currentUser.id);
+      if (!error) {
+        setSelectedCompanies([]);
+        fetchData();
+      }
+    }
+  };
+
+  const handleBulkMarkReadUnread = async (markUnread) => {
+    if (selectedCompanies.length === 0) return;
+    
+    const action = markUnread ? 'mark as unread' : 'mark as read';
+    if (window.confirm(`Are you sure you want to ${action} ${selectedCompanies.length} companies?`)) {
+      const { error } = await bulkMarkCompaniesReadUnread(selectedCompanies, markUnread, currentUser.id);
+      if (!error) {
+        setSelectedCompanies([]);
+        fetchData();
+      }
+    }
+  };
+
   const handleSaveCompany = async (companyData) => {
     setSaving(true);
     try {
@@ -240,6 +277,17 @@ export default function CompaniesPage() {
       ...prev,
       [columnKey]: checked
     }));
+  };
+
+  const handleStatusChange = async (companyId, newStatus) => {
+    const statusValue = newStatus === 'No Status' ? null : newStatus;
+    const { error } = await updateCompany(companyId, { status: statusValue }, currentUser.id);
+    if (!error) {
+      // Update local state
+      setCompanies(prev => prev.map(company => 
+        company.id === companyId ? { ...company, status: statusValue } : company
+      ));
+    }
   };
 
   const getStatusBadgeColor = (status) => {
@@ -469,20 +517,57 @@ export default function CompaniesPage() {
           </Card>
 
           {/* Bulk Actions */}
-          {selectedCompanies.length > 0 && canDelete && (
+          {selectedCompanies.length > 0 && (canDelete || canEdit) && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <span className="text-sm text-blue-800">
                   {selectedCompanies.length} companies selected
                 </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected
-                </Button>
+                <div className="flex space-x-2">
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleBulkAssignToMe}
+                      className="text-blue-600 hover:text-blue-800 border-blue-200 hover:border-blue-300"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Assign Selected to Me
+                    </Button>
+                  )}
+                  {canEdit && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkMarkReadUnread(false)}
+                        className="text-green-600 hover:text-green-800 border-green-200 hover:border-green-300"
+                      >
+                        <BookOpenCheck className="h-4 w-4 mr-2" />
+                        Mark Read
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkMarkReadUnread(true)}
+                        className="text-orange-600 hover:text-orange-800 border-orange-200 hover:border-orange-300"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Mark Unread
+                      </Button>
+                    </>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -720,12 +805,30 @@ export default function CompaniesPage() {
                           )}
                           {visibleColumns.status && (
                             <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
-                              {company.status ? (
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(company.status)}`}>
-                                  {company.status}
-                                </span>
+                              {canEdit ? (
+                                <Select 
+                                  value={company.status || 'No Status'} 
+                                  onValueChange={(value) => handleStatusChange(company.id, value)}
+                                >
+                                  <SelectTrigger className="h-8 text-xs min-w-[140px]">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {INLINE_STATUS_OPTIONS.map((option) => (
+                                      <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               ) : (
-                                <span className="text-gray-400 text-sm">No status</span>
+                                company.status ? (
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(company.status)}`}>
+                                    {company.status}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">No status</span>
+                                )
                               )}
                             </td>
                           )}

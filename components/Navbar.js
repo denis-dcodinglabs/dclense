@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Users, Building2, BarChart3, FileText, Bell } from 'lucide-react';
@@ -11,6 +12,7 @@ import { signOut, getCurrentUserWithRole } from '@/lib/auth';
 import { getUnreadNotificationCount } from '@/lib/reminders';
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -171,7 +173,11 @@ export default function Navbar() {
           <div className="flex items-center space-x-6">
             <Link 
               href="/dashboard"
-              className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+              className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
+                pathname === '/dashboard' 
+                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                  : 'text-gray-700'
+              }`}
             >
               <BarChart3 className="h-4 w-4" />
               <span className="text-sm font-medium">Representatives</span>
@@ -179,7 +185,11 @@ export default function Navbar() {
             
             <Link 
               href="/companies" 
-              className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+              className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
+                pathname === '/companies' 
+                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                  : 'text-gray-700'
+              }`}
             >
               <Building2 className="h-4 w-4" />
               <span className="text-sm font-medium">Companies</span>
@@ -187,7 +197,11 @@ export default function Navbar() {
             
             <Link 
               href="/reminders" 
-              className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors relative"
+              className={`flex items-center space-x-2 hover:text-blue-600 transition-colors relative ${
+                pathname === '/reminders' 
+                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                  : 'text-gray-700'
+              }`}
             >
               <Bell className="h-4 w-4" />
               <span className="text-sm font-medium">
@@ -203,7 +217,11 @@ export default function Navbar() {
             {user?.role === 'Admin' && (
               <Link 
                 href="/logs" 
-                className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
+                  pathname === '/logs' 
+                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                    : 'text-gray-700'
+                }`}
               >
                 <FileText className="h-4 w-4" />
                 <span className="text-sm font-medium">Logs</span>
@@ -213,7 +231,11 @@ export default function Navbar() {
             {user?.role === 'Admin' && (
               <Link 
                 href="/admin" 
-                className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
+                  pathname === '/admin' 
+                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                    : 'text-gray-700'
+                }`}
               >
                 <Users className="h-4 w-4" />
                 <span className="text-sm font-medium">Admin</span>

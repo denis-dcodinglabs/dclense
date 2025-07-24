@@ -1,68 +1,134 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'
-import { useSearchParams } from 'next/navigation';
-import { Plus, Upload, Download, UserPlus, Building2, TrendingUp, Users, Target, Activity, Search, Edit, Trash2 } from 'lucide-react';
-import { Settings, Eye, EyeOff } from 'lucide-react';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import Navbar from '@/components/Navbar';
-import RepresentativeDialog from '@/components/RepresentativeDialog';
-import RepresentativeDetailModal from '@/components/RepresentativeDetailModal';
-import CSVImportModal from '@/components/CSVImportModal';
-import CSVExportModal from '@/components/CSVExportModal';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { getRepresentatives, deleteRepresentative, assignToMe } from '@/lib/representatives';
-import { bulkDeleteRepresentatives } from '@/lib/representatives';
-import { getActivityStats, getCompanyStatusStats, getConversionRates, getAgentPerformance } from '@/lib/analytics';
-import { getCompanies } from '@/lib/companies';
-import { getCurrentUserWithRole } from '@/lib/auth';
-import { createRepresentative, updateRepresentative } from '@/lib/representatives';
-import { subscribeToRepresentatives, handleRepresentativeUpdate, unsubscribeFromChannel } from '@/lib/realtime';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import {
+  Plus,
+  Upload,
+  Download,
+  UserPlus,
+  Building2,
+  TrendingUp,
+  Users,
+  Target,
+  Activity,
+  Search,
+  Edit,
+  Trash2,
+  User,
+} from "lucide-react";
+import { Settings, Eye, EyeOff, BookOpen, BookOpenCheck } from "lucide-react";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Navbar from "@/components/Navbar";
+import RepresentativeDialog from "@/components/RepresentativeDialog";
+import RepresentativeDetailModal from "@/components/RepresentativeDetailModal";
+import CSVImportModal from "@/components/CSVImportModal";
+import CSVExportModal from "@/components/CSVExportModal";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  getRepresentatives,
+  deleteRepresentative,
+  assignToMe,
+} from "@/lib/representatives";
+import {
+  bulkDeleteRepresentatives,
+  bulkAssignRepresentativesToMe,
+} from "@/lib/representatives";
+import { bulkMarkRepresentativesReadUnread } from "@/lib/representatives";
+import {
+  getActivityStats,
+  getCompanyStatusStats,
+  getConversionRates,
+  getAgentPerformance,
+} from "@/lib/analytics";
+import { getCompanies } from "@/lib/companies";
+import { getCurrentUserWithRole } from "@/lib/auth";
+import {
+  createRepresentative,
+  updateRepresentative,
+} from "@/lib/representatives";
+import {
+  subscribeToRepresentatives,
+  handleRepresentativeUpdate,
+  unsubscribeFromChannel,
+} from "@/lib/realtime";
 
 const STATUS_OPTIONS = [
-  { value: 'all', label: 'All Statuses' },
-  { value: 'No Status', label: 'No Status' },
-  { value: 'No Reply', label: 'No Reply' },
-  { value: 'Not Interested', label: 'Not Interested' },
-  { value: 'Contacted', label: 'Contacted' },
-  { value: 'Not a Fit', label: 'Not a Fit' },
-  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
-  { value: 'Declined', label: 'Declined' },
-  { value: 'Client', label: 'Client' },
-  { value: 'Pending Connection', label: 'Pending Connection' },
+  { value: "all", label: "All Statuses" },
+  { value: "No Status", label: "No Status" },
+  { value: "No Reply", label: "No Reply" },
+  { value: "Not Interested", label: "Not Interested" },
+  { value: "Contacted", label: "Contacted" },
+  { value: "Not a Fit", label: "Not a Fit" },
+  { value: "Asked to Reach Out Later", label: "Asked to Reach Out Later" },
+  { value: "Declined", label: "Declined" },
+  { value: "Client", label: "Client" },
+  { value: "Pending Connection", label: "Pending Connection" },
+];
+
+const INLINE_STATUS_OPTIONS = [
+  { value: "No Status", label: "No Status" },
+  { value: "No Reply", label: "No Reply" },
+  { value: "Not Interested", label: "Not Interested" },
+  { value: "Contacted", label: "Contacted" },
+  { value: "Not a Fit", label: "Not a Fit" },
+  { value: "Asked to Reach Out Later", label: "Asked to Reach Out Later" },
+  { value: "Declined", label: "Declined" },
+  { value: "Client", label: "Client" },
+  { value: "Pending Connection", label: "Pending Connection" },
 ];
 
 const TABLE_COLUMNS = [
-  { key: 'name', label: 'Name', required: true },
-  { key: 'company', label: 'Company', required: false },
-  { key: 'role', label: 'Role', required: false },
-  { key: 'contact_source', label: 'Contact Source', required: false },
-  { key: 'linkedin_profile_url', label: 'LinkedIn Profile URL', required: false },
-  { key: 'contact_date', label: 'Contact Date', required: false },
-  { key: 'follow_up_dates', label: 'Follow-up Dates', required: false },
-  { key: 'status', label: 'Status', required: false },
-  { key: 'outcome', label: 'Outcome', required: false },
-  { key: 'reminder', label: 'Reminder', required: false },
-  { key: 'contacted_by', label: 'Contacted By', required: false },
-  { key: 'assigned_to', label: 'Assigned To', required: false },
-  { key: 'notes', label: 'Notes', required: false }
+  { key: "name", label: "Name", required: true },
+  { key: "company", label: "Company", required: false },
+  { key: "role", label: "Role", required: false },
+  { key: "contact_source", label: "Contact Source", required: false },
+  {
+    key: "linkedin_profile_url",
+    label: "LinkedIn Profile URL",
+    required: false,
+  },
+  { key: "contact_date", label: "Contact Date", required: false },
+  { key: "follow_up_dates", label: "Follow-up Dates", required: false },
+  { key: "status", label: "Status", required: false },
+  { key: "outcome", label: "Outcome", required: false },
+  { key: "reminder", label: "Reminder", required: false },
+  { key: "contacted_by", label: "Contacted By", required: false },
+  { key: "assigned_to", label: "Assigned To", required: false },
+  { key: "notes", label: "Notes", required: false },
 ];
 
 const READ_STATUS_OPTIONS = [
-  { value: 'all_read_status', label: 'All' },
-  { value: 'unread_only', label: 'Unread Only' },
-  { value: 'read_only', label: 'Read Only' },
+  { value: "all_read_status", label: "All" },
+  { value: "unread_only", label: "Unread Only" },
+  { value: "read_only", label: "Read Only" },
 ];
 
 export default function Dashboard() {
-  const router = useRouter()
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [representatives, setRepresentatives] = useState([]);
   const [stats, setStats] = useState({});
@@ -99,18 +165,18 @@ export default function Dashboard() {
     reminder: true,
     contacted_by: false,
     assigned_to: true,
-    notes: false
+    notes: false,
   });
   const [filters, setFilters] = useState({
-    search: '',
+    search: "",
     company_ids: [], // Array for multi-select
-    assigned_to: '',
-    status: '',
-    unread_filter: '',
-    rep_position: '',
-    exported_filter: '',
-    sort_field: 'created_at',
-    sort_order: 'desc'
+    assigned_to: "",
+    status: "",
+    unread_filter: "",
+    rep_position: "",
+    exported_filter: "",
+    sort_field: "created_at",
+    sort_order: "desc",
   });
 
   useEffect(() => {
@@ -118,14 +184,14 @@ export default function Dashboard() {
     fetchCompanies();
     fetchUsers();
     getCurrentUser();
-    
+
     // Check for repId in URL parameters
-    const repIdFromUrl = searchParams.get('repId');
+    const repIdFromUrl = searchParams.get("repId");
     if (repIdFromUrl) {
       setSelectedRepId(repIdFromUrl);
       setRepDetailModalOpen(true);
     }
-    
+
     // Set up real-time subscription
     const subscription = subscribeToRepresentatives((payload) => {
       handleRepresentativeUpdate(payload, representatives, setRepresentatives);
@@ -133,7 +199,7 @@ export default function Dashboard() {
       fetchStats();
     });
     setRealtimeSubscription(subscription);
-    
+
     // Cleanup subscription on unmount
     return () => {
       if (subscription) {
@@ -148,19 +214,20 @@ export default function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      const [statsResult, statusResult, conversionResult, performanceResult] = await Promise.all([
-        getActivityStats(),
-        getCompanyStatusStats(),
-        getConversionRates(),
-        getAgentPerformance()
-      ]);
+      const [statsResult, statusResult, conversionResult, performanceResult] =
+        await Promise.all([
+          getActivityStats(),
+          getCompanyStatusStats(),
+          getConversionRates(),
+          getAgentPerformance(),
+        ]);
 
       setStats(statsResult.data || {});
       setStatusStats(statusResult.data || {});
       setConversionRates(conversionResult.data || []);
       setAgentPerformance(performanceResult.data || []);
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error("Error fetching stats:", error);
     }
   };
 
@@ -170,7 +237,7 @@ export default function Dashboard() {
   };
 
   const fetchUsers = async () => {
-    const { getUsers } = await import('@/lib/users');
+    const { getUsers } = await import("@/lib/users");
     const { data } = await getUsers();
     setUsers(data || []);
   };
@@ -190,50 +257,57 @@ export default function Dashboard() {
       setRepresentatives(repsResult.data || []);
       setTotalCount(repsResult.count || 0);
       setTotalPages(Math.ceil((repsResult.count || 0) / ITEMS_PER_PAGE));
-      
+
       // Fetch stats separately
       await fetchStats();
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleFilterChange = (key, value) => {
-    const filterValue = value === 'all' || value === 'all_assignees' || value === 'all_read_status' || value === 'all_positions' || value === 'all_exported_status' ? '' : value;
-    setFilters(prev => ({ ...prev, [key]: filterValue }));
+    const filterValue =
+      value === "all" ||
+      value === "all_assignees" ||
+      value === "all_read_status" ||
+      value === "all_positions" ||
+      value === "all_exported_status"
+        ? ""
+        : value;
+    setFilters((prev) => ({ ...prev, [key]: filterValue }));
     setCurrentPage(1); // Reset to first page when filtering
   };
 
   const handleCompanyFilterChange = (companyId, checked) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      company_ids: checked 
+      company_ids: checked
         ? [...prev.company_ids, companyId]
-        : prev.company_ids.filter(id => id !== companyId)
+        : prev.company_ids.filter((id) => id !== companyId),
     }));
     setCurrentPage(1);
   };
 
   const clearCompanyFilter = () => {
-    setFilters(prev => ({ ...prev, company_ids: [] }));
+    setFilters((prev) => ({ ...prev, company_ids: [] }));
     setCurrentPage(1);
   };
 
   const handleColumnToggle = (columnKey, checked) => {
-    setVisibleColumns(prev => ({
+    setVisibleColumns((prev) => ({
       ...prev,
-      [columnKey]: checked
+      [columnKey]: checked,
     }));
   };
 
   const handlePreviousPage = () => {
-    setCurrentPage(prev => Math.max(prev - 1, 1));
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
   const handleNextPage = () => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
   const handleAddRepresentative = () => {
@@ -259,9 +333,16 @@ export default function Dashboard() {
 
   const handleBulkDelete = async () => {
     if (selectedRepresentatives.length === 0) return;
-    
-    if (window.confirm(`Are you sure you want to delete ${selectedRepresentatives.length} representatives?`)) {
-      const { error } = await bulkDeleteRepresentatives(selectedRepresentatives, currentUser.id);
+
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${selectedRepresentatives.length} representatives?`,
+      )
+    ) {
+      const { error } = await bulkDeleteRepresentatives(
+        selectedRepresentatives,
+        currentUser.id,
+      );
       if (!error) {
         setSelectedRepresentatives([]);
         fetchData();
@@ -269,17 +350,76 @@ export default function Dashboard() {
     }
   };
 
+  const handleBulkAssignToMe = async () => {
+    if (selectedRepresentatives.length === 0) return;
+
+    if (
+      window.confirm(
+        `Are you sure you want to assign ${selectedRepresentatives.length} representatives to yourself?`,
+      )
+    ) {
+      const { error } = await bulkAssignRepresentativesToMe(
+        selectedRepresentatives,
+        currentUser.id,
+      );
+      if (!error) {
+        setSelectedRepresentatives([]);
+        fetchData();
+      }
+    }
+  };
+
+  const handleBulkMarkReadUnread = async (markUnread) => {
+    if (selectedRepresentatives.length === 0) return;
+
+    const action = markUnread ? "mark as unread" : "mark as read";
+    if (
+      window.confirm(
+        `Are you sure you want to ${action} ${selectedRepresentatives.length} representatives?`,
+      )
+    ) {
+      const { error } = await bulkMarkRepresentativesReadUnread(
+        selectedRepresentatives,
+        markUnread,
+        currentUser.id,
+      );
+      if (!error) {
+        setSelectedRepresentatives([]);
+        fetchData();
+      }
+    }
+  };
+
+  const handleStatusChange = async (representativeId, newStatus) => {
+    const statusValue = newStatus === "No Status" ? null : newStatus;
+    const { error } = await updateRepresentative(
+      representativeId,
+      { status: statusValue },
+      currentUser.id,
+    );
+    if (!error) {
+      // Update local state to reflect the change immediately
+      setRepresentatives((prev) =>
+        prev.map((rep) =>
+          rep.id === representativeId ? { ...rep, status: statusValue } : rep,
+        ),
+      );
+    }
+  };
+
   const handleSelectRepresentative = (repId, checked) => {
     if (checked) {
       setSelectedRepresentatives([...selectedRepresentatives, repId]);
     } else {
-      setSelectedRepresentatives(selectedRepresentatives.filter(id => id !== repId));
+      setSelectedRepresentatives(
+        selectedRepresentatives.filter((id) => id !== repId),
+      );
     }
   };
 
   const handleSelectAll = (checked) => {
     if (checked) {
-      setSelectedRepresentatives(representatives.map(r => r.id));
+      setSelectedRepresentatives(representatives.map((r) => r.id));
     } else {
       setSelectedRepresentatives([]);
     }
@@ -290,7 +430,11 @@ export default function Dashboard() {
     try {
       let result;
       if (editingRep) {
-        result = await updateRepresentative(editingRep.id, repData, currentUser.id);
+        result = await updateRepresentative(
+          editingRep.id,
+          repData,
+          currentUser.id,
+        );
       } else {
         result = await createRepresentative(repData, currentUser.id);
       }
@@ -300,7 +444,7 @@ export default function Dashboard() {
         fetchData();
       }
     } catch (error) {
-      console.error('Error saving representative:', error);
+      console.error("Error saving representative:", error);
     } finally {
       setSaving(false);
     }
@@ -318,16 +462,22 @@ export default function Dashboard() {
     markRepresentativeAsRead(repId);
     setSelectedRepId(repId);
     setRepDetailModalOpen(true);
-    router.push(`/dashboard?repId=${repId}`, { scroll: false }); 
+    router.push(`/dashboard?repId=${repId}`, { scroll: false });
   };
 
   const markRepresentativeAsRead = async (repId) => {
-    const { error } = await updateRepresentative(repId, { mark_unread: false }, currentUser.id);
+    const { error } = await updateRepresentative(
+      repId,
+      { mark_unread: false },
+      currentUser.id,
+    );
     if (!error) {
       // Update local state to reflect the change
-      setRepresentatives(prev => prev.map(rep => 
-        rep.id === repId ? { ...rep, mark_unread: false } : rep
-      ));
+      setRepresentatives((prev) =>
+        prev.map((rep) =>
+          rep.id === repId ? { ...rep, mark_unread: false } : rep,
+        ),
+      );
     }
   };
 
@@ -338,12 +488,36 @@ export default function Dashboard() {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
   };
 
-  const canEdit = currentUser?.role === 'Admin' || currentUser?.role === 'Editor';
-  const canDelete = currentUser?.role === 'Admin';
+  const getStatusBadgeColor = (status) => {
+    switch (status) {
+      case "Client":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "Contacted":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "Not Interested":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "Declined":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "Not a Fit":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "Asked to Reach Out Later":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "Pending Connection":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "No Reply":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  const canEdit =
+    currentUser?.role === "Admin" || currentUser?.role === "Editor";
+  const canDelete = currentUser?.role === "Admin";
 
   return (
     <ProtectedRoute>
@@ -354,26 +528,30 @@ export default function Dashboard() {
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Representatives</h1>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Representatives
+                </h1>
                 <p className="mt-2 text-gray-600">
                   Welcome back! Here's what's happening with your leads.
                 </p>
               </div>
-              <div className="flex space-x-3">
-              </div>
+              <div className="flex space-x-3"></div>
             </div>
-
           </div>
 
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Companies</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Companies
+                </CardTitle>
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalCompanies || 0}</div>
+                <div className="text-2xl font-bold">
+                  {stats.totalCompanies || 0}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   +{stats.recentCompanies || 0} this month
                 </p>
@@ -382,11 +560,15 @@ export default function Dashboard() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Representatives</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Representatives
+                </CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalRepresentatives || 0}</div>
+                <div className="text-2xl font-bold">
+                  {stats.totalRepresentatives || 0}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   +{stats.recentContacts || 0} contacted this month
                 </p>
@@ -395,11 +577,15 @@ export default function Dashboard() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Clients</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Active Clients
+                </CardTitle>
                 <Target className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.clientCount || 0}</div>
+                <div className="text-2xl font-bold">
+                  {stats.clientCount || 0}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {statusStats.Client || 0} total clients
                 </p>
@@ -408,14 +594,20 @@ export default function Dashboard() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Conversion Rate
+                </CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {stats.totalCompanies > 0 
-                    ? ((stats.clientCount / stats.totalCompanies) * 100).toFixed(1)
-                    : 0}%
+                  {stats.totalCompanies > 0
+                    ? (
+                        (stats.clientCount / stats.totalCompanies) *
+                        100
+                      ).toFixed(1)
+                    : 0}
+                  %
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Overall conversion rate
@@ -436,12 +628,17 @@ export default function Dashboard() {
                   <Input
                     placeholder="Search representatives..."
                     value={filters.search}
-                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("search", e.target.value)
+                    }
                     className="pl-10"
                   />
                 </div>
-                
-                <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+
+                <Select
+                  value={filters.status}
+                  onValueChange={(value) => handleFilterChange("status", value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
@@ -454,7 +651,15 @@ export default function Dashboard() {
                   </SelectContent>
                 </Select>
 
-                <Select value={filters.assigned_to} onValueChange={(value) => handleFilterChange('assigned_to', value === 'all_assignees' ? '' : value)}>
+                <Select
+                  value={filters.assigned_to}
+                  onValueChange={(value) =>
+                    handleFilterChange(
+                      "assigned_to",
+                      value === "all_assignees" ? "" : value,
+                    )
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by assignee" />
                   </SelectTrigger>
@@ -468,7 +673,12 @@ export default function Dashboard() {
                   </SelectContent>
                 </Select>
 
-                <Select value={filters.unread_filter} onValueChange={(value) => handleFilterChange('unread_filter', value)}>
+                <Select
+                  value={filters.unread_filter}
+                  onValueChange={(value) =>
+                    handleFilterChange("unread_filter", value)
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by read status" />
                   </SelectTrigger>
@@ -481,7 +691,15 @@ export default function Dashboard() {
                   </SelectContent>
                 </Select>
 
-                <Select value={filters.rep_position} onValueChange={(value) => handleFilterChange('rep_position', value === 'all_positions' ? '' : value)}>
+                <Select
+                  value={filters.rep_position}
+                  onValueChange={(value) =>
+                    handleFilterChange(
+                      "rep_position",
+                      value === "all_positions" ? "" : value,
+                    )
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by position" />
                   </SelectTrigger>
@@ -495,14 +713,24 @@ export default function Dashboard() {
                   </SelectContent>
                 </Select>
 
-                <Select value={filters.exported_filter} onValueChange={(value) => handleFilterChange('exported_filter', value === 'all_exported_status' ? '' : value)}>
+                <Select
+                  value={filters.exported_filter}
+                  onValueChange={(value) =>
+                    handleFilterChange(
+                      "exported_filter",
+                      value === "all_exported_status" ? "" : value,
+                    )
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by export status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all_exported_status">All</SelectItem>
                     <SelectItem value="exported_only">Exported Only</SelectItem>
-                    <SelectItem value="not_exported_only">Not Exported Only</SelectItem>
+                    <SelectItem value="not_exported_only">
+                      Not Exported Only
+                    </SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -511,17 +739,18 @@ export default function Dashboard() {
                   <div className="relative">
                     <Select>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Filter by Company" >
-                          {filters.company_ids.length === 0 
-                            ? "Select companies..." 
-                            : `${filters.company_ids.length} companies selected`
-                          }
+                        <SelectValue placeholder="Filter by Company">
+                          {filters.company_ids.length === 0
+                            ? "Select companies..."
+                            : `${filters.company_ids.length} companies selected`}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
                         <div className="p-2 border-b">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">Select Companies</span>
+                            <span className="text-sm font-medium">
+                              Select Companies
+                            </span>
                             {filters.company_ids.length > 0 && (
                               <Button
                                 variant="ghost"
@@ -535,13 +764,23 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="p-2 border-b bg-gray-50">
-                          <div 
+                          <div
                             className="flex items-center space-x-2 py-1.5 hover:bg-gray-100 cursor-pointer rounded"
-                            onClick={() => handleFilterChange('company_id', filters.company_id === 'empty' ? '' : 'empty')}
+                            onClick={() =>
+                              handleFilterChange(
+                                "company_id",
+                                filters.company_id === "empty" ? "" : "empty",
+                              )
+                            }
                           >
                             <Checkbox
-                              checked={filters.company_id === 'empty'}
-                              onCheckedChange={(checked) => handleFilterChange('company_id', checked ? 'empty' : '')}
+                              checked={filters.company_id === "empty"}
+                              onCheckedChange={(checked) =>
+                                handleFilterChange(
+                                  "company_id",
+                                  checked ? "empty" : "",
+                                )
+                              }
                               onClick={(e) => e.stopPropagation()}
                             />
                             <Label className="text-sm cursor-pointer font-medium text-gray-700">
@@ -551,17 +790,26 @@ export default function Dashboard() {
                         </div>
                         <div className="max-h-48 overflow-y-auto">
                           {companies.map((company) => (
-                            <div 
-                              key={company.id} 
+                            <div
+                              key={company.id}
                               className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
-                              onClick={() => handleCompanyFilterChange(company.id, !filters.company_ids.includes(company.id))}
+                              onClick={() =>
+                                handleCompanyFilterChange(
+                                  company.id,
+                                  !filters.company_ids.includes(company.id),
+                                )
+                              }
                             >
                               <Checkbox
-                                checked={filters.company_ids.includes(company.id)}
-                                onCheckedChange={(checked) => handleCompanyFilterChange(company.id, checked)}
+                                checked={filters.company_ids.includes(
+                                  company.id,
+                                )}
+                                onCheckedChange={(checked) =>
+                                  handleCompanyFilterChange(company.id, checked)
+                                }
                                 onClick={(e) => e.stopPropagation()}
                               />
-                              <Label 
+                              <Label
                                 className="text-sm cursor-pointer flex-1 truncate"
                                 title={company.company_name}
                               >
@@ -573,7 +821,8 @@ export default function Dashboard() {
                         {filters.company_ids.length > 0 && (
                           <div className="p-2 border-t bg-gray-50">
                             <div className="text-xs text-gray-600">
-                              {filters.company_ids.length} of {companies.length} companies selected
+                              {filters.company_ids.length} of {companies.length}{" "}
+                              companies selected
                             </div>
                           </div>
                         )}
@@ -582,13 +831,20 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Sorting Controls */}
               <div className="mt-4 pt-4 border-t border-gray-200">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <Label className="text-sm font-medium text-gray-700">Sort by:</Label>
-                    <Select value={filters.sort_field} onValueChange={(value) => handleFilterChange('sort_field', value)}>
+                    <Label className="text-sm font-medium text-gray-700">
+                      Sort by:
+                    </Label>
+                    <Select
+                      value={filters.sort_field}
+                      onValueChange={(value) =>
+                        handleFilterChange("sort_field", value)
+                      }
+                    >
                       <SelectTrigger className="w-40">
                         <SelectValue />
                       </SelectTrigger>
@@ -601,20 +857,24 @@ export default function Dashboard() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="flex items-center space-x-1">
                     <Button
-                      variant={filters.sort_order === 'asc' ? 'default' : 'outline'}
+                      variant={
+                        filters.sort_order === "asc" ? "default" : "outline"
+                      }
                       size="sm"
-                      onClick={() => handleFilterChange('sort_order', 'asc')}
+                      onClick={() => handleFilterChange("sort_order", "asc")}
                       className="px-3"
                     >
                       ↑ ASC
                     </Button>
                     <Button
-                      variant={filters.sort_order === 'desc' ? 'default' : 'outline'}
+                      variant={
+                        filters.sort_order === "desc" ? "default" : "outline"
+                      }
                       size="sm"
-                      onClick={() => handleFilterChange('sort_order', 'desc')}
+                      onClick={() => handleFilterChange("sort_order", "desc")}
                       className="px-3"
                     >
                       ↓ DESC
@@ -640,22 +900,29 @@ export default function Dashboard() {
                     <PopoverContent className="w-64" align="start">
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-medium text-sm mb-3">Show/Hide Columns</h4>
+                          <h4 className="font-medium text-sm mb-3">
+                            Show/Hide Columns
+                          </h4>
                           <div className="space-y-3">
                             {TABLE_COLUMNS.map((column) => (
-                              <div key={column.key} className="flex items-center space-x-2">
+                              <div
+                                key={column.key}
+                                className="flex items-center space-x-2"
+                              >
                                 <Checkbox
                                   id={column.key}
                                   checked={visibleColumns[column.key]}
-                                  onCheckedChange={(checked) => handleColumnToggle(column.key, checked)}
+                                  onCheckedChange={(checked) =>
+                                    handleColumnToggle(column.key, checked)
+                                  }
                                   disabled={column.required}
                                 />
-                                <Label 
-                                  htmlFor={column.key} 
-                                  className={`text-sm ${column.required ? 'text-gray-500' : 'cursor-pointer'}`}
+                                <Label
+                                  htmlFor={column.key}
+                                  className={`text-sm ${column.required ? "text-gray-500" : "cursor-pointer"}`}
                                 >
                                   {column.label}
-                                  {column.required && ' (Required)'}
+                                  {column.required && " (Required)"}
                                 </Label>
                                 {visibleColumns[column.key] ? (
                                   <Eye className="h-3 w-3 text-green-600" />
@@ -670,21 +937,23 @@ export default function Dashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setVisibleColumns({
-                              name: true,
-                              company: true,
-                              role: true,
-                              contact_source: true,
-                              linkedin_profile_url: true,
-                              contact_date: true,
-                              follow_up_dates: true,
-                              status: true,
-                              outcome: true,
-                              reminder: true,
-                              contacted_by: true,
-                              assigned_to: true,
-                              notes: true
-                            })}
+                            onClick={() =>
+                              setVisibleColumns({
+                                name: true,
+                                company: true,
+                                role: true,
+                                contact_source: true,
+                                linkedin_profile_url: true,
+                                contact_date: true,
+                                follow_up_dates: true,
+                                status: true,
+                                outcome: true,
+                                reminder: true,
+                                contacted_by: true,
+                                assigned_to: true,
+                                notes: true,
+                              })
+                            }
                             className="w-full"
                           >
                             Show All Columns
@@ -695,40 +964,86 @@ export default function Dashboard() {
                   </Popover>
                 </div>
                 <div className="flex space-x-3">
-                <Button variant="outline" onClick={() => setImportModalOpen(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Representatives CSV
-                </Button>
-                <Button variant="outline" onClick={() => setExportModalOpen(true)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-                {canEdit && (
-                  <Button onClick={handleAddRepresentative} className="bg-blue-600 hover:bg-blue-700">
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Add Representative
+                  <Button
+                    variant="outline"
+                    onClick={() => setImportModalOpen(true)}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import Representatives CSV
                   </Button>
-                )}
-              </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setExportModalOpen(true)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                  {canEdit && (
+                    <Button
+                      onClick={handleAddRepresentative}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add Representative
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Bulk Actions */}
-          {selectedRepresentatives.length > 0 && canDelete && (
+          {selectedRepresentatives.length > 0 && (canDelete || canEdit) && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-blue-800">
                   {selectedRepresentatives.length} representatives selected
                 </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected
-                </Button>
+                <div className="flex space-x-2">
+                  {canEdit && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkMarkReadUnread(false)}
+                        className="text-green-600 hover:text-green-800"
+                      >
+                        <BookOpenCheck className="h-4 w-4 mr-2" />
+                        Mark Read
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBulkMarkReadUnread(true)}
+                        className="text-orange-600 hover:text-orange-800"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Mark Unread
+                      </Button>
+                    </>
+                  )}
+                  {canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleBulkAssignToMe}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Assign Selected to Me
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -739,11 +1054,14 @@ export default function Dashboard() {
               <CardTitle className="flex items-center justify-between">
                 <span>Representatives</span>
                 <span className="text-sm font-normal text-gray-500">
-                  Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount}
+                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                  {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{" "}
+                  {totalCount}
                 </span>
               </CardTitle>
               <CardDescription>
-                Representative contacts and their status (Page {currentPage} of {totalPages})
+                Representative contacts and their status (Page {currentPage} of{" "}
+                {totalPages})
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -754,8 +1072,12 @@ export default function Dashboard() {
               ) : representatives.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No representatives found</h3>
-                  <p className="text-gray-500 mb-4">Get started by adding your first representative.</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No representatives found
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    Get started by adding your first representative.
+                  </p>
                   {canEdit && (
                     <Button onClick={handleAddRepresentative}>
                       <UserPlus className="h-4 w-4 mr-2" />
@@ -771,12 +1093,17 @@ export default function Dashboard() {
                         {canDelete && (
                           <th className="px-6 py-3 text-left sticky left-0 bg-gray-50 z-10">
                             <Checkbox
-                              checked={selectedRepresentatives.length === representatives.length}
+                              checked={
+                                selectedRepresentatives.length ===
+                                representatives.length
+                              }
                               onCheckedChange={handleSelectAll}
                             />
                           </th>
                         )}
-                        <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky bg-gray-50 z-10 ${canDelete ? 'left-14' : 'left-0'}`}>
+                        <th
+                          className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky bg-gray-50 z-10 ${canDelete ? "left-14" : "left-0"}`}
+                        >
                           Name
                         </th>
                         {visibleColumns.company && (
@@ -843,97 +1170,131 @@ export default function Dashboard() {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {representatives.map((rep) => (
-                        <tr key={rep.id} className={`group hover:bg-gray-50 ${rep.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
+                        <tr
+                          key={rep.id}
+                          className={`group hover:bg-gray-50 ${rep.mark_unread ? "bg-blue-50 border-l-4 border-l-blue-500" : ""}`}
+                        >
                           {canDelete && (
-                            <td className={`px-6 py-4 whitespace-nowrap sticky left-0 z-10 ${rep.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}>
+                            <td
+                              className={`px-6 py-4 whitespace-nowrap sticky left-0 z-10 ${rep.mark_unread ? "bg-blue-50 group-hover:bg-gray-50" : "bg-white group-hover:bg-gray-50"}`}
+                            >
                               <Checkbox
-                                checked={selectedRepresentatives.includes(rep.id)}
-                                onCheckedChange={(checked) => handleSelectRepresentative(rep.id, checked)}
+                                checked={selectedRepresentatives.includes(
+                                  rep.id,
+                                )}
+                                onCheckedChange={(checked) =>
+                                  handleSelectRepresentative(rep.id, checked)
+                                }
                               />
                             </td>
                           )}
-                          <td className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-14' : 'left-0'} ${rep.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}>
+                          <td
+                            className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? "left-14" : "left-0"} ${rep.mark_unread ? "bg-blue-50 group-hover:bg-gray-50" : "bg-white group-hover:bg-gray-50"}`}
+                          >
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
                                 <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                                   <span className="text-sm font-medium text-white">
-                                    {rep.first_name?.[0]}{rep.last_name?.[0]}
+                                    {rep.first_name?.[0]}
+                                    {rep.last_name?.[0]}
                                   </span>
                                 </div>
                               </div>
                               <div className="ml-4 flex-1 flex items-center justify-between">
                                 <div>
-                                <div className="text-sm font-medium text-gray-900">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-2">
-                                    <button
-                                      onClick={() => handleRepresentativeClick(rep.id)}
-                                      className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
-                                    >
-                                      {rep.first_name} {rep.last_name}
-                                    </button>
-                                    {rep.linkedin_profile_url && (
+                                  <div className="text-sm font-medium text-gray-900">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-2">
+                                        <button
+                                          onClick={() =>
+                                            handleRepresentativeClick(rep.id)
+                                          }
+                                          className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
+                                        >
+                                          {rep.first_name} {rep.last_name}
+                                        </button>
+                                        {rep.linkedin_profile_url && (
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const url =
+                                                rep.linkedin_profile_url.startsWith(
+                                                  "http",
+                                                )
+                                                  ? rep.linkedin_profile_url
+                                                  : `https://${rep.linkedin_profile_url}`;
+                                              window.open(
+                                                url,
+                                                "_blank",
+                                                "noopener,noreferrer",
+                                              );
+                                            }}
+                                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                                            title="Open LinkedIn Profile"
+                                          >
+                                            <img
+                                              src="/linkedinicon.webp"
+                                              alt="LinkedIn"
+                                              className="h-4 w-4 hover:opacity-80 transition-opacity"
+                                            />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                      {rep.contact_date
+                                        ? new Date(
+                                            rep.contact_date,
+                                          ).toLocaleDateString()
+                                        : "Not contacted"}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-center space-x-3">
+                                    {canEdit && (
                                       <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          const url = rep.linkedin_profile_url.startsWith('http') 
-                                            ? rep.linkedin_profile_url 
-                                            : `https://${rep.linkedin_profile_url}`;
-                                          window.open(url, '_blank', 'noopener,noreferrer');
-                                        }}
-                                        className="text-blue-600 hover:text-blue-800 transition-colors"
-                                        title="Open LinkedIn Profile"
+                                        onClick={() =>
+                                          handleEditRepresentative(rep)
+                                        }
+                                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
+                                        title="Edit Representative"
                                       >
-                                        <img 
-                                          src="/linkedinicon.webp" 
-                                          alt="LinkedIn" 
-                                          className="h-4 w-4 hover:opacity-80 transition-opacity"
-                                        />
+                                        <Edit className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                    {canDelete && (
+                                      <button
+                                        onClick={() =>
+                                          handleDeleteRepresentative(rep)
+                                        }
+                                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
+                                        title="Delete Representative"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
                                       </button>
                                     )}
                                   </div>
                                 </div>
-                                <div className="text-sm text-gray-500">
-                                  {rep.contact_date ? new Date(rep.contact_date).toLocaleDateString() : 'Not contacted'}
-                                </div>
-                                </div>
-                                <div className="flex items-center justify-center space-x-3">
-                                  {canEdit && (
-                                    <button
-                                      onClick={() => handleEditRepresentative(rep)}
-                                      className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
-                                      title="Edit Representative"
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </button>
-                                  )}
-                                  {canDelete && (
-                                    <button
-                                      onClick={() => handleDeleteRepresentative(rep)}
-                                      className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
-                                      title="Delete Representative"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </button>
-                                  )}
-                                </div>
                               </div>
-                            </div></div>
+                            </div>
                           </td>
                           {visibleColumns.company && (
                             <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
-                              <div className="text-sm text-gray-900">{rep.company?.company_name}</div>
-                              <div className="text-sm text-gray-500">{rep.company?.status}</div>
+                              <div className="text-sm text-gray-900">
+                                {rep.company?.company_name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {rep.company?.status}
+                              </div>
                             </td>
                           )}
                           {visibleColumns.role && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
-                              {rep.role || 'N/A'}
+                              {rep.role || "N/A"}
                             </td>
                           )}
                           {visibleColumns.contact_source && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.contact_source || 'N/A'}
+                              {rep.contact_source || "N/A"}
                             </td>
                           )}
                           {visibleColumns.linkedin_profile_url && (
@@ -942,17 +1303,24 @@ export default function Dashboard() {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const url = rep.linkedin_profile_url.startsWith('http') 
-                                      ? rep.linkedin_profile_url 
-                                      : `https://${rep.linkedin_profile_url}`;
-                                    window.open(url, '_blank', 'noopener,noreferrer');
+                                    const url =
+                                      rep.linkedin_profile_url.startsWith(
+                                        "http",
+                                      )
+                                        ? rep.linkedin_profile_url
+                                        : `https://${rep.linkedin_profile_url}`;
+                                    window.open(
+                                      url,
+                                      "_blank",
+                                      "noopener,noreferrer",
+                                    );
                                   }}
                                   className="text-blue-600 hover:text-blue-800 transition-colors flex items-center"
                                   title="Open LinkedIn Profile"
                                 >
-                                  <img 
-                                    src="/linkedinicon.webp" 
-                                    alt="LinkedIn" 
+                                  <img
+                                    src="/linkedinicon.webp"
+                                    alt="LinkedIn"
                                     className="h-4 w-4 hover:opacity-80 transition-opacity"
                                   />
                                 </button>
@@ -963,74 +1331,121 @@ export default function Dashboard() {
                           )}
                           {visibleColumns.contact_date && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.contact_date ? new Date(rep.contact_date).toLocaleDateString() : 'N/A'}
+                              {rep.contact_date
+                                ? new Date(
+                                    rep.contact_date,
+                                  ).toLocaleDateString()
+                                : "N/A"}
                             </td>
                           )}
                           {visibleColumns.follow_up_dates && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
-                              {rep.follow_up_dates && rep.follow_up_dates.length > 0 ? (
+                              {rep.follow_up_dates &&
+                              rep.follow_up_dates.length > 0 ? (
                                 <div className="flex flex-wrap gap-1">
-                                  {rep.follow_up_dates.slice(0, 2).map((date, index) => (
-                                    <span key={index} className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded">
-                                      {new Date(date).toLocaleDateString()}
-                                    </span>
-                                  ))}
+                                  {rep.follow_up_dates
+                                    .slice(0, 2)
+                                    .map((date, index) => (
+                                      <span
+                                        key={index}
+                                        className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded"
+                                      >
+                                        {new Date(date).toLocaleDateString()}
+                                      </span>
+                                    ))}
                                   {rep.follow_up_dates.length > 2 && (
-                                    <span className="text-xs text-gray-500">+{rep.follow_up_dates.length - 2}</span>
+                                    <span className="text-xs text-gray-500">
+                                      +{rep.follow_up_dates.length - 2}
+                                    </span>
                                   )}
                                 </div>
                               ) : (
-                                'N/A'
+                                "N/A"
                               )}
                             </td>
                           )}
                           {visibleColumns.status && (
                             <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                rep.outcome === 'Client' ? 'bg-green-100 text-green-800' :
-                                rep.outcome === 'Declined' ? 'bg-red-100 text-red-800' :
-                                rep.status ? 'bg-blue-100 text-blue-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
-                                {rep.outcome || rep.status || 'No Status'}
-                              </span>
+                              {canEdit ? (
+                                <Select
+                                  value={rep.status || "No Status"}
+                                  onValueChange={(value) =>
+                                    handleStatusChange(rep.id, value)
+                                  }
+                                >
+                                  <SelectTrigger className="w-full min-w-[140px] h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {INLINE_STATUS_OPTIONS.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                        className="text-xs"
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : rep.status ? (
+                                <span
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(rep.status)}`}
+                                >
+                                  {rep.status}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400 text-sm">
+                                  No status
+                                </span>
+                              )}
                             </td>
                           )}
                           {visibleColumns.outcome && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.outcome || 'N/A'}
+                              {rep.outcome || "N/A"}
                             </td>
                           )}
                           {visibleColumns.reminder && (
                             <td className="px-6 py-4 whitespace-nowrap">
                               {rep.reminder_date ? (
                                 <div className="flex items-center">
-                                  <div className={`w-3 h-3 rounded-full mr-2 ${
-                                    new Date(rep.reminder_date) <= new Date() ? 'bg-red-500' : 'bg-orange-500'
-                                  }`}></div>
-                                  <span className={`text-sm ${
-                                    new Date(rep.reminder_date) <= new Date() ? 'text-red-600 font-medium' : 'text-orange-600'
-                                  }`}>
+                                  <div
+                                    className={`w-3 h-3 rounded-full mr-2 ${
+                                      new Date(rep.reminder_date) <= new Date()
+                                        ? "bg-red-500"
+                                        : "bg-orange-500"
+                                    }`}
+                                  ></div>
+                                  <span
+                                    className={`text-sm ${
+                                      new Date(rep.reminder_date) <= new Date()
+                                        ? "text-red-600 font-medium"
+                                        : "text-orange-600"
+                                    }`}
+                                  >
                                     {formatDate(rep.reminder_date)}
                                   </span>
                                 </div>
                               ) : (
-                                <span className="text-gray-400 text-sm">No reminder</span>
+                                <span className="text-gray-400 text-sm">
+                                  No reminder
+                                </span>
                               )}
                             </td>
                           )}
                           {visibleColumns.contacted_by && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.contacted_user ? 
-                                `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}` : 
-                                'N/A'
-                              }
+                              {rep.contacted_user
+                                ? `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
+                                : "N/A"}
                             </td>
                           )}
                           {visibleColumns.assigned_to && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
-                              {rep.assigned_user ? 
-                                `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}` : 
+                              {rep.assigned_user ? (
+                                `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
+                              ) : (
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -1039,19 +1454,21 @@ export default function Dashboard() {
                                 >
                                   Assign to me
                                 </Button>
-                              }
-                            </td>
-                          )}
-                          {visibleColumns.notes && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32" title={rep.notes}>
-                              {rep.notes ? (
-                                rep.notes.length > 50 ? `${rep.notes.substring(0, 50)}...` : rep.notes
-                              ) : (
-                                'N/A'
                               )}
                             </td>
                           )}
-                         
+                          {visibleColumns.notes && (
+                            <td
+                              className="px-4 py-4 text-sm text-gray-900 truncate max-w-32"
+                              title={rep.notes}
+                            >
+                              {rep.notes
+                                ? rep.notes.length > 50
+                                  ? `${rep.notes.substring(0, 50)}...`
+                                  : rep.notes
+                                : "N/A"}
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -1065,7 +1482,9 @@ export default function Dashboard() {
           {totalPages > 1 && (
             <div className="mt-6 flex items-center justify-between">
               <div className="text-sm text-gray-700">
-                Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount} representatives
+                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{" "}
+                {totalCount} representatives
               </div>
               <div className="flex space-x-2">
                 <Button
