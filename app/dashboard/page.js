@@ -89,6 +89,18 @@ const STATUS_OPTIONS = [
   { value: "Pending Connection", label: "Pending Connection" },
 ];
 
+const INLINE_STATUS_OPTIONS = [
+  { value: 'No Status', label: 'No Status' },
+  { value: 'No Reply', label: 'No Reply' },
+  { value: 'Not Interested', label: 'Not Interested' },
+  { value: 'Contacted', label: 'Contacted' },
+  { value: 'Not a Fit', label: 'Not a Fit' },
+  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
+  { value: 'Declined', label: 'Declined' },
+  { value: 'Client', label: 'Client' },
+  { value: 'Pending Connection', label: 'Pending Connection' }
+];
+
 const TABLE_COLUMNS = [
   { key: "name", label: "Name", required: true },
   { key: "company", label: "Company", required: false },
@@ -370,6 +382,17 @@ export default function Dashboard() {
         selectedRepresentatives,
         markUnread,
         currentUser.id,
+  const handleStatusChange = async (representativeId, newStatus) => {
+    const statusValue = newStatus === 'No Status' ? null : newStatus;
+    const { error } = await updateRepresentative(representativeId, { status: statusValue }, currentUser.id);
+    if (!error) {
+      // Update local state to reflect the change immediately
+      setRepresentatives(prev => prev.map(rep => 
+        rep.id === representativeId ? { ...rep, status: statusValue } : rep
+      ));
+    }
+  };
+
       );
       if (!error) {
         setSelectedRepresentatives([]);
@@ -1314,13 +1337,31 @@ export default function Dashboard() {
                           )}
                           {visibleColumns.status && (
                             <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
-                              <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  rep.outcome === "Client"
-                                    ? "bg-green-100 text-green-800"
-                                    : rep.outcome === "Declined"
-                                      ? "bg-red-100 text-red-800"
-                                      : rep.status
+                              {canEdit ? (
+                                <Select 
+                                  value={rep.status || 'No Status'} 
+                                  onValueChange={(value) => handleStatusChange(rep.id, value)}
+                                >
+                                  <SelectTrigger className="w-full min-w-[140px] h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {INLINE_STATUS_OPTIONS.map((option) => (
+                                      <SelectItem key={option.value} value={option.value} className="text-xs">
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                rep.status ? (
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(rep.status)}`}>
+                                    {rep.status}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">No status</span>
+                                )
+                              )}
                                         ? "bg-blue-100 text-blue-800"
                                         : "bg-gray-100 text-gray-800"
                                 }`}
