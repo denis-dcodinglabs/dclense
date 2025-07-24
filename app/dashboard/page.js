@@ -90,15 +90,15 @@ const STATUS_OPTIONS = [
 ];
 
 const INLINE_STATUS_OPTIONS = [
-  { value: 'No Status', label: 'No Status' },
-  { value: 'No Reply', label: 'No Reply' },
-  { value: 'Not Interested', label: 'Not Interested' },
-  { value: 'Contacted', label: 'Contacted' },
-  { value: 'Not a Fit', label: 'Not a Fit' },
-  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
-  { value: 'Declined', label: 'Declined' },
-  { value: 'Client', label: 'Client' },
-  { value: 'Pending Connection', label: 'Pending Connection' }
+  { value: "No Status", label: "No Status" },
+  { value: "No Reply", label: "No Reply" },
+  { value: "Not Interested", label: "Not Interested" },
+  { value: "Contacted", label: "Contacted" },
+  { value: "Not a Fit", label: "Not a Fit" },
+  { value: "Asked to Reach Out Later", label: "Asked to Reach Out Later" },
+  { value: "Declined", label: "Declined" },
+  { value: "Client", label: "Client" },
+  { value: "Pending Connection", label: "Pending Connection" },
 ];
 
 const TABLE_COLUMNS = [
@@ -391,13 +391,19 @@ export default function Dashboard() {
   };
 
   const handleStatusChange = async (representativeId, newStatus) => {
-    const statusValue = newStatus === 'No Status' ? null : newStatus;
-    const { error } = await updateRepresentative(representativeId, { status: statusValue }, currentUser.id);
+    const statusValue = newStatus === "No Status" ? null : newStatus;
+    const { error } = await updateRepresentative(
+      representativeId,
+      { status: statusValue },
+      currentUser.id,
+    );
     if (!error) {
       // Update local state to reflect the change immediately
-      setRepresentatives(prev => prev.map(rep => 
-        rep.id === representativeId ? { ...rep, status: statusValue } : rep
-      ));
+      setRepresentatives((prev) =>
+        prev.map((rep) =>
+          rep.id === representativeId ? { ...rep, status: statusValue } : rep,
+        ),
+      );
     }
   };
 
@@ -1361,29 +1367,37 @@ export default function Dashboard() {
                           {visibleColumns.status && (
                             <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
                               {canEdit ? (
-                                <Select 
-                                  value={rep.status || 'No Status'} 
-                                  onValueChange={(value) => handleStatusChange(rep.id, value)}
+                                <Select
+                                  value={rep.status || "No Status"}
+                                  onValueChange={(value) =>
+                                    handleStatusChange(rep.id, value)
+                                  }
                                 >
                                   <SelectTrigger className="w-full min-w-[140px] h-8 text-xs">
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {INLINE_STATUS_OPTIONS.map((option) => (
-                                      <SelectItem key={option.value} value={option.value} className="text-xs">
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                        className="text-xs"
+                                      >
                                         {option.label}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
+                              ) : rep.status ? (
+                                <span
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(rep.status)}`}
+                                >
+                                  {rep.status}
+                                </span>
                               ) : (
-                                rep.status ? (
-                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(rep.status)}`}>
-                                    {rep.status}
-                                  </span>
-                                ) : (
-                                  <span className="text-gray-400 text-sm">No status</span>
-                                )
+                                <span className="text-gray-400 text-sm">
+                                  No status
+                                </span>
                               )}
                             </td>
                           )}
@@ -1397,14 +1411,14 @@ export default function Dashboard() {
                               {rep.reminder_date ? (
                                 <div className="flex items-center">
                                   <div
-                                    className={\`w-3 h-3 rounded-full mr-2 ${
+                                    className={`w-3 h-3 rounded-full mr-2 ${
                                       new Date(rep.reminder_date) <= new Date()
                                         ? "bg-red-500"
                                         : "bg-orange-500"
                                     }`}
                                   ></div>
                                   <span
-                                    className={\`text-sm ${
+                                    className={`text-sm ${
                                       new Date(rep.reminder_date) <= new Date()
                                         ? "text-red-600 font-medium"
                                         : "text-orange-600"
@@ -1423,14 +1437,14 @@ export default function Dashboard() {
                           {visibleColumns.contacted_by && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {rep.contacted_user
-                                ? \`${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
+                                ? `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
                                 : "N/A"}
                             </td>
                           )}
                           {visibleColumns.assigned_to && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
                               {rep.assigned_user ? (
-                                \`${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
+                                `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
                               ) : (
                                 <Button
                                   variant="outline"
@@ -1450,7 +1464,7 @@ export default function Dashboard() {
                             >
                               {rep.notes
                                 ? rep.notes.length > 50
-                                  ? \`${rep.notes.substring(0, 50)}...`
+                                  ? `${rep.notes.substring(0, 50)}...`
                                   : rep.notes
                                 : "N/A"}
                             </td>
