@@ -198,15 +198,7 @@ export default function ContactPage() {
         </Card>
 
         <div className="text-center mt-6">
-          <p className="text-sm text-gray-500">
-            Need immediate assistance? Email us directly at{' '}
-            <a 
-              href="mailto:leutrim@dcodinglabs.com" 
-              className="text-blue-600 hover:text-blue-700 underline"
-            >
-              leutrim@dcodinglabs.com
-            </a>
-          </p>
+         
         </div>
       </div>
     </div>
