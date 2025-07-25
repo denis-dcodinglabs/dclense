@@ -204,56 +204,6 @@ export default function Navbar() {
               >
                 Contact
               </Link>
-              <Link 
-                href="/dashboard"
-                className={`hover:text-blue-600 transition-colors font-medium ${
-                  pathname === '/dashboard' 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700'
-                }`}
-              >
-                Representatives
-              </Link>
-              <Link 
-                href="/companies"
-                className={`hover:text-blue-600 transition-colors font-medium ${
-                  pathname === '/companies' 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700'
-                }`}
-              >
-                Companies
-              </Link>
-              <Link 
-                href="/reminders"
-                className={`hover:text-blue-600 transition-colors font-medium ${
-                  pathname === '/reminders' 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700'
-                }`}
-              >
-                Reminders
-              </Link>
-              <Link 
-                href="/logs"
-                className={`hover:text-blue-600 transition-colors font-medium ${
-                  pathname === '/logs' 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700'
-                }`}
-              >
-                Logs
-              </Link>
-              <Link 
-                href="/admin"
-                className={`hover:text-blue-600 transition-colors font-medium ${
-                  pathname === '/admin' 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700'
-                }`}
-              >
-                Admin
-              </Link>
               <Link href="/">
                 <Button className="bg-blue-600 hover:bg-blue-700">
                   Login
