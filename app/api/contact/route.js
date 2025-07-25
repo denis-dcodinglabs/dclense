@@ -29,8 +29,8 @@ export async function POST(request) {
     // Send email using Resend
     try {
       const { data, error } = await resend.emails.send({
-        from: 'DCLense Contact Form <noreply@dcodinglabs.com>',
-        to: ['leutrimtahiri2@gmail.com'],
+        from: 'DCLense Contact Form <onboarding@resend.dev>',
+        to: ['leutrim@dcodinglabs.com'],
         subject: `New Contact Form Message from ${name}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
