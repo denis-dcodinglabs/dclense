@@ -254,7 +254,7 @@ export default function Navbar() {
               >
                 Admin
               </Link>
-              <Link href="/">
+              <Link href="/login">
                 <Button className="bg-blue-600 hover:bg-blue-700">
                   Login
                 </Button>
