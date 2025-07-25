@@ -204,9 +204,9 @@ export default function Navbar() {
               >
                 Contact
               </Link>
-              <Link href="/login">
+              <Link href={user ? "/dashboard" : "/login"}>
                 <Button className="bg-blue-600 hover:bg-blue-700">
-                  Login
+                  {user ? "Dashboard" : "Login"}
                 </Button>
               </Link>
             </div>
