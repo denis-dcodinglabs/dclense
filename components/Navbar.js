@@ -1,34 +1,35 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { toast } from 'sonner';
-import { Users, Building2, BarChart3, FileText, Bell } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Toaster } from '@/components/ui/sonner';
-import { signOut, getCurrentUserWithRole } from '@/lib/auth';
-import { getUnreadNotificationCount } from '@/lib/reminders';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { toast } from "sonner";
+import { Users, Building2, BarChart3, FileText, Bell } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
+import { signOut, getCurrentUserWithRole } from "@/lib/auth";
+import { getUnreadNotificationCount } from "@/lib/reminders";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [notificationPermission, setNotificationPermission] = useState('default');
+  const [notificationPermission, setNotificationPermission] =
+    useState("default");
   const router = useRouter();
 
   useEffect(() => {
     const fetchUser = async () => {
       const currentUser = await getCurrentUserWithRole();
       setUser(currentUser);
-      
+
       if (currentUser) {
         fetchUnreadCount(currentUser.id);
         requestNotificationPermission();
-        
+
         // Set up real-time subscription for notification count
         setupNotificationSubscription(currentUser.id);
       }
@@ -38,117 +39,116 @@ export default function Navbar() {
 
   const setupNotificationSubscription = async (userId) => {
     try {
-      const { supabase } = await import('@/lib/supabase');
-    
+      const { supabase } = await import("@/lib/supabase");
+
       const subscription = supabase
         .channel(`notification_count_${userId}`)
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${userId}`
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
           },
           (payload) => {
-            console.log('New notification received:', payload.new);
-            setUnreadCount(prev => prev + 1);
-            
+            console.log("New notification received:", payload.new);
+            setUnreadCount((prev) => prev + 1);
+
             // Show browser notification or toast
-            showBrowserNotification(
-              payload.new.title,
-              payload.new.message
-            );
-          }
+            showBrowserNotification(payload.new.title, payload.new.message);
+          },
         )
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${userId}`
+            event: "UPDATE",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
           },
           (payload) => {
-            console.log('Notification updated:', payload);
+            console.log("Notification updated:", payload);
             // Refetch count for updates (mark as read/unread)
             fetchUnreadCount(userId);
-          }
+          },
         )
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: 'DELETE',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${userId}`
+            event: "DELETE",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
           },
           (payload) => {
-            console.log('Notification deleted:', payload);
+            console.log("Notification deleted:", payload);
             // Refetch count for deletions
             fetchUnreadCount(userId);
-          }
+          },
         )
         .subscribe((status) => {
-          console.log('Notification subscription status:', status);
-          if (status === 'CHANNEL_ERROR') {
-            console.error('Failed to subscribe to notifications - this may be due to RLS policies');
+          console.log("Notification subscription status:", status);
+          if (status === "CHANNEL_ERROR") {
+            console.error(
+              "Failed to subscribe to notifications - this may be due to RLS policies",
+            );
             // Fallback: just fetch count periodically instead of real-time
             const interval = setInterval(() => {
               fetchUnreadCount(userId);
             }, 30000); // Check every 30 seconds
-            
+
             return () => clearInterval(interval);
           }
         });
 
       // Cleanup function
       return () => {
-        console.log('Unsubscribing from notifications');
+        console.log("Unsubscribing from notifications");
         if (subscription) {
           supabase.removeChannel(subscription);
         }
       };
     } catch (error) {
-      console.error('Error setting up notification subscription:', error);
+      console.error("Error setting up notification subscription:", error);
       // Fallback: fetch count periodically
       const interval = setInterval(() => {
         fetchUnreadCount(userId);
       }, 30000);
-      
+
       return () => {}; // Return empty cleanup function
     }
   };
   const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
+    if ("Notification" in window) {
       const permission = await Notification.requestPermission();
       setNotificationPermission(permission);
     }
   };
 
   const showBrowserNotification = (title, message) => {
-    if (notificationPermission === 'granted') {
+    if (notificationPermission === "granted") {
       new Notification(title, {
         body: message,
-        icon: '/favicon.ico',
-        badge: '/favicon.ico',
-        tag: 'dclense-notification',
+        icon: "/favicon.ico",
+        badge: "/favicon.ico",
+        tag: "dclense-notification",
         requireInteraction: false,
-        silent: false
+        silent: false,
       });
     } else {
       // Fallback to toast notification
       toast.info(title, {
         description: message,
         duration: 10000,
-        position: 'top-right',
+        position: "top-right",
       });
     }
   };
   const fetchUnreadCount = async (userId) => {
-    console.log('Fetching unread count for user:', userId);
+    console.log("Fetching unread count for user:", userId);
     const { count } = await getUnreadNotificationCount(userId);
-    console.log('Unread count fetched:', count);
+    console.log("Unread count fetched:", count);
     setUnreadCount(count || 0);
   };
 
@@ -156,7 +156,7 @@ export default function Navbar() {
     setLoading(true);
     const { error } = await signOut();
     if (!error) {
-      router.push('/');
+      router.push("/");
     }
     setLoading(false);
   };
@@ -168,44 +168,50 @@ export default function Navbar() {
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link href="/home" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+              <Link
+                href="/home"
+                className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+              >
                 DCLense
               </Link>
             </div>
-            
+
             <div className="flex items-center space-x-6">
-              <Link 
+              <Link
                 href="/home"
                 className={`hover:text-blue-600 transition-colors font-medium ${
-                  pathname === '/home' 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700'
+                  pathname === "/home"
+                    ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                    : "text-gray-700"
                 }`}
               >
                 Home
               </Link>
-              <Link 
+              <Link
                 href="/services"
                 className={`hover:text-blue-600 transition-colors font-medium ${
-                  pathname === '/services' 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700'
+                  pathname === "/services"
+                    ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                    : "text-gray-700"
                 }`}
               >
                 Services
               </Link>
-              <Link 
+              <Link
                 href="/contact"
                 className={`hover:text-blue-600 transition-colors font-medium ${
-                  pathname === '/contact' 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700'
+                  pathname === "/contact"
+                    ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                    : "text-gray-700"
                 }`}
               >
                 Contact
               </Link>
               <Link href="/">
-                <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/')}>
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => router.push("/")}
+                >
                   Login
                 </Button>
               </Link>
@@ -223,75 +229,78 @@ export default function Navbar() {
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link href="/home" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+            <Link
+              href="/home"
+              className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+            >
               DCLense
             </Link>
           </div>
-          
+
           <div className="flex items-center space-x-6">
-            <Link 
+            <Link
               href="/home"
               className={`hover:text-blue-600 transition-colors font-medium ${
-                pathname === '/home' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700'
+                pathname === "/home"
+                  ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                  : "text-gray-700"
               }`}
             >
               Home
             </Link>
-            
-            <Link 
+
+            <Link
               href="/services"
               className={`hover:text-blue-600 transition-colors font-medium ${
-                pathname === '/services' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700'
+                pathname === "/services"
+                  ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                  : "text-gray-700"
               }`}
             >
               Services
             </Link>
-            
-            <Link 
+
+            <Link
               href="/contact"
               className={`hover:text-blue-600 transition-colors font-medium ${
-                pathname === '/contact' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700'
+                pathname === "/contact"
+                  ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                  : "text-gray-700"
               }`}
             >
               Contact
             </Link>
-            
-              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/login')}>
+
+            <Link
               href="/dashboard"
               className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
-                pathname === '/dashboard' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700'
+                pathname === "/dashboard"
+                  ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                  : "text-gray-700"
               }`}
             >
               <BarChart3 className="h-4 w-4" />
               <span className="text-sm font-medium">Representatives</span>
             </Link>
-            
-            <Link 
-              href="/companies" 
+
+            <Link
+              href="/companies"
               className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
-                pathname === '/companies' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700'
+                pathname === "/companies"
+                  ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                  : "text-gray-700"
               }`}
             >
               <Building2 className="h-4 w-4" />
               <span className="text-sm font-medium">Companies</span>
             </Link>
-            
-            <Link 
-              href="/reminders" 
+
+            <Link
+              href="/reminders"
               className={`flex items-center space-x-2 hover:text-blue-600 transition-colors relative ${
-                pathname === '/reminders' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700'
+                pathname === "/reminders"
+                  ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                  : "text-gray-700"
               }`}
             >
               <Bell className="h-4 w-4" />
@@ -304,28 +313,28 @@ export default function Navbar() {
                 )}
               </span>
             </Link>
-            
-            {user?.role === 'Admin' && (
-              <Link 
-                href="/logs" 
+
+            {user?.role === "Admin" && (
+              <Link
+                href="/logs"
                 className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
-                  pathname === '/logs' 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700'
+                  pathname === "/logs"
+                    ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                    : "text-gray-700"
                 }`}
               >
                 <FileText className="h-4 w-4" />
                 <span className="text-sm font-medium">Logs</span>
               </Link>
             )}
-            
-            {user?.role === 'Admin' && (
-              <Link 
-                href="/admin" 
+
+            {user?.role === "Admin" && (
+              <Link
+                href="/admin"
                 className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
-                  pathname === '/admin' 
-                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                    : 'text-gray-700'
+                  pathname === "/admin"
+                    ? "text-blue-600 border-b-2 border-blue-600 pb-1"
+                    : "text-gray-700"
                 }`}
               >
                 <Users className="h-4 w-4" />
@@ -333,7 +342,7 @@ export default function Navbar() {
               </Link>
             )}
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {user && (
               <span className="text-gray-700 text-sm">
@@ -345,7 +354,7 @@ export default function Navbar() {
               disabled={loading}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
             >
-              {loading ? 'Signing out...' : 'Sign out'}
+              {loading ? "Signing out..." : "Sign out"}
             </button>
           </div>
         </div>
