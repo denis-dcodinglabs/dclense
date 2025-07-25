@@ -210,7 +210,7 @@ export default function Navbar() {
               <Link href="/">
                 <Button
                   className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => router.push("/")}
+                  onClick={() => router.push("/login")}
                 >
                   Login
                 </Button>
