@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 
+export const dynamic = 'force-dynamic';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+console.log('Resend API key:', process.env.RESEND_API_KEY);
 export async function POST(request) {
   try {
     const { name, email, message } = await request.json();
@@ -21,44 +26,58 @@ export async function POST(request) {
       );
     }
 
-    // Here you would typically integrate with an email service like:
-    // - SendGrid
-    // - Nodemailer with SMTP
-    // - AWS SES
-    // - Resend
-    // - etc.
+    // Send email using Resend
+    try {
+      const { data, error } = await resend.emails.send({
+        from: 'DCLense Contact Form <onboarding@resend.dev>',
+        to: ['leutrim@dcodinglabs.com'],
+        subject: `New Contact Form Message from ${name}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
+              New Contact Form Submission
+            </h2>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 10px 0;"><strong>Name:</strong> ${name}</p>
+              <p style="margin: 10px 0;"><strong>Email:</strong> ${email}</p>
+              <p style="margin: 10px 0;"><strong>Message:</strong></p>
+              <div style="background-color: white; padding: 15px; border-radius: 4px; border-left: 4px solid #2563eb;">
+                ${message.replace(/\n/g, '<br>')}
+              </div>
+            </div>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+            <p style="color: #64748b; font-size: 12px; text-align: center;">
+              This message was sent from the DCLense contact form.
+            </p>
+          </div>
+        `,
+        text: `
+New Contact Form Submission
 
-    // For now, we'll simulate sending an email
-    // In a real implementation, you would send the email to leutrim@dcodinglabs.com
-    
-    const emailData = {
-      to: 'leutrim@dcodinglabs.com',
-      subject: `New Contact Form Message from ${name}`,
-      html: `
-        <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, '<br>')}</p>
-        <hr>
-        <p><small>This message was sent from the DCLense contact form.</small></p>
-      `,
-      text: `
-        New Contact Form Submission
-        
-        Name: ${name}
-        Email: ${email}
-        Message: ${message}
-        
-        This message was sent from the DCLense contact form.
-      `
-    };
+Name: ${name}
+Email: ${email}
+Message: ${message}
 
-    // TODO: Replace this with actual email sending logic
-    console.log('Email would be sent:', emailData);
+This message was sent from the DCLense contact form.
+        `.trim()
+      });
 
-    // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+      if (error) {
+        console.error('Resend error:', error);
+        return NextResponse.json(
+          { message: 'Failed to send email. Please try again.' },
+          { status: 500 }
+        );
+      }
+
+      console.log('Email sent successfully:', data);
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      return NextResponse.json(
+        { message: 'Failed to send email. Please try again.' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       { message: 'Message sent successfully' },

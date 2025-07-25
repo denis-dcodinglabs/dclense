@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Mail, Send, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -92,12 +93,20 @@ export default function ContactPage() {
               <p className="text-gray-600 mb-6">
                 Thank you for contacting us. We'll get back to you as soon as possible.
               </p>
-              <Button 
-                onClick={() => setSuccess(false)}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Send Another Message
-              </Button>
+              <div className="flex flex-col space-y-3">
+                <Button 
+                  onClick={() => setSuccess(false)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Send Another Message
+                </Button>
+                <Link href="/">
+                  <Button variant="outline" className="w-full">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Home
+                  </Button>
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -109,6 +118,14 @@ export default function ContactPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <Link href="/">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-800">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Contact Us</h1>
           <p className="text-gray-600">
             Get in touch with our team. We'd love to hear from you.
