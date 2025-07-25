@@ -1,6 +1,5 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Link from 'next/link';
 import { ArrowRight, Upload, Download, Users, BarChart3, Shield, Database, Bell, FileSpreadsheet, Zap, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,43 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Navigation */}
-      <Navbar />
+      <nav className="bg-white shadow-lg border-b border-gray-200">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link href="/home" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                DCLense
+              </Link>
+            </div>
+            
+            <div className="flex items-center space-x-6">
+              <Link 
+                href="/home"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                Home
+              </Link>
+              <Link 
+                href="/services"
+                className="text-blue-600 border-b-2 border-blue-600 pb-1 font-medium"
+              >
+                Services
+              </Link>
+              <Link 
+                href="/contact"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                Contact
+              </Link>
+              <Link href="/">
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  Login
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
 
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
