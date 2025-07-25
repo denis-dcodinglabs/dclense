@@ -205,7 +205,7 @@ export default function Navbar() {
                 Contact
               </Link>
               <Link href="/">
-                <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/')}>
+                <Button className="bg-blue-600 hover:bg-blue-700">
                   Login
                 </Button>
               </Link>
@@ -223,45 +223,12 @@ export default function Navbar() {
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link href="/home" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+            <Link href="/dashboard" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
               DCLense
             </Link>
           </div>
           
           <div className="flex items-center space-x-6">
-            <Link 
-              href="/home"
-              className={`hover:text-blue-600 transition-colors font-medium ${
-                pathname === '/home' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700'
-              }`}
-            >
-              Home
-            </Link>
-            
-            <Link 
-              href="/services"
-              className={`hover:text-blue-600 transition-colors font-medium ${
-                pathname === '/services' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700'
-              }`}
-            >
-              Services
-            </Link>
-            
-            <Link 
-              href="/contact"
-              className={`hover:text-blue-600 transition-colors font-medium ${
-                pathname === '/contact' 
-                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
-                  : 'text-gray-700'
-              }`}
-            >
-              Contact
-            </Link>
-            
             <Link 
               href="/dashboard"
               className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
