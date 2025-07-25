@@ -176,7 +176,7 @@ export default function Navbar() {
             <div className="flex items-center space-x-6">
               <Link 
                 href="/home"
-                className={`hover:text-blue-600 transition-colors font-medium ${
+                className={`text-gray-700 hover:text-blue-600 transition-colors font-medium ${
                   pathname === '/home' 
                     ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                     : 'text-gray-700'
@@ -186,7 +186,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 href="/services"
-                className={`hover:text-blue-600 transition-colors font-medium ${
+                className={`text-gray-700 hover:text-blue-600 transition-colors font-medium ${
                   pathname === '/services' 
                     ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                     : 'text-gray-700'
@@ -196,7 +196,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 href="/contact"
-                className={`hover:text-blue-600 transition-colors font-medium ${
+                className={`text-gray-700 hover:text-blue-600 transition-colors font-medium ${
                   pathname === '/contact' 
                     ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                     : 'text-gray-700'
@@ -206,7 +206,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 href="/dashboard"
-                className={`hover:text-blue-600 transition-colors font-medium ${
+                className={`text-gray-700 hover:text-blue-600 transition-colors font-medium ${
                   pathname === '/dashboard' 
                     ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                     : 'text-gray-700'
@@ -216,7 +216,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 href="/companies"
-                className={`hover:text-blue-600 transition-colors font-medium ${
+                className={`text-gray-700 hover:text-blue-600 transition-colors font-medium ${
                   pathname === '/companies' 
                     ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                     : 'text-gray-700'
@@ -226,7 +226,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 href="/reminders"
-                className={`hover:text-blue-600 transition-colors font-medium ${
+                className={`text-gray-700 hover:text-blue-600 transition-colors font-medium ${
                   pathname === '/reminders' 
                     ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                     : 'text-gray-700'
@@ -236,7 +236,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 href="/logs"
-                className={`hover:text-blue-600 transition-colors font-medium ${
+                className={`text-gray-700 hover:text-blue-600 transition-colors font-medium ${
                   pathname === '/logs' 
                     ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                     : 'text-gray-700'
@@ -246,7 +246,7 @@ export default function Navbar() {
               </Link>
               <Link 
                 href="/admin"
-                className={`hover:text-blue-600 transition-colors font-medium ${
+                className={`text-gray-700 hover:text-blue-600 transition-colors font-medium ${
                   pathname === '/admin' 
                     ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                     : 'text-gray-700'
