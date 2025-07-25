@@ -13,7 +13,7 @@ export default function ServicesPage() {
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link href="/home" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+              <Link href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
                 DCLense
               </Link>
             </div>
