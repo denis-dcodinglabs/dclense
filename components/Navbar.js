@@ -161,14 +161,14 @@ export default function Navbar() {
     setLoading(false);
   };
 
-  // If user is not logged in, show public navigation
+  // Show public navigation only if user is not logged in
   if (!user) {
     return (
       <nav className="bg-white shadow-lg border-b border-gray-200">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link href="/home" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+              <Link href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
                 DCLense
               </Link>
             </div>
@@ -217,18 +217,51 @@ export default function Navbar() {
     );
   }
 
-  // Logged in user navigation
+  // Logged in user navigation - show full dashboard navigation on all pages
   return (
     <nav className="bg-white shadow-lg border-b border-gray-200">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link href="/dashboard" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+            <Link href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
               DCLense
             </Link>
           </div>
           
           <div className="flex items-center space-x-6">
+            <Link 
+              href="/"
+              className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
+                pathname === '/' 
+                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                  : 'text-gray-700'
+              }`}
+            >
+              <span className="text-sm font-medium">Home</span>
+            </Link>
+            
+            <Link 
+              href="/services"
+              className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
+                pathname === '/services' 
+                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                  : 'text-gray-700'
+              }`}
+            >
+              <span className="text-sm font-medium">Services</span>
+            </Link>
+            
+            <Link 
+              href="/contact"
+              className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
+                pathname === '/contact' 
+                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                  : 'text-gray-700'
+              }`}
+            >
+              <span className="text-sm font-medium">Contact</span>
+            </Link>
+            
             <Link 
               href="/dashboard"
               className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
