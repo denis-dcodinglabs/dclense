@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Users, Building2, BarChart3, FileText, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { signOut, getCurrentUserWithRole } from '@/lib/auth';
 import { getUnreadNotificationCount } from '@/lib/reminders';
@@ -160,6 +161,63 @@ export default function Navbar() {
     setLoading(false);
   };
 
+  // If user is not logged in, show public navigation
+  if (!user) {
+    return (
+      <nav className="bg-white shadow-lg border-b border-gray-200">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                DCLense
+              </Link>
+            </div>
+            
+            <div className="flex items-center space-x-6">
+              <Link 
+                href="/"
+                className={`hover:text-blue-600 transition-colors font-medium ${
+                  pathname === '/' 
+                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                    : 'text-gray-700'
+                }`}
+              >
+                Home
+              </Link>
+              <Link 
+                href="/services"
+                className={`hover:text-blue-600 transition-colors font-medium ${
+                  pathname === '/services' 
+                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                    : 'text-gray-700'
+                }`}
+              >
+                Services
+              </Link>
+              <Link 
+                href="/contact"
+                className={`hover:text-blue-600 transition-colors font-medium ${
+                  pathname === '/contact' 
+                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                    : 'text-gray-700'
+                }`}
+              >
+                Contact
+              </Link>
+              <Link href="/login">
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  Login
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+        <Toaster />
+      </nav>
+    );
+  }
+
+  // Logged in user navigation
   return (
     <nav className="bg-white shadow-lg border-b border-gray-200">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
