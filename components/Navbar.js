@@ -175,9 +175,9 @@ export default function Navbar() {
             
             <div className="flex items-center space-x-6">
               <Link 
-                href="/home"
+                href="/"
                 className={`hover:text-blue-600 transition-colors font-medium ${
-                  pathname === '/home' 
+                  pathname === '/' 
                     ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
                     : 'text-gray-700'
                 }`}
