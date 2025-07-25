@@ -263,6 +263,28 @@ export default function Navbar() {
             </Link>
             
             <Link 
+              href="/services"
+              className={`hover:text-blue-600 transition-colors font-medium ${
+                pathname === '/services' 
+                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                  : 'text-gray-700'
+              }`}
+            >
+              Services
+            </Link>
+            
+            <Link 
+              href="/contact"
+              className={`hover:text-blue-600 transition-colors font-medium ${
+                pathname === '/contact' 
+                  ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                  : 'text-gray-700'
+              }`}
+            >
+              Contact
+            </Link>
+            
+            <Link 
               href="/dashboard"
               className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
                 pathname === '/dashboard' 
