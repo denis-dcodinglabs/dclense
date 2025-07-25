@@ -329,7 +329,7 @@ export default function ServicesPage() {
           </div>
           <div className="border-t border-gray-800 pt-8">
             <p className="text-gray-400">
-              © 2024 DCoding Labs. All rights reserved.
+              © 2025 DCoding Labs. All rights reserved.
             </p>
           </div>
         </div>
