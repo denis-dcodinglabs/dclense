@@ -262,7 +262,7 @@ export default function Navbar() {
               Contact
             </Link>
             
-            <Link 
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/login')}>
               href="/dashboard"
               className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
                 pathname === '/dashboard' 
