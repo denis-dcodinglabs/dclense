@@ -274,6 +274,20 @@ export default function Navbar() {
             
             {user?.role === 'Admin' && (
               <Link 
+                href="/statistics" 
+                className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
+                  pathname === '/statistics' 
+                    ? 'text-blue-600 border-b-2 border-blue-600 pb-1' 
+                    : 'text-gray-700'
+                }`}
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span className="text-sm font-medium">Statistics</span>
+              </Link>
+            )}
+            
+            {user?.role === 'Admin' && (
+              <Link 
                 href="/logs" 
                 className={`flex items-center space-x-2 hover:text-blue-600 transition-colors ${
                   pathname === '/logs' 
