@@ -849,7 +849,6 @@ export default function Dashboard() {
                 </div>
               
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Contacted By</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start">
