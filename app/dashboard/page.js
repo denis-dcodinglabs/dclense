@@ -285,7 +285,7 @@ export default function Dashboard() {
   const handleContactedByChange = (userId, checked) => {
     setFilters(prev => ({
       ...prev,
-      contacted_by: checked 
+      contacted_by: checked
         ? [...prev.contacted_by, userId]
         : prev.contacted_by.filter(id => id !== userId)
     }));
@@ -854,7 +854,7 @@ export default function Dashboard() {
                   </PopoverContent>
                 </Popover>
               </div>
-              
+
               <div className="space-y-2">
                 <Popover>
                   <PopoverTrigger asChild>
@@ -896,8 +896,8 @@ export default function Dashboard() {
                               checked={filters.contacted_by.includes(user.id)}
                               onCheckedChange={(checked) => handleContactedByChange(user.id, checked)}
                             />
-                            <Label 
-                              htmlFor={`contacted-by-${user.id}`} 
+                            <Label
+                              htmlFor={`contacted-by-${user.id}`}
                               className="text-sm cursor-pointer flex-1"
                             >
                               {user.first_name} {user.last_name}
@@ -922,12 +922,15 @@ export default function Dashboard() {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <Label className="text-sm font-medium text-gray-700">
-                          {filters.contacted_by.length === 0 
-                            ? "All Users" 
-                            : users
-                                .filter(user => filters.contacted_by.includes(user.id))
-                                .map(user => `${user.first_name} ${user.last_name}`)
-                                .join(', ')}
+                      Sort by:
+                    </Label>
+                    <Select
+                      value={filters.sort_field}
+                      onValueChange={(value) =>
+                        handleFilterChange("sort_field", value)
+                      }
+                    >
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
