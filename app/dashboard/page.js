@@ -922,15 +922,12 @@ export default function Dashboard() {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <Label className="text-sm font-medium text-gray-700">
-                      Sort by:
-                    </Label>
-                    <Select
-                      value={filters.sort_field}
-                      onValueChange={(value) =>
-                        handleFilterChange("sort_field", value)
-                      }
-                    >
-                      <SelectTrigger className="w-40">
+                          {filters.contacted_by.length === 0 
+                            ? "All Users" 
+                            : users
+                                .filter(user => filters.contacted_by.includes(user.id))
+                                .map(user => `${user.first_name} ${user.last_name}`)
+                                .join(', ')}
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
