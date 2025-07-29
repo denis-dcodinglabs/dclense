@@ -752,12 +752,12 @@ export default function Dashboard() {
                 </Select>
 
                 {/* Company Multi-Select Dropdown */}
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Select>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Filter by Company">
-                          {filters.company_ids.length === 0
+                             <span className="truncate">
+                               {users
+                                 .filter(user => filters.contacted_by.includes(user.id))
+                                 .map(user => `${user.first_name} ${user.last_name}`)
+                                 .join(', ')}
+                             </span>
                             ? "Select companies..."
                             : `${filters.company_ids.length} companies selected`}
                         </SelectValue>
