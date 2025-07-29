@@ -875,14 +875,6 @@ export default function Dashboard() {
                                 }
                               })()}
                             </span>
-                            {filters.contacted_by.length > 0 && (
-                              <Badge
-                                variant="secondary"
-                                className="ml-1 flex-shrink-0"
-                              >
-                                {filters.contacted_by.length}
-                              </Badge>
-                            )}
                           </div>
                         )}
                       </Button>
