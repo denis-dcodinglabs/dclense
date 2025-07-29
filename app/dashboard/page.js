@@ -210,7 +210,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData();
-  }, [filters]);
+  }, [currentPage, filters]);
 
   const fetchStats = async () => {
     try {
@@ -270,6 +270,7 @@ export default function Dashboard() {
   const handleFilterChange = (key, value) => {
     const filterValue =
       value === "all" ||
+    setCurrentPage(1); // Reset to first page when filters change
       value === "all_assignees" ||
       value === "all_read_status" ||
       value === "all_positions" ||
