@@ -853,7 +853,7 @@ export default function Dashboard() {
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start">
                       {filters.contacted_by.length === 0 ? (
-                        "All Users"
+                        "Contacted by"
                       ) : (
                         <div className="flex items-center gap-1">
                           <span>{filters.contacted_by.length} selected</span>
