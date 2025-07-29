@@ -867,9 +867,7 @@ export default function CompaniesPage() {
               <div className="text-sm text-gray-700">
                 Showing {((currentPage - 1) * 50) + 1}-{Math.min(currentPage * 50, totalCount)} of {totalCount} companies
               </div>
-              <div className="text-sm text-gray-700">
-                Showing {((currentPage - 1) * 50) + 1}-{Math.min(currentPage * 50, companies.length + ((currentPage - 1) * 50))} of {companies.length + ((currentPage - 1) * 50)} companies
-              </div>
+              
               <div className="text-sm text-gray-700">
                 Page {currentPage} of {totalPages}
               </div>
