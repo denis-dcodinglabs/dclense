@@ -73,6 +73,7 @@ export default function CompaniesPage() {
   const [selectedCompanies, setSelectedCompanies] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -141,6 +142,7 @@ export default function CompaniesPage() {
     try {
       const { data, count } = await getCompanies(currentPage, 50, filters);
       setCompanies(data || []);
+      setTotalCount(count || 0);
       setTotalPages(Math.ceil((count || 0) / 50));
     } catch (error) {
       console.error('Error fetching companies:', error);
@@ -862,6 +864,12 @@ export default function CompaniesPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Showing {((currentPage - 1) * 50) + 1}-{Math.min(currentPage * 50, totalCount)} of {totalCount} companies
+              </div>
+              <div className="text-sm text-gray-700">
+                Showing {((currentPage - 1) * 50) + 1}-{Math.min(currentPage * 50, companies.length + ((currentPage - 1) * 50))} of {companies.length + ((currentPage - 1) * 50)} companies
+              </div>
               <div className="text-sm text-gray-700">
                 Page {currentPage} of {totalPages}
               </div>
