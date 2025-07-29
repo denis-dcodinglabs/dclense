@@ -84,7 +84,45 @@ export default function ContactPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <nav className="bg-white shadow-lg border-b border-gray-200">
+          <div className="mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center">
+                <Link href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                  DCLense
+                </Link>
+              </div>
+              
+              <div className="flex items-center space-x-6">
+                <Link 
+                  href="/"
+                  className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+                >
+                  Home
+                </Link>
+                <Link 
+                  href="/services"
+                  className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+                >
+                  Services
+                </Link>
+                <Link 
+                  href="/contact"
+                  className="text-blue-600 border-b-2 border-blue-600 pb-1 font-medium"
+                >
+                  Contact
+                </Link>
+                <Link href="/login">
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    Login
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <div className="flex items-center justify-center px-4 py-8">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="text-center">
@@ -110,22 +148,53 @@ export default function ContactPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Link href="/">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-800">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
-              </Button>
-            </Link>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <nav className="bg-white shadow-lg border-b border-gray-200">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link href="/" className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                DCLense
+              </Link>
+            </div>
+            
+            <div className="flex items-center space-x-6">
+              <Link 
+                href="/"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                Home
+              </Link>
+              <Link 
+                href="/services"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                Services
+              </Link>
+              <Link 
+                href="/contact"
+                className="text-blue-600 border-b-2 border-blue-600 pb-1 font-medium"
+              >
+                Contact
+              </Link>
+              <Link href="/login">
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  Login
+                </Button>
+              </Link>
+            </div>
           </div>
+        </div>
+      </nav>
+      <div className="flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8 mt-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Contact Us</h1>
           <p className="text-gray-600">
             Get in touch with our team. We'd love to hear from you.
@@ -217,6 +286,7 @@ export default function ContactPage() {
         <div className="text-center mt-6">
          
         </div>
+      </div>
       </div>
     </div>
   );
