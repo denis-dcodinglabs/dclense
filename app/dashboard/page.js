@@ -752,101 +752,108 @@ export default function Dashboard() {
                 </Select>
 
                 {/* Company Multi-Select Dropdown */}
-                             <span className="truncate">
-                               {users
-                                 .filter(user => filters.contacted_by.includes(user.id))
-                                 .map(user => `${user.first_name} ${user.last_name}`)
-                                 .join(', ')}
-                             </span>
-                            ? "Select companies..."
-                            : `${filters.company_ids.length} companies selected`}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        <div className="p-2 border-b">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">
-                              Select Companies
-                            </span>
-                            {filters.company_ids.length > 0 && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={clearCompanyFilter}
-                                className="text-xs text-blue-600 hover:text-blue-800 h-6 px-2"
-                              >
-                                Clear All
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                        <div className="p-2 border-b bg-gray-50">
-                          <div
-                            className="flex items-center space-x-2 py-1.5 hover:bg-gray-100 cursor-pointer rounded"
-                            onClick={() =>
-                              handleFilterChange(
-                                "company_id",
-                                filters.company_id === "empty" ? "" : "empty",
-                              )
-                            }
-                          >
-                            <Checkbox
-                              checked={filters.company_id === "empty"}
-                              onCheckedChange={(checked) =>
-                                handleFilterChange(
-                                  "company_id",
-                                  checked ? "empty" : "",
-                                )
-                              }
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <Label className="text-sm cursor-pointer font-medium text-gray-700">
-                              No Company Assigned
-                            </Label>
-                          </div>
-                        </div>
-                        <div className="max-h-48 overflow-y-auto">
-                          {companies.map((company) => (
-                            <div
-                              key={company.id}
-                              className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
-                              onClick={() =>
-                                handleCompanyFilterChange(
-                                  company.id,
-                                  !filters.company_ids.includes(company.id),
-                                )
-                              }
-                            >
-                              <Checkbox
-                                checked={filters.company_ids.includes(
-                                  company.id,
-                                )}
-                                onCheckedChange={(checked) =>
-                                  handleCompanyFilterChange(company.id, checked)
-                                }
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <Label
-                                className="text-sm cursor-pointer flex-1 truncate"
-                                title={company.company_name}
-                              >
-                                {company.company_name}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                        {filters.company_ids.length > 0 && (
-                          <div className="p-2 border-t bg-gray-50">
-                            <div className="text-xs text-gray-600">
-                              {filters.company_ids.length} of {companies.length}{" "}
-                              companies selected
-                            </div>
-                          </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      <SelectValue>
+                        {filters.company_ids.length === 0 ? (
+                          <span className="truncate">
+                            {users
+                              .filter(user => filters.contacted_by.includes(user.id))
+                              .map(user => `${user.first_name} ${user.last_name}`)
+                              .join(', ')}
+                          </span>
+                        ) : (
+                          "Select companies..."
                         )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                        {filters.company_ids.length > 0 ? `${filters.company_ids.length} companies selected` : ""}
+                      </SelectValue>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="max-h-60">
+                    <div className="p-2 border-b">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          Select Companies
+                        </span>
+                        {filters.company_ids.length > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={clearCompanyFilter}
+                            className="text-xs text-blue-600 hover:text-blue-800 h-6 px-2"
+                          >
+                            Clear All
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="p-2 border-b bg-gray-50">
+                      <div
+                        className="flex items-center space-x-2 py-1.5 hover:bg-gray-100 cursor-pointer rounded"
+                        onClick={() =>
+                          handleFilterChange(
+                            "company_id",
+                            filters.company_id === "empty" ? "" : "empty",
+                          )
+                        }
+                      >
+                        <Checkbox
+                          checked={filters.company_id === "empty"}
+                          onCheckedChange={(checked) =>
+                            handleFilterChange(
+                              "company_id",
+                              checked ? "empty" : "",
+                            )
+                          }
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <Label className="text-sm cursor-pointer font-medium text-gray-700">
+                          No Company Assigned
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      {companies.map((company) => (
+                        <div
+                          key={company.id}
+                          className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
+                          onClick={() =>
+                            handleCompanyFilterChange(
+                              company.id,
+                              !filters.company_ids.includes(company.id),
+                            )
+                          }
+                        >
+                          <Checkbox
+                            checked={filters.company_ids.includes(
+                              company.id,
+                            )}
+                            onCheckedChange={(checked) =>
+                              handleCompanyFilterChange(company.id, checked)
+                            }
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <Label
+                            className="text-sm cursor-pointer flex-1 truncate"
+                            title={company.company_name}
+                          >
+                            {company.company_name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    {filters.company_ids.length > 0 && (
+                      <div className="p-2 border-t bg-gray-50">
+                        <div className="text-xs text-gray-600">
+                          {filters.company_ids.length} of {companies.length}{" "}
+                          companies selected
+                        </div>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
+              </div>
               
               <div className="space-y-2">
                 <Popover>
@@ -908,7 +915,6 @@ export default function Dashboard() {
                     </div>
                   </PopoverContent>
                 </Popover>
-              </div>
               </div>
 
               {/* Sorting Controls */}
