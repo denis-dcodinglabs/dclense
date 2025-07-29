@@ -283,17 +283,17 @@ export default function Dashboard() {
   };
 
   const handleContactedByChange = (userId, checked) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      contacted_by: checked 
+      contacted_by: checked
         ? [...prev.contacted_by, userId]
-        : prev.contacted_by.filter(id => id !== userId)
+        : prev.contacted_by.filter((id) => id !== userId),
     }));
     setCurrentPage(1);
   };
 
   const clearContactedByFilter = () => {
-    setFilters(prev => ({ ...prev, contacted_by: [] }));
+    setFilters((prev) => ({ ...prev, contacted_by: [] }));
     setCurrentPage(1);
   };
 
@@ -847,68 +847,98 @@ export default function Dashboard() {
                     </Select>
                   </div>
                 </div>
-              
-              <div className="space-y-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
-                      {filters.contacted_by.length === 0 ? (
-                        "Contacted by"
-                      ) : (
-                        <div className="flex items-center gap-1">
-                          <span>{filters.contacted_by.length} selected</span>
+
+                <div className="space-y-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                      >
+                        {filters.contacted_by.length === 0 ? (
+                          "Contacted by"
+                        ) : (
+                          <div className="flex items-center gap-1 flex-1 min-w-0">
+                            <span className="truncate">
+                              {(() => {
+                                const selectedUsers = users.filter((user) =>
+                                  filters.contacted_by.includes(user.id),
+                                );
+                                const names = selectedUsers.map(
+                                  (user) =>
+                                    `${user.first_name} ${user.last_name}`,
+                                );
+                                if (names.length <= 2) {
+                                  return names.join(", ");
+                                } else {
+                                  return `${names.slice(0, 2).join(", ")} +${names.length - 2} more`;
+                                }
+                              })()}
+                            </span>
+                            {filters.contacted_by.length > 0 && (
+                              <Badge
+                                variant="secondary"
+                                className="ml-1 flex-shrink-0"
+                              >
+                                {filters.contacted_by.length}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64" align="start">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-sm">Select Users</h4>
                           {filters.contacted_by.length > 0 && (
-                            <Badge variant="secondary" className="ml-1">
-                              {filters.contacted_by.length}
-                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={clearContactedByFilter}
+                              className="text-xs"
+                            >
+                              Clear All
+                            </Button>
                           )}
                         </div>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64" align="start">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-sm">Select Users</h4>
+                        <div className="space-y-3 max-h-48 overflow-y-auto">
+                          {users.map((user) => (
+                            <div
+                              key={user.id}
+                              className="flex items-center space-x-2"
+                            >
+                              <Checkbox
+                                id={`contacted-by-${user.id}`}
+                                checked={filters.contacted_by.includes(user.id)}
+                                onCheckedChange={(checked) =>
+                                  handleContactedByChange(user.id, checked)
+                                }
+                              />
+                              <Label
+                                htmlFor={`contacted-by-${user.id}`}
+                                className="text-sm cursor-pointer flex-1"
+                              >
+                                {user.first_name} {user.last_name}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
                         {filters.contacted_by.length > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={clearContactedByFilter}
-                            className="text-xs"
-                          >
-                            Clear All
-                          </Button>
+                          <div className="pt-3 border-t">
+                            <div className="text-xs text-gray-500">
+                              {filters.contacted_by.length} user
+                              {filters.contacted_by.length !== 1
+                                ? "s"
+                                : ""}{" "}
+                              selected
+                            </div>
+                          </div>
                         )}
                       </div>
-                      <div className="space-y-3 max-h-48 overflow-y-auto">
-                        {users.map((user) => (
-                          <div key={user.id} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`contacted-by-${user.id}`}
-                              checked={filters.contacted_by.includes(user.id)}
-                              onCheckedChange={(checked) => handleContactedByChange(user.id, checked)}
-                            />
-                            <Label 
-                              htmlFor={`contacted-by-${user.id}`} 
-                              className="text-sm cursor-pointer flex-1"
-                            >
-                              {user.first_name} {user.last_name}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                      {filters.contacted_by.length > 0 && (
-                        <div className="pt-3 border-t">
-                          <div className="text-xs text-gray-500">
-                            {filters.contacted_by.length} user{filters.contacted_by.length !== 1 ? 's' : ''} selected
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
 
               {/* Sorting Controls */}
