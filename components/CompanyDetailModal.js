@@ -351,7 +351,7 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
                             
                             {rep.contact_source && (
                               <div>
-                                <label className="text-xs font-medium text-gray-500">Contact Source</label>
+                                <label className="text-xs font-medium text-gray-500">Contact Origin</label>
                                 <div className="mt-1 text-sm text-gray-900">{rep.contact_source}</div>
                               </div>
                             )}
