@@ -207,7 +207,7 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Source</label>
+                    <label className="text-sm font-medium text-gray-500">Contact Origin</label>
                     <div className="mt-1 text-gray-900">
                       {company.source || 'N/A'}
                     </div>
