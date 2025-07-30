@@ -49,7 +49,7 @@ const REPRESENTATIVE_EXPORT_FIELDS = [
 
 export default function CSVExportModal({ isOpen, onClose, data, exportType = 'companies', selectedItems = [], filters = {} }) {
   const [selectedFields, setSelectedFields] = useState([]);
-  const [exportScope, setExportScope] = useState('all'); // all, filtered, current, selected
+  const [exportScope, setExportScope] = useState('current'); // all, filtered, current, selected
   const [purpose, setPurpose] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
