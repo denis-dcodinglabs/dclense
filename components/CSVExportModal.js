@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, AlertCircle } from 'lucide-react';
-import { exportToCSV, downloadCSV } from '@/lib/csvUtils';
+import { exportToCSV, downloadCSV, getAllCompaniesForExport, getAllRepresentativesForExport } from '@/lib/csvUtils';
 import { getCurrentUserWithRole } from '@/lib/auth';
 
 const COMPANY_EXPORT_FIELDS = [
@@ -113,6 +113,27 @@ export default function CSVExportModal({ isOpen, onClose, data, exportType = 'co
       let scopeDescription = 'all data';
       
       switch (exportScope) {
+        case 'all':
+          // Fetch all data from database
+          if (exportType === 'companies') {
+            const { data: allCompanies, error } = await getAllCompaniesForExport(filters);
+            if (error) {
+              setError('Failed to fetch all companies: ' + error.message);
+              setLoading(false);
+              return;
+            }
+            exportData = allCompanies || [];
+          } else {
+            const { data: allRepresentatives, error } = await getAllRepresentativesForExport(filters);
+            if (error) {
+              setError('Failed to fetch all representatives: ' + error.message);
+              setLoading(false);
+              return;
+            }
+            exportData = allRepresentatives || [];
+          }
+          scopeDescription = `all data (${exportData.length} records)`;
+          break;
         case 'selected':
           // Filter data to only include selected items
           exportData = data.filter(item => selectedItems.includes(item.id));
@@ -179,7 +200,7 @@ export default function CSVExportModal({ isOpen, onClose, data, exportType = 'co
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Data ({data.length} records)</SelectItem>
+                  <SelectItem value="all">All Data (fetch from database)</SelectItem>
                   <SelectItem value="filtered">Filtered Data ({data.length} records)</SelectItem>
                   <SelectItem value="current">Current Page Only (up to 50 records)</SelectItem>
                   {selectedItems.length > 0 && (
