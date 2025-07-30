@@ -920,6 +920,7 @@ export default function CompaniesPage() {
             data={companies}
             exportType="companies"
             selectedItems={selectedCompanies}
+            filters={filters}
           />
       </div>
     </ProtectedRoute>

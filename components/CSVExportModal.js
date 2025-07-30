@@ -47,7 +47,7 @@ const REPRESENTATIVE_EXPORT_FIELDS = [
   { key: 'updated_at', label: 'Updated Date' }
 ];
 
-export default function CSVExportModal({ isOpen, onClose, data, exportType = 'companies', selectedItems = [] }) {
+export default function CSVExportModal({ isOpen, onClose, data, exportType = 'companies', selectedItems = [], filters = {} }) {
   const [selectedFields, setSelectedFields] = useState([]);
   const [exportScope, setExportScope] = useState('all'); // all, filtered, current, selected
   const [purpose, setPurpose] = useState('');
@@ -137,7 +137,8 @@ export default function CSVExportModal({ isOpen, onClose, data, exportType = 'co
         selectedFields,
         exportType,
         purpose,
-        currentUser.id
+        currentUser.id,
+        filters
       );
 
       // Download the file

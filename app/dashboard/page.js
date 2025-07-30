@@ -1652,6 +1652,7 @@ export default function Dashboard() {
             data={representatives}
             exportType="representatives"
             selectedItems={selectedRepresentatives}
+            filters={filters}
           />
         </main>
       </div>
