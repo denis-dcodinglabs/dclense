@@ -774,7 +774,7 @@ export default function Dashboard() {
                             : `${filters.company_ids.length} companies selected`}
                         </SelectValue>
                       </SelectTrigger>
-                      <SelectContent className="max-h-60">
+                      <SelectContent className="max-h-80">
                         <div className="p-2">
                           <Input
                             placeholder="Search companies..."
