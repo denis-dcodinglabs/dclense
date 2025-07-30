@@ -433,6 +433,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                   <Label className="font-medium">
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
+                    }
                     
                     
                     
