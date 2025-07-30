@@ -139,6 +139,7 @@ export default function Dashboard() {
   const [agentPerformance, setAgentPerformance] = useState([]);
   const [users, setUsers] = useState([]);
   const [companies, setCompanies] = useState([]);
+  const [companySearchTerm, setCompanySearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRep, setEditingRep] = useState(null);
@@ -542,6 +543,11 @@ export default function Dashboard() {
     currentUser?.role === "Admin" || currentUser?.role === "Editor";
   const canDelete = currentUser?.role === "Admin";
 
+  // Filter companies based on search term
+  const filteredCompanies = companies.filter(company =>
+    company.company_name?.toLowerCase().includes(companySearchTerm.toLowerCase())
+  );
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
@@ -769,6 +775,14 @@ export default function Dashboard() {
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
+                        <div className="p-2">
+                          <Input
+                            placeholder="Search companies..."
+                            value={companySearchTerm}
+                            onChange={(e) => setCompanySearchTerm(e.target.value)}
+                            className="h-8"
+                          />
+                        </div>
                         <div className="p-2 border-b">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">
@@ -812,7 +826,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="max-h-48 overflow-y-auto">
-                          {companies.map((company) => (
+                          {filteredCompanies.map((company) => (
                             <div
                               key={company.id}
                               className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
@@ -841,6 +855,11 @@ export default function Dashboard() {
                             </div>
                           ))}
                         </div>
+                        {filteredCompanies.length === 0 && companySearchTerm && (
+                          <div className="p-2 text-sm text-gray-500 text-center">
+                            No companies found matching "{companySearchTerm}"
+                          </div>
+                        )}
                         {filters.company_ids.length > 0 && (
                           <div className="p-2 border-t bg-gray-50">
                             <div className="text-xs text-gray-600">
@@ -1178,488 +1197,4 @@ export default function Dashboard() {
                 </div>
               ) : representatives.length === 0 ? (
                 <div className="text-center py-8">
-                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No representatives found
-                  </h3>
-                  <p className="text-gray-500 mb-4">
-                    Get started by adding your first representative.
-                  </p>
-                  {canEdit && (
-                    <Button onClick={handleAddRepresentative}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Add Representative
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 relative">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        {canDelete && (
-                          <th className="px-6 py-3 text-left sticky left-0 bg-gray-50 z-10">
-                            <Checkbox
-                              checked={
-                                selectedRepresentatives.length ===
-                                representatives.length
-                              }
-                              onCheckedChange={handleSelectAll}
-                            />
-                          </th>
-                        )}
-                        <th
-                          className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky bg-gray-50 z-10 ${canDelete ? "left-14" : "left-0"}`}
-                        >
-                          Name
-                        </th>
-                        {visibleColumns.company && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
-                            Company
-                          </th>
-                        )}
-                        {visibleColumns.role && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
-                            Role
-                          </th>
-                        )}
-                        {visibleColumns.linkedin_profile_url && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                            LinkedIn
-                          </th>
-                        )}
-                        {visibleColumns.method_of_contact && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                            Method of Contact
-                          </th>
-                        )}
-                        {visibleColumns.contact_source && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
-                            Contact Origin
-                          </th>
-                        )}
-                        {visibleColumns.contact_date && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
-                            Contact Date
-                          </th>
-                        )}
-                        {visibleColumns.follow_up_dates && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                            Follow-up Dates
-                          </th>
-                        )}
-                        {visibleColumns.status && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
-                            Status
-                          </th>
-                        )}
-                        {visibleColumns.outcome && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
-                            Outcome
-                          </th>
-                        )}
-                        {visibleColumns.reminder && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Reminder
-                          </th>
-                        )}
-                        {visibleColumns.contacted_by && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
-                            Contacted By
-                          </th>
-                        )}
-                        {visibleColumns.assigned_to && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
-                            Assigned To
-                          </th>
-                        )}
-                        {visibleColumns.notes && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                            Notes
-                          </th>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {representatives.map((rep) => (
-                        <tr
-                          key={rep.id}
-                          className={`group hover:bg-gray-50 ${rep.mark_unread ? "bg-blue-50 border-l-4 border-l-blue-500" : ""}`}
-                        >
-                          {canDelete && (
-                            <td
-                              className={`px-6 py-4 whitespace-nowrap sticky left-0 z-10 ${rep.mark_unread ? "bg-blue-50 group-hover:bg-gray-50" : "bg-white group-hover:bg-gray-50"}`}
-                            >
-                              <Checkbox
-                                checked={selectedRepresentatives.includes(
-                                  rep.id,
-                                )}
-                                onCheckedChange={(checked) =>
-                                  handleSelectRepresentative(rep.id, checked)
-                                }
-                              />
-                            </td>
-                          )}
-                          <td
-                            className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? "left-14" : "left-0"} ${rep.mark_unread ? "bg-blue-50 group-hover:bg-gray-50" : "bg-white group-hover:bg-gray-50"}`}
-                          >
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                                  <span className="text-sm font-medium text-white">
-                                    {rep.first_name?.[0]}
-                                    {rep.last_name?.[0]}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="ml-4 flex-1 flex items-center justify-between">
-                                <div>
-                                  <div className="text-sm font-medium text-gray-900">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center space-x-2">
-                                        <button
-                                          onClick={() =>
-                                            handleRepresentativeClick(rep.id)
-                                          }
-                                          className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
-                                        >
-                                          {rep.first_name} {rep.last_name}
-                                        </button>
-                                        {rep.linkedin_profile_url && (
-                                          <button
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              const url =
-                                                rep.linkedin_profile_url.startsWith(
-                                                  "http",
-                                                )
-                                                  ? rep.linkedin_profile_url
-                                                  : `https://${rep.linkedin_profile_url}`;
-                                              window.open(
-                                                url,
-                                                "_blank",
-                                                "noopener,noreferrer",
-                                              );
-                                            }}
-                                            className="text-blue-600 hover:text-blue-800 transition-colors"
-                                            title="Open LinkedIn Profile"
-                                          >
-                                            <img
-                                              src="/linkedinicon.webp"
-                                              alt="LinkedIn"
-                                              className="h-4 w-4 hover:opacity-80 transition-opacity"
-                                            />
-                                          </button>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <div className="text-sm text-gray-500">
-                                      {rep.contact_date
-                                        ? new Date(
-                                            rep.contact_date,
-                                          ).toLocaleDateString()
-                                        : "Not contacted"}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center justify-center space-x-3">
-                                    {canEdit && (
-                                      <button
-                                        onClick={() =>
-                                          handleEditRepresentative(rep)
-                                        }
-                                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
-                                        title="Edit Representative"
-                                      >
-                                        <Edit className="h-4 w-4" />
-                                      </button>
-                                    )}
-                                    {canDelete && (
-                                      <button
-                                        onClick={() =>
-                                          handleDeleteRepresentative(rep)
-                                        }
-                                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
-                                        title="Delete Representative"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          {visibleColumns.company && (
-                            <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
-                              <div className="text-sm text-gray-900">
-                                {rep.company?.company_name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {rep.company?.status}
-                              </div>
-                            </td>
-                          )}
-                          {visibleColumns.role && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
-                              {rep.role || "N/A"}
-                            </td>
-                          )}
-                          {visibleColumns.linkedin_profile_url && (
-                            <td className="px-4 py-4 text-sm truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.linkedin_profile_url ? (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const url =
-                                      rep.linkedin_profile_url.startsWith(
-                                        "http",
-                                      )
-                                        ? rep.linkedin_profile_url
-                                        : `https://${rep.linkedin_profile_url}`;
-                                    window.open(
-                                      url,
-                                      "_blank",
-                                      "noopener,noreferrer",
-                                    );
-                                  }}
-                                  className="text-blue-600 hover:text-blue-800 transition-colors flex items-center"
-                                  title="Open LinkedIn Profile"
-                                >
-                                  <img
-                                    src="/linkedinicon.webp"
-                                    alt="LinkedIn"
-                                    className="h-4 w-4 hover:opacity-80 transition-opacity"
-                                  />
-                                </button>
-                              ) : (
-                                <span className="text-gray-400">N/A</span>
-                              )}
-                            </td>
-                          )}
-                          {visibleColumns.method_of_contact && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.method_of_contact || 'N/A'}
-                            </td>
-                          )}
-                          {visibleColumns.contact_source && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.contact_source || "N/A"}
-                            </td>
-                          )}
-                          {visibleColumns.contact_date && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.contact_date
-                                ? new Date(
-                                    rep.contact_date,
-                                  ).toLocaleDateString()
-                                : "N/A"}
-                            </td>
-                          )}
-                          {visibleColumns.follow_up_dates && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
-                              {rep.follow_up_dates &&
-                              rep.follow_up_dates.length > 0 ? (
-                                <div className="flex flex-wrap gap-1">
-                                  {rep.follow_up_dates
-                                    .slice(0, 2)
-                                    .map((date, index) => (
-                                      <span
-                                        key={index}
-                                        className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded"
-                                      >
-                                        {new Date(date).toLocaleDateString()}
-                                      </span>
-                                    ))}
-                                  {rep.follow_up_dates.length > 2 && (
-                                    <span className="text-xs text-gray-500">
-                                      +{rep.follow_up_dates.length - 2}
-                                    </span>
-                                  )}
-                                </div>
-                              ) : (
-                                "N/A"
-                              )}
-                            </td>
-                          )}
-                          {visibleColumns.status && (
-                            <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
-                              {canEdit ? (
-                                <Select
-                                  value={rep.status || "No Status"}
-                                  onValueChange={(value) =>
-                                    handleStatusChange(rep.id, value)
-                                  }
-                                >
-                                  <SelectTrigger className="w-full min-w-[140px] h-8 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {INLINE_STATUS_OPTIONS.map((option) => (
-                                      <SelectItem
-                                        key={option.value}
-                                        value={option.value}
-                                        className="text-xs"
-                                      >
-                                        {option.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              ) : rep.status ? (
-                                <span
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(rep.status)}`}
-                                >
-                                  {rep.status}
-                                </span>
-                              ) : (
-                                <span className="text-gray-400 text-sm">
-                                  No status
-                                </span>
-                              )}
-                            </td>
-                          )}
-                          {visibleColumns.outcome && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.outcome || "N/A"}
-                            </td>
-                          )}
-                          {visibleColumns.reminder && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              {rep.reminder_date ? (
-                                <div className="flex items-center">
-                                  <div
-                                    className={`w-3 h-3 rounded-full mr-2 ${
-                                      new Date(rep.reminder_date) <= new Date()
-                                        ? "bg-red-500"
-                                        : "bg-orange-500"
-                                    }`}
-                                  ></div>
-                                  <span
-                                    className={`text-sm ${
-                                      new Date(rep.reminder_date) <= new Date()
-                                        ? "text-red-600 font-medium"
-                                        : "text-orange-600"
-                                    }`}
-                                  >
-                                    {formatDate(rep.reminder_date)}
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="text-gray-400 text-sm">
-                                  No reminder
-                                </span>
-                              )}
-                            </td>
-                          )}
-                          {visibleColumns.contacted_by && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.contacted_user
-                                ? `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
-                                : "N/A"}
-                            </td>
-                          )}
-                          {visibleColumns.assigned_to && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
-                              {rep.assigned_user ? (
-                                `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
-                              ) : (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleAssignToMe(rep.id)}
-                                  className="text-blue-600 hover:text-blue-800"
-                                >
-                                  Assign to me
-                                </Button>
-                              )}
-                            </td>
-                          )}
-                          {visibleColumns.notes && (
-                            <td
-                              className="px-4 py-4 text-sm text-gray-900 truncate max-w-32"
-                              title={rep.notes}
-                            >
-                              {rep.notes
-                                ? rep.notes.length > 50
-                                  ? `${rep.notes.substring(0, 50)}...`
-                                  : rep.notes
-                                : "N/A"}
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Pagination Controls at Bottom */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
-                {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{" "}
-                {totalCount} representatives
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </Button>
-                <span className="flex items-center px-3 py-2 text-sm text-gray-700">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Representative Dialog */}
-          <RepresentativeDialog
-            isOpen={dialogOpen}
-            onClose={() => setDialogOpen(false)}
-            onSave={handleSaveRepresentative}
-            representative={editingRep}
-            saving={saving}
-          />
-
-          {/* Representative Detail Modal */}
-          <RepresentativeDetailModal
-            isOpen={repDetailModalOpen}
-            onClose={() => setRepDetailModalOpen(false)}
-            representativeId={selectedRepId}
-          />
-
-          {/* CSV Import Modal */}
-          <CSVImportModal
-            isOpen={importModalOpen}
-            onClose={() => setImportModalOpen(false)}
-            onImportComplete={handleImportComplete}
-            importType="representatives"
-          />
-
-          {/* CSV Export Modal */}
-          <CSVExportModal
-            isOpen={exportModalOpen}
-            onClose={() => setExportModalOpen(false)}
-            data={representatives}
-            exportType="representatives"
-            selectedItems={selectedRepresentatives}
-            filters={filters}
-          />
-        </main>
-      </div>
-    </ProtectedRoute>
-  );
-}
+                  <Users className="h-12 w-
