@@ -57,7 +57,8 @@ const TABLE_COLUMNS = [
   { key: 'status', label: 'Status', required: false },
   { key: 'last_activity_date', label: 'Last Activity Date', required: false },
   { key: 'assigned_to', label: 'Assigned To', required: false },
-  { key: 'representatives', label: 'Representatives', required: false }
+  { key: 'representatives', label: 'Representatives', required: false },
+  { key: 'created_at', label: 'Created At', required: false }
 ];
 
 export default function CompaniesPage() {
@@ -90,7 +91,8 @@ export default function CompaniesPage() {
     status: true,
     last_activity_date: true,
     assigned_to: true,
-    representatives: true
+    representatives: true,
+    created_at: false
   });
   const [filters, setFilters] = useState({
     search: '',
@@ -487,7 +489,8 @@ export default function CompaniesPage() {
                               status: true,
                               last_activity_date: true,
                               assigned_to: true,
-                              representatives: true
+                              representatives: true,
+                              created_at: true
                             })}
                             className="w-full"
                           >
@@ -657,6 +660,11 @@ export default function CompaniesPage() {
                         {visibleColumns.representatives && (
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Representatives
+                          </th>
+                        )}
+                        {visibleColumns.created_at && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Created At
                           </th>
                         )}
                       </tr>
@@ -850,6 +858,11 @@ export default function CompaniesPage() {
                           {visibleColumns.representatives && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
                               {company.representatives?.length || 0} reps
+                            </td>
+                          )}
+                          {visibleColumns.created_at && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
+                              {new Date(company.created_at).toLocaleDateString()}
                             </td>
                           )}
                         </tr>
