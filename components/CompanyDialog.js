@@ -164,7 +164,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="source">Source</Label>
+              <Label htmlFor="source">Contact Origin</Label>
               <Input
                 id="source"
                 value={formData.source}
