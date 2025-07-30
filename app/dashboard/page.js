@@ -106,14 +106,16 @@ const TABLE_COLUMNS = [
   { key: "name", label: "Name", required: true },
   { key: "company", label: "Company", required: false },
   { key: "role", label: "Role", required: false },
-  { key: "contact_source", label: "Contact Source", required: false },
   {
     key: "linkedin_profile_url",
     label: "LinkedIn Profile URL",
     required: false,
   },
+  { key: "method_of_contact", label: "Method of Contact", required: false },
+  { key: "contact_source", label: "Contact Origin", required: false },
   { key: "contact_date", label: "Contact Date", required: false },
   { key: "follow_up_dates", label: "Follow-up Dates", required: false },
+  { key: "created_at", label: "Created At", required: false },
   { key: "status", label: "Status", required: false },
   { key: "outcome", label: "Outcome", required: false },
   { key: "reminder", label: "Reminder", required: false },
@@ -138,6 +140,7 @@ export default function Dashboard() {
   const [agentPerformance, setAgentPerformance] = useState([]);
   const [users, setUsers] = useState([]);
   const [companies, setCompanies] = useState([]);
+  const [companySearchTerm, setCompanySearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRep, setEditingRep] = useState(null);
@@ -157,14 +160,16 @@ export default function Dashboard() {
     name: true,
     company: true,
     role: true,
-    contact_source: false,
     linkedin_profile_url: false,
+    method_of_contact: false,
+    contact_source: false,
     contact_date: false,
     follow_up_dates: false,
     status: true,
     outcome: false,
     reminder: true,
     contacted_by: false,
+    created_at: false,
     assigned_to: true,
     notes: false,
   });
@@ -246,7 +251,13 @@ export default function Dashboard() {
 
   const fetchCompanies = async () => {
     const { data } = await getCompanies(1, 1000); // Get all companies for filter
-    setCompanies(data || []);
+    // Sort companies alphabetically by company_name
+    const sortedCompanies = (data || []).sort((a, b) =>
+      (a.company_name || "").localeCompare(b.company_name || "", undefined, {
+        sensitivity: "base",
+      }),
+    );
+    setCompanies(sortedCompanies);
   };
 
   const fetchData = async () => {
@@ -536,6 +547,13 @@ export default function Dashboard() {
     currentUser?.role === "Admin" || currentUser?.role === "Editor";
   const canDelete = currentUser?.role === "Admin";
 
+  // Filter companies based on search term
+  const filteredCompanies = companies.filter((company) =>
+    company.company_name
+      ?.toLowerCase()
+      .includes(companySearchTerm.toLowerCase()),
+  );
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
@@ -762,7 +780,17 @@ export default function Dashboard() {
                             : `${filters.company_ids.length} companies selected`}
                         </SelectValue>
                       </SelectTrigger>
-                      <SelectContent className="max-h-60">
+                      <SelectContent className="max-h-96">
+                        <div className="p-2">
+                          <Input
+                            placeholder="Search companies..."
+                            value={companySearchTerm}
+                            onChange={(e) =>
+                              setCompanySearchTerm(e.target.value)
+                            }
+                            className="h-8"
+                          />
+                        </div>
                         <div className="p-2 border-b">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">
@@ -805,22 +833,92 @@ export default function Dashboard() {
                             </Label>
                           </div>
                         </div>
-                        <div className="max-h-48 overflow-y-auto">
-                          {companies.map((company) => (
-                            <div
-                              key={company.id}
-                              className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
-                              onClick={() =>
-                                handleCompanyFilterChange(
-                                  company.id,
+                        <div className="max-h-64 overflow-y-auto">
+                          {(() => {
+                            // Split companies into selected and unselected
+                            const selectedCompanies = filteredCompanies.filter(
+                              (company) =>
+                                filters.company_ids.includes(company.id),
+                            );
+                            const unselectedCompanies =
+                              filteredCompanies.filter(
+                                (company) =>
                                   !filters.company_ids.includes(company.id),
-                                )
+                              );
+
+                            return { selectedCompanies, unselectedCompanies };
+                          })().selectedCompanies.map((company) => (
+                            <div
+                              key={`selected-${company.id}`}
+                              className="flex items-center space-x-2 px-2 py-1.5 hover:bg-blue-100 cursor-pointer bg-blue-50 border-l-2 border-blue-400"
+                              onClick={() =>
+                                handleCompanyFilterChange(company.id, false)
                               }
                             >
                               <Checkbox
-                                checked={filters.company_ids.includes(
-                                  company.id,
-                                )}
+                                checked={true}
+                                onCheckedChange={(checked) =>
+                                  handleCompanyFilterChange(company.id, checked)
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <Label
+                                className="text-sm cursor-pointer flex-1 truncate font-medium text-blue-900"
+                                title={company.company_name}
+                              >
+                                {company.company_name}
+                                <span className="ml-2 text-xs text-blue-600">
+                                  ✓
+                                </span>
+                              </Label>
+                            </div>
+                          ))}
+
+                          {(() => {
+                            const selectedCompanies = filteredCompanies.filter(
+                              (company) =>
+                                filters.company_ids.includes(company.id),
+                            );
+                            const unselectedCompanies =
+                              filteredCompanies.filter(
+                                (company) =>
+                                  !filters.company_ids.includes(company.id),
+                              );
+
+                            // Show divider if we have both selected and unselected companies
+                            if (
+                              selectedCompanies.length > 0 &&
+                              unselectedCompanies.length > 0
+                            ) {
+                              return (
+                                <div className="border-t border-gray-200 my-1">
+                                  <div className="px-2 py-1 text-xs text-gray-500 bg-gray-50">
+                                    Other Companies
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+
+                          {(() => {
+                            const unselectedCompanies =
+                              filteredCompanies.filter(
+                                (company) =>
+                                  !filters.company_ids.includes(company.id),
+                              );
+
+                            return unselectedCompanies;
+                          })().map((company) => (
+                            <div
+                              key={`unselected-${company.id}`}
+                              className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
+                              onClick={() =>
+                                handleCompanyFilterChange(company.id, true)
+                              }
+                            >
+                              <Checkbox
+                                checked={false}
                                 onCheckedChange={(checked) =>
                                   handleCompanyFilterChange(company.id, checked)
                                 }
@@ -835,6 +933,12 @@ export default function Dashboard() {
                             </div>
                           ))}
                         </div>
+                        {filteredCompanies.length === 0 &&
+                          companySearchTerm && (
+                            <div className="p-2 text-sm text-gray-500 text-center">
+                              No companies found matching "{companySearchTerm}"
+                            </div>
+                          )}
                         {filters.company_ids.length > 0 && (
                           <div className="p-2 border-t bg-gray-50">
                             <div className="text-xs text-gray-600">
@@ -894,7 +998,7 @@ export default function Dashboard() {
                             </Button>
                           )}
                         </div>
-                        <div className="space-y-3 max-h-48 overflow-y-auto">
+                        <div className="space-y-3 max-h-64 overflow-y-auto">
                           {users.map((user) => (
                             <div
                               key={user.id}
@@ -1172,78 +1276,76 @@ export default function Dashboard() {
                 </div>
               ) : representatives.length === 0 ? (
                 <div className="text-center py-8">
-                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
                     No representatives found
                   </h3>
-                  <p className="text-gray-500 mb-4">
-                    Get started by adding your first representative.
+                  <p className="text-gray-500">
+                    Try adjusting your filters or add some representatives to
+                    get started.
                   </p>
-                  {canEdit && (
-                    <Button onClick={handleAddRepresentative}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Add Representative
-                    </Button>
-                  )}
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 relative">
+                  <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        {canDelete && (
-                          <th className="px-6 py-3 text-left sticky left-0 bg-gray-50 z-10">
-                            <Checkbox
-                              checked={
-                                selectedRepresentatives.length ===
-                                representatives.length
-                              }
-                              onCheckedChange={handleSelectAll}
-                            />
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <Checkbox
+                            checked={
+                              selectedRepresentatives.length ===
+                              representatives.length
+                            }
+                            onCheckedChange={handleSelectAll}
+                          />
+                        </th>
+                        {visibleColumns.name && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
                           </th>
                         )}
-                        <th
-                          className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky bg-gray-50 z-10 ${canDelete ? "left-14" : "left-0"}`}
-                        >
-                          Name
-                        </th>
                         {visibleColumns.company && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Company
                           </th>
                         )}
                         {visibleColumns.role && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Role
                           </th>
                         )}
-                        {visibleColumns.contact_source && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
-                            Contact Source
-                          </th>
-                        )}
                         {visibleColumns.linkedin_profile_url && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             LinkedIn
                           </th>
                         )}
+                        {visibleColumns.method_of_contact && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Contact Method
+                          </th>
+                        )}
+                        {visibleColumns.contact_source && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Contact Origin
+                          </th>
+                        )}
                         {visibleColumns.contact_date && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Contact Date
                           </th>
                         )}
                         {visibleColumns.follow_up_dates && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Follow-up Dates
                           </th>
                         )}
                         {visibleColumns.status && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
                           </th>
                         )}
                         {visibleColumns.outcome && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Outcome
                           </th>
                         )}
@@ -1253,393 +1355,321 @@ export default function Dashboard() {
                           </th>
                         )}
                         {visibleColumns.contacted_by && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Contacted By
                           </th>
                         )}
+                        {visibleColumns.created_at && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Created At
+                          </th>
+                        )}
                         {visibleColumns.assigned_to && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Assigned To
                           </th>
                         )}
                         {visibleColumns.notes && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Notes
                           </th>
                         )}
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {representatives.map((rep) => (
                         <tr
                           key={rep.id}
-                          className={`group hover:bg-gray-50 ${rep.mark_unread ? "bg-blue-50 border-l-4 border-l-blue-500" : ""}`}
+                          className={`hover:bg-gray-50 cursor-pointer ${
+                            rep.mark_unread ? "bg-blue-50" : ""
+                          }`}
+                          onClick={() => handleRepresentativeClick(rep.id)}
                         >
-                          {canDelete && (
-                            <td
-                              className={`px-6 py-4 whitespace-nowrap sticky left-0 z-10 ${rep.mark_unread ? "bg-blue-50 group-hover:bg-gray-50" : "bg-white group-hover:bg-gray-50"}`}
-                            >
-                              <Checkbox
-                                checked={selectedRepresentatives.includes(
-                                  rep.id,
-                                )}
-                                onCheckedChange={(checked) =>
-                                  handleSelectRepresentative(rep.id, checked)
-                                }
-                              />
-                            </td>
-                          )}
                           <td
-                            className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? "left-14" : "left-0"} ${rep.mark_unread ? "bg-blue-50 group-hover:bg-gray-50" : "bg-white group-hover:bg-gray-50"}`}
+                            className="px-6 py-4 whitespace-nowrap"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                                  <span className="text-sm font-medium text-white">
-                                    {rep.first_name?.[0]}
-                                    {rep.last_name?.[0]}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="ml-4 flex-1 flex items-center justify-between">
+                            <Checkbox
+                              checked={selectedRepresentatives.includes(rep.id)}
+                              onCheckedChange={(checked) =>
+                                handleSelectRepresentative(rep.id, checked)
+                              }
+                            />
+                          </td>
+                          {visibleColumns.name && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
                                 <div>
                                   <div className="text-sm font-medium text-gray-900">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center space-x-2">
-                                        <button
-                                          onClick={() =>
-                                            handleRepresentativeClick(rep.id)
-                                          }
-                                          className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
-                                        >
-                                          {rep.first_name} {rep.last_name}
-                                        </button>
-                                        {rep.linkedin_profile_url && (
-                                          <button
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              const url =
-                                                rep.linkedin_profile_url.startsWith(
-                                                  "http",
-                                                )
-                                                  ? rep.linkedin_profile_url
-                                                  : `https://${rep.linkedin_profile_url}`;
-                                              window.open(
-                                                url,
-                                                "_blank",
-                                                "noopener,noreferrer",
-                                              );
-                                            }}
-                                            className="text-blue-600 hover:text-blue-800 transition-colors"
-                                            title="Open LinkedIn Profile"
-                                          >
-                                            <img
-                                              src="/linkedinicon.webp"
-                                              alt="LinkedIn"
-                                              className="h-4 w-4 hover:opacity-80 transition-opacity"
-                                            />
-                                          </button>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <div className="text-sm text-gray-500">
-                                      {rep.contact_date
-                                        ? new Date(
-                                            rep.contact_date,
-                                          ).toLocaleDateString()
-                                        : "Not contacted"}
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center justify-center space-x-3">
-                                    {canEdit && (
-                                      <button
-                                        onClick={() =>
-                                          handleEditRepresentative(rep)
-                                        }
-                                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
-                                        title="Edit Representative"
-                                      >
-                                        <Edit className="h-4 w-4" />
-                                      </button>
-                                    )}
-                                    {canDelete && (
-                                      <button
-                                        onClick={() =>
-                                          handleDeleteRepresentative(rep)
-                                        }
-                                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
-                                        title="Delete Representative"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </button>
+                                    {rep.full_name}
+                                    {rep.mark_unread && (
+                                      <Badge className="ml-2 bg-blue-100 text-blue-800 text-xs">
+                                        Unread
+                                      </Badge>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          </td>
+                            </td>
+                          )}
                           {visibleColumns.company && (
-                            <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
                               <div className="text-sm text-gray-900">
-                                {rep.company?.company_name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {rep.company?.status}
+                                {rep.company?.company_name || "N/A"}
                               </div>
                             </td>
                           )}
                           {visibleColumns.role && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
-                              {rep.role || "N/A"}
-                            </td>
-                          )}
-                          {visibleColumns.contact_source && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.contact_source || "N/A"}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.role || "N/A"}
+                              </div>
                             </td>
                           )}
                           {visibleColumns.linkedin_profile_url && (
-                            <td className="px-4 py-4 text-sm truncate max-w-32 group-hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap">
                               {rep.linkedin_profile_url ? (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const url =
-                                      rep.linkedin_profile_url.startsWith(
-                                        "http",
-                                      )
-                                        ? rep.linkedin_profile_url
-                                        : `https://${rep.linkedin_profile_url}`;
-                                    window.open(
-                                      url,
-                                      "_blank",
-                                      "noopener,noreferrer",
-                                    );
-                                  }}
-                                  className="text-blue-600 hover:text-blue-800 transition-colors flex items-center"
-                                  title="Open LinkedIn Profile"
+                                <a
+                                  href={rep.linkedin_profile_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  <img
-                                    src="/linkedinicon.webp"
-                                    alt="LinkedIn"
-                                    className="h-4 w-4 hover:opacity-80 transition-opacity"
-                                  />
-                                </button>
+                                  LinkedIn
+                                </a>
                               ) : (
                                 <span className="text-gray-400">N/A</span>
                               )}
                             </td>
                           )}
+                          {visibleColumns.method_of_contact && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.method_of_contact || "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.contact_source && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.contact_source || "N/A"}
+                              </div>
+                            </td>
+                          )}
                           {visibleColumns.contact_date && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.contact_date
-                                ? new Date(
-                                    rep.contact_date,
-                                  ).toLocaleDateString()
-                                : "N/A"}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {formatDate(rep.contact_date)}
+                              </div>
                             </td>
                           )}
                           {visibleColumns.follow_up_dates && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
-                              {rep.follow_up_dates &&
-                              rep.follow_up_dates.length > 0 ? (
-                                <div className="flex flex-wrap gap-1">
-                                  {rep.follow_up_dates
-                                    .slice(0, 2)
-                                    .map((date, index) => (
-                                      <span
-                                        key={index}
-                                        className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded"
-                                      >
-                                        {new Date(date).toLocaleDateString()}
-                                      </span>
-                                    ))}
-                                  {rep.follow_up_dates.length > 2 && (
-                                    <span className="text-xs text-gray-500">
-                                      +{rep.follow_up_dates.length - 2}
-                                    </span>
-                                  )}
-                                </div>
-                              ) : (
-                                "N/A"
-                              )}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.follow_up_dates || "N/A"}
+                              </div>
                             </td>
                           )}
                           {visibleColumns.status && (
-                            <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
-                              {canEdit ? (
-                                <Select
-                                  value={rep.status || "No Status"}
-                                  onValueChange={(value) =>
-                                    handleStatusChange(rep.id, value)
-                                  }
-                                >
-                                  <SelectTrigger className="w-full min-w-[140px] h-8 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {INLINE_STATUS_OPTIONS.map((option) => (
-                                      <SelectItem
-                                        key={option.value}
-                                        value={option.value}
-                                        className="text-xs"
-                                      >
-                                        {option.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              ) : rep.status ? (
-                                <span
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(rep.status)}`}
-                                >
-                                  {rep.status}
-                                </span>
-                              ) : (
-                                <span className="text-gray-400 text-sm">
-                                  No status
-                                </span>
-                              )}
+                            <td
+                              className="px-6 py-4 whitespace-nowrap"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Select
+                                value={rep.status || "No Status"}
+                                onValueChange={(value) =>
+                                  handleStatusChange(rep.id, value)
+                                }
+                                disabled={!canEdit}
+                              >
+                                <SelectTrigger className="w-40">
+                                  <SelectValue>
+                                    <Badge
+                                      className={getStatusBadgeColor(
+                                        rep.status,
+                                      )}
+                                    >
+                                      {rep.status || "No Status"}
+                                    </Badge>
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {INLINE_STATUS_OPTIONS.map((option) => (
+                                    <SelectItem
+                                      key={option.value}
+                                      value={option.value}
+                                    >
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </td>
                           )}
                           {visibleColumns.outcome && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.outcome || "N/A"}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.outcome || "N/A"}
+                              </div>
                             </td>
                           )}
                           {visibleColumns.reminder && (
                             <td className="px-6 py-4 whitespace-nowrap">
-                              {rep.reminder_date ? (
-                                <div className="flex items-center">
-                                  <div
-                                    className={`w-3 h-3 rounded-full mr-2 ${
-                                      new Date(rep.reminder_date) <= new Date()
-                                        ? "bg-red-500"
-                                        : "bg-orange-500"
-                                    }`}
-                                  ></div>
-                                  <span
-                                    className={`text-sm ${
-                                      new Date(rep.reminder_date) <= new Date()
-                                        ? "text-red-600 font-medium"
-                                        : "text-orange-600"
-                                    }`}
-                                  >
-                                    {formatDate(rep.reminder_date)}
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="text-gray-400 text-sm">
-                                  No reminder
-                                </span>
-                              )}
+                              <div className="text-sm text-gray-900">
+                                {formatDate(rep.reminder_date)}
+                              </div>
                             </td>
                           )}
                           {visibleColumns.contacted_by && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.contacted_user
-                                ? `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
-                                : "N/A"}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.contacted_user
+                                  ? `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
+                                  : "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.created_at && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
+                              {new Date(rep.created_at).toLocaleDateString()}
                             </td>
                           )}
                           {visibleColumns.assigned_to && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
-                              {rep.assigned_user ? (
-                                `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
-                              ) : (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.assigned_user
+                                  ? `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
+                                  : "Unassigned"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.notes && (
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900 max-w-xs truncate">
+                                {rep.notes || "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          <td
+                            className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex space-x-2">
+                              {canEdit && (
                                 <Button
-                                  variant="outline"
+                                  variant="ghost"
                                   size="sm"
                                   onClick={() => handleAssignToMe(rep.id)}
                                   className="text-blue-600 hover:text-blue-800"
                                 >
-                                  Assign to me
+                                  <User className="h-4 w-4" />
                                 </Button>
                               )}
-                            </td>
-                          )}
-                          {visibleColumns.notes && (
-                            <td
-                              className="px-4 py-4 text-sm text-gray-900 truncate max-w-32"
-                              title={rep.notes}
-                            >
-                              {rep.notes
-                                ? rep.notes.length > 50
-                                  ? `${rep.notes.substring(0, 50)}...`
-                                  : rep.notes
-                                : "N/A"}
-                            </td>
-                          )}
+                              {canEdit && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEditRepresentative(rep)}
+                                  className="text-indigo-600 hover:text-indigo-800"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {canDelete && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleDeleteRepresentative(rep)
+                                  }
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               )}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="text-sm text-gray-700">
+                    Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+                    {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{" "}
+                    {totalCount} results
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={handlePreviousPage}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <span className="flex items-center px-4 py-2 text-sm text-gray-700">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Pagination Controls at Bottom */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
-                {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{" "}
-                {totalCount} representatives
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </Button>
-                <span className="flex items-center px-3 py-2 text-sm text-gray-700">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Representative Dialog */}
+          {/* Modals */}
           <RepresentativeDialog
-            isOpen={dialogOpen}
-            onClose={() => setDialogOpen(false)}
-            onSave={handleSaveRepresentative}
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
             representative={editingRep}
+            onSave={handleSaveRepresentative}
             saving={saving}
+            companies={companies}
+            users={users}
           />
 
-          {/* Representative Detail Modal */}
           <RepresentativeDetailModal
-            isOpen={repDetailModalOpen}
-            onClose={() => setRepDetailModalOpen(false)}
+            open={repDetailModalOpen}
+            onOpenChange={(open) => {
+              setRepDetailModalOpen(open);
+              if (!open) {
+                router.push("/dashboard", { scroll: false });
+              }
+            }}
             representativeId={selectedRepId}
+            companies={companies}
+            users={users}
+            onUpdate={fetchData}
           />
 
-          {/* CSV Import Modal */}
           <CSVImportModal
-            isOpen={importModalOpen}
-            onClose={() => setImportModalOpen(false)}
+            open={importModalOpen}
+            onOpenChange={setImportModalOpen}
             onImportComplete={handleImportComplete}
-            importType="representatives"
+            companies={companies}
+            users={users}
           />
 
-          {/* CSV Export Modal */}
           <CSVExportModal
-            isOpen={exportModalOpen}
-            onClose={() => setExportModalOpen(false)}
-            data={representatives}
-            exportType="representatives"
-            selectedItems={selectedRepresentatives}
+            open={exportModalOpen}
+            onOpenChange={setExportModalOpen}
+            filters={filters}
+            visibleColumns={visibleColumns}
           />
         </main>
       </div>

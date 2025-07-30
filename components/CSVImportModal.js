@@ -17,7 +17,7 @@ const COMPANY_FIELDS = [
   { key: 'location', label: 'Location', required: false },
   { key: 'linkedin_url', label: 'LinkedIn URL', required: false },
   { key: 'website', label: 'Website', required: false },
-  { key: 'source', label: 'Source', required: false },
+  { key: 'source', label: 'Contact Origin', required: false },
   { key: 'number_of_employees', label: 'Number of Employees', required: false },
   { key: 'status', label: 'Status', required: false },
   { key: 'notes', label: 'Notes', required: false },
@@ -31,7 +31,8 @@ const REPRESENTATIVE_FIELDS = [
   { key: 'last_name', label: 'Last Name', required: false },
   { key: 'role', label: 'Role', required: false },
   { key: 'linkedin_profile_url', label: 'LinkedIn Profile URL', required: false },
-  { key: 'contact_source', label: 'Contact Source', required: false },
+  { key: 'method_of_contact', label: 'Method of Contact', required: false },
+  { key: 'contact_source', label: 'Contact Origin', required: false },
   { key: 'status', label: 'Status', required: false },
   { key: 'contact_date', label: 'Contact Date', required: false },
   { key: 'outcome', label: 'Outcome', required: false },
@@ -269,6 +270,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         case 'last_name': return 'Doe';
         case 'industry': return 'Technology';
         case 'role': return 'CEO';
+        case 'method_of_contact': return 'LinkedIn';
         case 'location': return 'New York, NY';
         case 'number_of_employees': return '100';
         case 'status': return 'Contacted';
@@ -431,6 +433,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                   <Label className="font-medium">
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
+                    
                     
                     
                     

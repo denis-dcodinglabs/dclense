@@ -205,7 +205,14 @@ export default function RepresentativeDetailModal({ isOpen, onClose, representat
                   </div>
                   
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Contact Source</label>
+                    <label className="text-sm font-medium text-gray-500">Method of Contact</label>
+                    <div className="mt-1 text-gray-900">
+                      {representative.method_of_contact || 'N/A'}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Contact Origin</label>
                     <div className="mt-1 text-gray-900">
                       {representative.contact_source || 'N/A'}
                     </div>

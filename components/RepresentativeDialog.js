@@ -17,6 +17,7 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
     last_name: '',
     role: '',
     linkedin_profile_url: '',
+    method_of_contact: '',
     contact_source: '',
     status: '',
     contact_date: '',
@@ -46,6 +47,7 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
         last_name: representative.last_name || '',
         role: representative.role || '',
         linkedin_profile_url: representative.linkedin_profile_url || '',
+        method_of_contact: representative.method_of_contact || '',
         contact_source: representative.contact_source || '',
         status: representative.status || '',
         contact_date: representative.contact_date ? representative.contact_date.split('T')[0] : '',
@@ -64,6 +66,7 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
         last_name: '',
         role: '',
         linkedin_profile_url: '',
+        method_of_contact: '',
         contact_source: '',
       status: '',
         contact_date: '',
@@ -215,16 +218,6 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="contact_source">Contact Source</Label>
-              <Input
-                id="contact_source"
-                value={formData.contact_source}
-                onChange={(e) => handleInputChange('contact_source', e.target.value)}
-                placeholder="Enter contact source"
-              />
-            </div>
-            
-            <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
                 <SelectTrigger>
@@ -253,6 +246,28 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
               onChange={(e) => handleInputChange('linkedin_profile_url', e.target.value)}
               placeholder="Enter LinkedIn profile URL"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="method_of_contact">Method of Contact</Label>
+              <Input
+                id="method_of_contact"
+                value={formData.method_of_contact}
+                onChange={(e) => handleInputChange('method_of_contact', e.target.value)}
+                placeholder="Enter method of contact"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="contact_source">Contact Origin</Label>
+              <Input
+                id="contact_source"
+                value={formData.contact_source}
+                onChange={(e) => handleInputChange('contact_source', e.target.value)}
+                placeholder="Enter contact origin"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
