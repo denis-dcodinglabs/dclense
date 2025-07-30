@@ -203,7 +203,7 @@ export default function CSVExportModal({ isOpen, onClose, data, exportType = 'co
                   <SelectItem value="all">All Data (fetch from database)</SelectItem>
                   <SelectItem value="filtered">Filtered Data ({data.length} records)</SelectItem>
                   <SelectItem value="current">Current Page Only (up to 50 records)</SelectItem>
-                  {selectedItems.length > 0 && (
+                  {Array.isArray(selectedItems) && selectedItems.length > 0 && (
                     <SelectItem value="selected">Selected Items Only ({selectedItems.length} records)</SelectItem>
                   )}
                 </SelectContent>
