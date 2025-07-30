@@ -19,7 +19,7 @@ const COMPANY_EXPORT_FIELDS = [
   { key: 'location', label: 'Location' },
   { key: 'linkedin_url', label: 'LinkedIn URL' },
   { key: 'website', label: 'Website' },
-  { key: 'source', label: 'Source' },
+  { key: 'source', label: 'Contact Origin' },
   { key: 'number_of_employees', label: 'Number of Employees' },
   { key: 'status', label: 'Status' },
   { key: 'notes', label: 'Notes' },
