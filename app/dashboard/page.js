@@ -112,7 +112,7 @@ const TABLE_COLUMNS = [
     required: false,
   },
   { key: "method_of_contact", label: "Method of Contact", required: false },
-  { key: "contact_source", label: "Contact Source", required: false },
+  { key: "contact_source", label: "Contact Origin", required: false },
   { key: "contact_date", label: "Contact Date", required: false },
   { key: "follow_up_dates", label: "Follow-up Dates", required: false },
   { key: "status", label: "Status", required: false },
@@ -1231,7 +1231,7 @@ export default function Dashboard() {
                         )}
                         {visibleColumns.contact_source && (
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
-                            Contact Source
+                            Contact Origin
                           </th>
                         )}
                         {visibleColumns.contact_date && (
