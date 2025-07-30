@@ -50,7 +50,7 @@ const TABLE_COLUMNS = [
   { key: 'company', label: 'Company', required: true },
   { key: 'industry', label: 'Industry', required: false },
   { key: 'location', label: 'Location', required: false },
-  { key: 'source', label: 'Source', required: false },
+  { key: 'source', label: 'Contact Origin', required: false },
   { key: 'linkedin_url', label: 'LinkedIn URL', required: false },
   { key: 'website', label: 'Website', required: false },
   { key: 'number_of_employees', label: 'Number of Employees', required: false },
@@ -621,7 +621,7 @@ export default function CompaniesPage() {
                         )}
                         {visibleColumns.source && (
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                            Source
+                            Contact Origin
                           </th>
                         )}
                         {visibleColumns.linkedin_url && (
