@@ -115,6 +115,7 @@ const TABLE_COLUMNS = [
   { key: "contact_source", label: "Contact Origin", required: false },
   { key: "contact_date", label: "Contact Date", required: false },
   { key: "follow_up_dates", label: "Follow-up Dates", required: false },
+  { key: 'created_at', label: 'Created At', required: false }
   { key: "status", label: "Status", required: false },
   { key: "outcome", label: "Outcome", required: false },
   { key: "reminder", label: "Reminder", required: false },
@@ -168,6 +169,7 @@ export default function Dashboard() {
     outcome: false,
     reminder: true,
     contacted_by: false,
+    created_at: false
     assigned_to: true,
     notes: false,
   });
@@ -1357,6 +1359,11 @@ export default function Dashboard() {
                             Contacted By
                           </th>
                         )}
+                        {visibleColumns.created_at && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Created At
+                          </th>
+                        )}
                         {visibleColumns.assigned_to && (
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Assigned To
@@ -1378,6 +1385,7 @@ export default function Dashboard() {
                           key={rep.id}
                           className={`hover:bg-gray-50 cursor-pointer ${
                             rep.mark_unread ? "bg-blue-50" : ""
+                            created_at: true
                           }`}
                           onClick={() => handleRepresentativeClick(rep.id)}
                         >
@@ -1525,6 +1533,11 @@ export default function Dashboard() {
                                   : "N/A"}
                               </div>
                             </td>
+                          {visibleColumns.created_at && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
+                              {new Date(rep.created_at).toLocaleDateString()}
+                            </td>
+                          )}
                           )}
                           {visibleColumns.assigned_to && (
                             <td className="px-6 py-4 whitespace-nowrap">
