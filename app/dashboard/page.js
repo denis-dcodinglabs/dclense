@@ -139,7 +139,7 @@ export default function Dashboard() {
   const [agentPerformance, setAgentPerformance] = useState([]);
   const [users, setUsers] = useState([]);
   const [companies, setCompanies] = useState([]);
-  const [companySearchTerm, setCompanySearchTerm] = useState('');
+  const [companySearchTerm, setCompanySearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRep, setEditingRep] = useState(null);
@@ -250,8 +250,10 @@ export default function Dashboard() {
   const fetchCompanies = async () => {
     const { data } = await getCompanies(1, 1000); // Get all companies for filter
     // Sort companies alphabetically by company_name
-    const sortedCompanies = (data || []).sort((a, b) => 
-      (a.company_name || '').localeCompare(b.company_name || '', undefined, { sensitivity: 'base' })
+    const sortedCompanies = (data || []).sort((a, b) =>
+      (a.company_name || "").localeCompare(b.company_name || "", undefined, {
+        sensitivity: "base",
+      }),
     );
     setCompanies(sortedCompanies);
   };
@@ -544,8 +546,10 @@ export default function Dashboard() {
   const canDelete = currentUser?.role === "Admin";
 
   // Filter companies based on search term
-  const filteredCompanies = companies.filter(company =>
-    company.company_name?.toLowerCase().includes(companySearchTerm.toLowerCase())
+  const filteredCompanies = companies.filter((company) =>
+    company.company_name
+      ?.toLowerCase()
+      .includes(companySearchTerm.toLowerCase()),
   );
 
   return (
@@ -779,7 +783,9 @@ export default function Dashboard() {
                           <Input
                             placeholder="Search companies..."
                             value={companySearchTerm}
-                            onChange={(e) => setCompanySearchTerm(e.target.value)}
+                            onChange={(e) =>
+                              setCompanySearchTerm(e.target.value)
+                            }
                             className="h-8"
                           />
                         </div>
@@ -826,21 +832,91 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="max-h-64 overflow-y-auto">
-                          {filteredCompanies.map((company) => (
-                            <div
-                              key={company.id}
-                              className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
-                              onClick={() =>
-                                handleCompanyFilterChange(
-                                  company.id,
+                          {(() => {
+                            // Split companies into selected and unselected
+                            const selectedCompanies = filteredCompanies.filter(
+                              (company) =>
+                                filters.company_ids.includes(company.id),
+                            );
+                            const unselectedCompanies =
+                              filteredCompanies.filter(
+                                (company) =>
                                   !filters.company_ids.includes(company.id),
-                                )
+                              );
+
+                            return { selectedCompanies, unselectedCompanies };
+                          })().selectedCompanies.map((company) => (
+                            <div
+                              key={`selected-${company.id}`}
+                              className="flex items-center space-x-2 px-2 py-1.5 hover:bg-blue-100 cursor-pointer bg-blue-50 border-l-2 border-blue-400"
+                              onClick={() =>
+                                handleCompanyFilterChange(company.id, false)
                               }
                             >
                               <Checkbox
-                                checked={filters.company_ids.includes(
-                                  company.id,
-                                )}
+                                checked={true}
+                                onCheckedChange={(checked) =>
+                                  handleCompanyFilterChange(company.id, checked)
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <Label
+                                className="text-sm cursor-pointer flex-1 truncate font-medium text-blue-900"
+                                title={company.company_name}
+                              >
+                                {company.company_name}
+                                <span className="ml-2 text-xs text-blue-600">
+                                  ✓
+                                </span>
+                              </Label>
+                            </div>
+                          ))}
+
+                          {(() => {
+                            const selectedCompanies = filteredCompanies.filter(
+                              (company) =>
+                                filters.company_ids.includes(company.id),
+                            );
+                            const unselectedCompanies =
+                              filteredCompanies.filter(
+                                (company) =>
+                                  !filters.company_ids.includes(company.id),
+                              );
+
+                            // Show divider if we have both selected and unselected companies
+                            if (
+                              selectedCompanies.length > 0 &&
+                              unselectedCompanies.length > 0
+                            ) {
+                              return (
+                                <div className="border-t border-gray-200 my-1">
+                                  <div className="px-2 py-1 text-xs text-gray-500 bg-gray-50">
+                                    Other Companies
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+
+                          {(() => {
+                            const unselectedCompanies =
+                              filteredCompanies.filter(
+                                (company) =>
+                                  !filters.company_ids.includes(company.id),
+                              );
+
+                            return unselectedCompanies;
+                          })().map((company) => (
+                            <div
+                              key={`unselected-${company.id}`}
+                              className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
+                              onClick={() =>
+                                handleCompanyFilterChange(company.id, true)
+                              }
+                            >
+                              <Checkbox
+                                checked={false}
                                 onCheckedChange={(checked) =>
                                   handleCompanyFilterChange(company.id, checked)
                                 }
@@ -855,11 +931,12 @@ export default function Dashboard() {
                             </div>
                           ))}
                         </div>
-                        {filteredCompanies.length === 0 && companySearchTerm && (
-                          <div className="p-2 text-sm text-gray-500 text-center">
-                            No companies found matching "{companySearchTerm}"
-                          </div>
-                        )}
+                        {filteredCompanies.length === 0 &&
+                          companySearchTerm && (
+                            <div className="p-2 text-sm text-gray-500 text-center">
+                              No companies found matching "{companySearchTerm}"
+                            </div>
+                          )}
                         {filters.company_ids.length > 0 && (
                           <div className="p-2 border-t bg-gray-50">
                             <div className="text-xs text-gray-600">
@@ -1202,7 +1279,8 @@ export default function Dashboard() {
                     No representatives found
                   </h3>
                   <p className="text-gray-500">
-                    Try adjusting your filters or add some representatives to get started.
+                    Try adjusting your filters or add some representatives to
+                    get started.
                   </p>
                 </div>
               ) : (
@@ -1212,7 +1290,10 @@ export default function Dashboard() {
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           <Checkbox
-                            checked={selectedRepresentatives.length === representatives.length}
+                            checked={
+                              selectedRepresentatives.length ===
+                              representatives.length
+                            }
                             onCheckedChange={handleSelectAll}
                           />
                         </th>
@@ -1401,7 +1482,9 @@ export default function Dashboard() {
                                 <SelectTrigger className="w-40">
                                   <SelectValue>
                                     <Badge
-                                      className={getStatusBadgeColor(rep.status)}
+                                      className={getStatusBadgeColor(
+                                        rep.status,
+                                      )}
                                     >
                                       {rep.status || "No Status"}
                                     </Badge>
@@ -1488,7 +1571,9 @@ export default function Dashboard() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleDeleteRepresentative(rep)}
+                                  onClick={() =>
+                                    handleDeleteRepresentative(rep)
+                                  }
                                   className="text-red-600 hover:text-red-800"
                                 >
                                   <Trash2 className="h-4 w-4" />
