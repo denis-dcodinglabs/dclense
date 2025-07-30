@@ -1197,4 +1197,385 @@ export default function Dashboard() {
                 </div>
               ) : representatives.length === 0 ? (
                 <div className="text-center py-8">
-                  <Users className="h-12 w-
+                  <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No representatives found
+                  </h3>
+                  <p className="text-gray-500">
+                    Try adjusting your filters or add some representatives to get started.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <Checkbox
+                            checked={selectedRepresentatives.length === representatives.length}
+                            onCheckedChange={handleSelectAll}
+                          />
+                        </th>
+                        {visibleColumns.name && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                          </th>
+                        )}
+                        {visibleColumns.company && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Company
+                          </th>
+                        )}
+                        {visibleColumns.role && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Role
+                          </th>
+                        )}
+                        {visibleColumns.linkedin_profile_url && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            LinkedIn
+                          </th>
+                        )}
+                        {visibleColumns.method_of_contact && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Contact Method
+                          </th>
+                        )}
+                        {visibleColumns.contact_source && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Contact Origin
+                          </th>
+                        )}
+                        {visibleColumns.contact_date && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Contact Date
+                          </th>
+                        )}
+                        {visibleColumns.follow_up_dates && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Follow-up Dates
+                          </th>
+                        )}
+                        {visibleColumns.status && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                        )}
+                        {visibleColumns.outcome && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Outcome
+                          </th>
+                        )}
+                        {visibleColumns.reminder && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Reminder
+                          </th>
+                        )}
+                        {visibleColumns.contacted_by && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Contacted By
+                          </th>
+                        )}
+                        {visibleColumns.assigned_to && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Assigned To
+                          </th>
+                        )}
+                        {visibleColumns.notes && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Notes
+                          </th>
+                        )}
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {representatives.map((rep) => (
+                        <tr
+                          key={rep.id}
+                          className={`hover:bg-gray-50 cursor-pointer ${
+                            rep.mark_unread ? "bg-blue-50" : ""
+                          }`}
+                          onClick={() => handleRepresentativeClick(rep.id)}
+                        >
+                          <td
+                            className="px-6 py-4 whitespace-nowrap"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Checkbox
+                              checked={selectedRepresentatives.includes(rep.id)}
+                              onCheckedChange={(checked) =>
+                                handleSelectRepresentative(rep.id, checked)
+                              }
+                            />
+                          </td>
+                          {visibleColumns.name && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {rep.full_name}
+                                    {rep.mark_unread && (
+                                      <Badge className="ml-2 bg-blue-100 text-blue-800 text-xs">
+                                        Unread
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.company && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.company?.company_name || "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.role && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.role || "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.linkedin_profile_url && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {rep.linkedin_profile_url ? (
+                                <a
+                                  href={rep.linkedin_profile_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  LinkedIn
+                                </a>
+                              ) : (
+                                <span className="text-gray-400">N/A</span>
+                              )}
+                            </td>
+                          )}
+                          {visibleColumns.method_of_contact && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.method_of_contact || "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.contact_source && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.contact_source || "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.contact_date && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {formatDate(rep.contact_date)}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.follow_up_dates && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.follow_up_dates || "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.status && (
+                            <td
+                              className="px-6 py-4 whitespace-nowrap"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Select
+                                value={rep.status || "No Status"}
+                                onValueChange={(value) =>
+                                  handleStatusChange(rep.id, value)
+                                }
+                                disabled={!canEdit}
+                              >
+                                <SelectTrigger className="w-40">
+                                  <SelectValue>
+                                    <Badge
+                                      className={getStatusBadgeColor(rep.status)}
+                                    >
+                                      {rep.status || "No Status"}
+                                    </Badge>
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {INLINE_STATUS_OPTIONS.map((option) => (
+                                    <SelectItem
+                                      key={option.value}
+                                      value={option.value}
+                                    >
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </td>
+                          )}
+                          {visibleColumns.outcome && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.outcome || "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.reminder && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {formatDate(rep.reminder_date)}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.contacted_by && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.contacted_user
+                                  ? `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
+                                  : "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.assigned_to && (
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">
+                                {rep.assigned_user
+                                  ? `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
+                                  : "Unassigned"}
+                              </div>
+                            </td>
+                          )}
+                          {visibleColumns.notes && (
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900 max-w-xs truncate">
+                                {rep.notes || "N/A"}
+                              </div>
+                            </td>
+                          )}
+                          <td
+                            className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex space-x-2">
+                              {canEdit && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleAssignToMe(rep.id)}
+                                  className="text-blue-600 hover:text-blue-800"
+                                >
+                                  <User className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {canEdit && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEditRepresentative(rep)}
+                                  className="text-indigo-600 hover:text-indigo-800"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {canDelete && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteRepresentative(rep)}
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="text-sm text-gray-700">
+                    Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+                    {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{" "}
+                    {totalCount} results
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={handlePreviousPage}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <span className="flex items-center px-4 py-2 text-sm text-gray-700">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Modals */}
+          <RepresentativeDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            representative={editingRep}
+            onSave={handleSaveRepresentative}
+            saving={saving}
+            companies={companies}
+            users={users}
+          />
+
+          <RepresentativeDetailModal
+            open={repDetailModalOpen}
+            onOpenChange={(open) => {
+              setRepDetailModalOpen(open);
+              if (!open) {
+                router.push("/dashboard", { scroll: false });
+              }
+            }}
+            representativeId={selectedRepId}
+            companies={companies}
+            users={users}
+            onUpdate={fetchData}
+          />
+
+          <CSVImportModal
+            open={importModalOpen}
+            onOpenChange={setImportModalOpen}
+            onImportComplete={handleImportComplete}
+            companies={companies}
+            users={users}
+          />
+
+          <CSVExportModal
+            open={exportModalOpen}
+            onOpenChange={setExportModalOpen}
+            filters={filters}
+            visibleColumns={visibleColumns}
+          />
+        </main>
+      </div>
+    </ProtectedRoute>
+  );
+}
