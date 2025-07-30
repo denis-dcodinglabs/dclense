@@ -825,7 +825,7 @@ export default function Dashboard() {
                             </Label>
                           </div>
                         </div>
-                        <div className="max-h-48 overflow-y-auto">
+                        <div className="max-h-64 overflow-y-auto">
                           {filteredCompanies.map((company) => (
                             <div
                               key={company.id}
