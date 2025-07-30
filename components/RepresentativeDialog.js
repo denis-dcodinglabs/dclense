@@ -260,12 +260,12 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="contact_source">Contact Source</Label>
+              <Label htmlFor="contact_source">Contact Origin</Label>
               <Input
                 id="contact_source"
                 value={formData.contact_source}
                 onChange={(e) => handleInputChange('contact_source', e.target.value)}
-                placeholder="Enter contact source"
+                placeholder="Enter contact origin"
               />
             </div>
           </div>
