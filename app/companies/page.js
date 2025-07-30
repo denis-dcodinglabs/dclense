@@ -98,7 +98,8 @@ export default function CompaniesPage() {
     assigned_to: '',
     unread_filter: '',
     sort_field: 'created_at',
-    sort_order: 'desc'
+    sort_order: 'desc',
+    show_deleted: false
   });
 
   useEffect(() => {
@@ -337,6 +338,23 @@ export default function CompaniesPage() {
               <CardTitle className="text-lg">Filters</CardTitle>
             </CardHeader>
             <CardContent>
+              {currentUser?.role === 'Admin' && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="show_deleted"
+                      checked={filters.show_deleted}
+                      onCheckedChange={(checked) => handleFilterChange('show_deleted', checked)}
+                    />
+                    <Label htmlFor="show_deleted" className="text-sm font-medium text-yellow-800">
+                      Show deleted records (Admin only)
+                    </Label>
+                  </div>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    This will include companies that have been soft-deleted
+                  </p>
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
