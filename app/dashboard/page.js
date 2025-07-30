@@ -248,7 +248,11 @@ export default function Dashboard() {
 
   const fetchCompanies = async () => {
     const { data } = await getCompanies(1, 1000); // Get all companies for filter
-    setCompanies(data || []);
+    // Sort companies alphabetically by company_name
+    const sortedCompanies = (data || []).sort((a, b) => 
+      (a.company_name || '').localeCompare(b.company_name || '', undefined, { sensitivity: 'base' })
+    );
+    setCompanies(sortedCompanies);
   };
 
   const fetchData = async () => {
