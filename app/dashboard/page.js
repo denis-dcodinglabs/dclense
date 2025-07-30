@@ -919,7 +919,7 @@ export default function Dashboard() {
                             </Button>
                           )}
                         </div>
-                        <div className="space-y-3 max-h-48 overflow-y-auto">
+                        <div className="space-y-3 max-h-64 overflow-y-auto">
                           {users.map((user) => (
                             <div
                               key={user.id}
