@@ -764,7 +764,7 @@ export default function Dashboard() {
                 </Select>
 
                 {/* Company Multi-Select Dropdown */}
-                <div className="space-y-2 h-20">
+                <div className="space-y-2">
                   <div className="relative">
                     <Select>
                       <SelectTrigger className="w-full">
