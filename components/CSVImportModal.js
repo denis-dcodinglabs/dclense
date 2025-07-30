@@ -31,6 +31,7 @@ const REPRESENTATIVE_FIELDS = [
   { key: 'last_name', label: 'Last Name', required: false },
   { key: 'role', label: 'Role', required: false },
   { key: 'linkedin_profile_url', label: 'LinkedIn Profile URL', required: false },
+  { key: 'method_of_contact', label: 'Method of Contact', required: false },
   { key: 'contact_source', label: 'Contact Source', required: false },
   { key: 'status', label: 'Status', required: false },
   { key: 'contact_date', label: 'Contact Date', required: false },
@@ -269,6 +270,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         case 'last_name': return 'Doe';
         case 'industry': return 'Technology';
         case 'role': return 'CEO';
+        case 'method_of_contact': return 'LinkedIn';
         case 'location': return 'New York, NY';
         case 'number_of_employees': return '100';
         case 'status': return 'Contacted';

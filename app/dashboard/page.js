@@ -106,12 +106,13 @@ const TABLE_COLUMNS = [
   { key: "name", label: "Name", required: true },
   { key: "company", label: "Company", required: false },
   { key: "role", label: "Role", required: false },
-  { key: "contact_source", label: "Contact Source", required: false },
   {
     key: "linkedin_profile_url",
     label: "LinkedIn Profile URL",
     required: false,
   },
+  { key: "method_of_contact", label: "Method of Contact", required: false },
+  { key: "contact_source", label: "Contact Source", required: false },
   { key: "contact_date", label: "Contact Date", required: false },
   { key: "follow_up_dates", label: "Follow-up Dates", required: false },
   { key: "status", label: "Status", required: false },
@@ -157,8 +158,9 @@ export default function Dashboard() {
     name: true,
     company: true,
     role: true,
-    contact_source: false,
     linkedin_profile_url: false,
+    method_of_contact: false,
+    contact_source: false,
     contact_date: false,
     follow_up_dates: false,
     status: true,
@@ -1217,14 +1219,19 @@ export default function Dashboard() {
                             Role
                           </th>
                         )}
+                        {visibleColumns.linkedin_profile_url && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            LinkedIn
+                          </th>
+                        )}
+                        {visibleColumns.method_of_contact && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Method of Contact
+                          </th>
+                        )}
                         {visibleColumns.contact_source && (
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
                             Contact Source
-                          </th>
-                        )}
-                        {visibleColumns.linkedin_profile_url && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
-                            LinkedIn
                           </th>
                         )}
                         {visibleColumns.contact_date && (
@@ -1393,11 +1400,6 @@ export default function Dashboard() {
                               {rep.role || "N/A"}
                             </td>
                           )}
-                          {visibleColumns.contact_source && (
-                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {rep.contact_source || "N/A"}
-                            </td>
-                          )}
                           {visibleColumns.linkedin_profile_url && (
                             <td className="px-4 py-4 text-sm truncate max-w-32 group-hover:bg-gray-50">
                               {rep.linkedin_profile_url ? (
@@ -1428,6 +1430,16 @@ export default function Dashboard() {
                               ) : (
                                 <span className="text-gray-400">N/A</span>
                               )}
+                            </td>
+                          )}
+                          {visibleColumns.method_of_contact && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
+                              {rep.method_of_contact || 'N/A'}
+                            </td>
+                          )}
+                          {visibleColumns.contact_source && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
+                              {rep.contact_source || "N/A"}
                             </td>
                           )}
                           {visibleColumns.contact_date && (
