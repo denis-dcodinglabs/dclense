@@ -682,18 +682,26 @@ export default function CompaniesPage() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {companies.map((company) => (
                         <tr key={company.id} className={`group hover:bg-gray-50 ${company.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
+                          {company.is_deleted && (
+                            <td colSpan="100%" className="absolute inset-0 bg-red-50 opacity-75 pointer-events-none"></td>
+                          )}
                           {canDelete && (
                             <td className={`px-6 py-4 sticky left-0 z-10 ${company.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}>
                               <Checkbox
                                 checked={selectedCompanies.includes(company.id)}
                                 onCheckedChange={(checked) => handleSelectCompany(company.id, checked)}
+                                disabled={company.is_deleted}
                               />
                             </td>
                           )}
                           <td className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-14' : 'left-0'} ${company.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}>
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                                <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                                  company.is_deleted 
+                                    ? 'bg-gradient-to-r from-gray-400 to-gray-500' 
+                                    : 'bg-gradient-to-r from-blue-500 to-purple-600'
+                                }`}>
                                   <span className="text-sm font-medium text-white">
                                     {company.company_name?.charAt(0)}
                                   </span>
@@ -705,9 +713,18 @@ export default function CompaniesPage() {
                                     <div className="flex items-center space-x-2">
                                       <button
                                         onClick={() => handleCompanyClick(company.id)}
-                                        className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
+                                        className={`hover:underline transition-colors text-left ${
+                                          company.is_deleted 
+                                            ? 'text-gray-500 hover:text-gray-700' 
+                                            : 'text-blue-600 hover:text-blue-800'
+                                        }`}
                                       >
                                         {company.company_name}
+                                        {company.is_deleted && (
+                                          <span className="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                                            DELETED
+                                          </span>
+                                        )}
                                       </button>
                                       {company.linkedin_url && (
                                         <button
