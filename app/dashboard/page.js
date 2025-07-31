@@ -179,6 +179,7 @@ export default function Dashboard() {
     assigned_to: '',
     status: '',
     contacted_by: [],
+    exported_filter: '',
     unread_filter: '',
     rep_position: '',
     exported_filter: '',
