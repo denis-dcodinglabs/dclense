@@ -264,7 +264,10 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const [repsResult] = await Promise.all([
-        getRepresentatives(currentPage, ITEMS_PER_PAGE, filters),
+        getRepresentatives(currentPage, ITEMS_PER_PAGE, {
+          ...filters,
+          current_user_id: currentUser?.id
+        }),
       ]);
 
       setRepresentatives(repsResult.data || []);
