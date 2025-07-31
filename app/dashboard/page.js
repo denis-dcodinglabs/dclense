@@ -1197,6 +1197,94 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
+          {/* Action Buttons */}
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Customize Table
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64" align="start">
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-3">Show/Hide Columns</h4>
+                          <div className="space-y-3">
+                            {TABLE_COLUMNS.map((column) => (
+                              <div key={column.key} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={column.key}
+                                  checked={visibleColumns[column.key]}
+                                  onCheckedChange={(checked) => handleColumnToggle(column.key, checked)}
+                                  disabled={column.required}
+                                />
+                                <Label 
+                                  htmlFor={column.key} 
+                                  className={`text-sm ${column.required ? 'text-gray-500' : 'cursor-pointer'}`}
+                                >
+                                  {column.label}
+                                  {column.required && ' (Required)'}
+                                </Label>
+                                {visibleColumns[column.key] ? (
+                                  <Eye className="h-3 w-3 text-green-600" />
+                                ) : (
+                                  <EyeOff className="h-3 w-3 text-gray-400" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="pt-3 border-t">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setVisibleColumns({
+                              representative: true,
+                              company: true,
+                              role: true,
+                              method_of_contact: true,
+                              contact_source: true,
+                              linkedin_profile_url: true,
+                              status: true,
+                              contact_date: true,
+                              outcome: true,
+                              assigned_to: true,
+                              contacted_by: true,
+                              created_at: true
+                            })}
+                            className="w-full"
+                          >
+                            Show All Columns
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex space-x-3">
+                  <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import Representatives CSV
+                  </Button>
+                  <Button variant="outline" onClick={() => setExportModalOpen(true)}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                  {canEdit && (
+                    <Button onClick={handleAddRepresentative} className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Representative
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Bulk Actions */}
           {selectedRepresentatives.length > 0 && (canDelete || canEdit) && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
