@@ -181,7 +181,7 @@ export default function Dashboard() {
     contacted_by: [],
     unread_filter: "",
     rep_position: "",
-    exported_filter: "", // Keep for UI, but will use junction table
+    exported_filter: "",
     sort_field: "created_at",
     sort_order: "desc",
   });
@@ -263,9 +263,9 @@ export default function Dashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Add current user ID to filters for export checking
-      const filtersWithUser = { ...filters, current_user_id: currentUser?.id };
-      const repsResult = await getRepresentatives(currentPage, ITEMS_PER_PAGE, filtersWithUser);
+      const [repsResult] = await Promise.all([
+        getRepresentatives(currentPage, ITEMS_PER_PAGE, filters),
+      ]);
 
       setRepresentatives(repsResult.data || []);
       setTotalCount(repsResult.count || 0);
