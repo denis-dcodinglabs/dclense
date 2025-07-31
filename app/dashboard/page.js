@@ -185,7 +185,6 @@ export default function Dashboard() {
     sort_field: "created_at",
     sort_order: "desc",
   });
-  const [exportedRepresentatives, setExportedRepresentatives] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -219,13 +218,6 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData();
   }, [currentPage, filters]);
-
-  useEffect(() => {
-    // Fetch export status when representatives change
-    if (representatives.length > 0 && currentUser) {
-      fetchExportStatus();
-    }
-  }, [representatives, currentUser]);
 
   const fetchStats = async () => {
     try {
@@ -263,7 +255,7 @@ export default function Dashboard() {
     const sortedCompanies = (data || []).sort((a, b) =>
       (a.company_name || "").localeCompare(b.company_name || "", undefined, {
         sensitivity: "base",
-      })
+      }),
     );
     setCompanies(sortedCompanies);
   };
@@ -271,12 +263,13 @@ export default function Dashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const filtersWithUser = { ...filters, user_id: currentUser?.id };
-      const { data, count } = await getRepresentatives(currentPage, 50, filtersWithUser);
+      const [repsResult] = await Promise.all([
+        getRepresentatives(currentPage, ITEMS_PER_PAGE, filters),
+      ]);
 
-      setRepresentatives(data || []);
-      setTotalCount(count || 0);
-      setTotalPages(Math.ceil((count || 0) / ITEMS_PER_PAGE));
+      setRepresentatives(repsResult.data || []);
+      setTotalCount(repsResult.count || 0);
+      setTotalPages(Math.ceil((repsResult.count || 0) / ITEMS_PER_PAGE));
 
       // Fetch stats separately
       await fetchStats();
@@ -285,15 +278,6 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchExportStatus = async () => {
-    if (!currentUser || representatives.length === 0) return;
-    
-    const { getRepresentativeExportStatus } = await import('@/lib/representatives');
-    const representativeIds = representatives.map(rep => rep.id);
-    const { data: exportedIds } = await getRepresentativeExportStatus(representativeIds, currentUser.id);
-    setExportedRepresentatives(exportedIds || []);
   };
 
   const handleFilterChange = (key, value) => {
@@ -569,10 +553,6 @@ export default function Dashboard() {
       ?.toLowerCase()
       .includes(companySearchTerm.toLowerCase()),
   );
-
-  const isRepresentativeExported = (repId) => {
-    return exportedRepresentatives.includes(repId);
-  };
 
   return (
     <ProtectedRoute>
@@ -1412,19 +1392,12 @@ export default function Dashboard() {
                             className="px-6 py-4 whitespace-nowrap"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                checked={selectedRepresentatives.includes(rep.id)}
-                                onCheckedChange={(checked) =>
-                                  handleSelectRepresentative(rep.id, checked)
-                                }
-                              />
-                              {isRepresentativeExported(rep.id) && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                                  Exported
-                                </span>
-                              )}
-                            </div>
+                            <Checkbox
+                              checked={selectedRepresentatives.includes(rep.id)}
+                              onCheckedChange={(checked) =>
+                                handleSelectRepresentative(rep.id, checked)
+                              }
+                            />
                           </td>
                           {visibleColumns.name && (
                             <td className="px-6 py-4 whitespace-nowrap">
