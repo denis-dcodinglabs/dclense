@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import {
   Plus,
   Upload,
@@ -17,117 +17,117 @@ import {
   Edit,
   Trash2,
   User,
-} from "lucide-react";
-import { Settings, Eye, EyeOff, BookOpen, BookOpenCheck } from "lucide-react";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import Navbar from "@/components/Navbar";
-import RepresentativeDialog from "@/components/RepresentativeDialog";
-import RepresentativeDetailModal from "@/components/RepresentativeDetailModal";
-import CSVImportModal from "@/components/CSVImportModal";
-import CSVExportModal from "@/components/CSVExportModal";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import { Settings, Eye, EyeOff, BookOpen, BookOpenCheck } from 'lucide-react';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Navbar from '@/components/Navbar';
+import RepresentativeDialog from '@/components/RepresentativeDialog';
+import RepresentativeDetailModal from '@/components/RepresentativeDetailModal';
+import CSVImportModal from '@/components/CSVImportModal';
+import CSVExportModal from '@/components/CSVExportModal';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
 import {
   getRepresentatives,
   deleteRepresentative,
   assignToMe,
-} from "@/lib/representatives";
+} from '@/lib/representatives';
 import {
   bulkDeleteRepresentatives,
   bulkAssignRepresentativesToMe,
-} from "@/lib/representatives";
-import { bulkMarkRepresentativesReadUnread } from "@/lib/representatives";
+} from '@/lib/representatives';
+import { bulkMarkRepresentativesReadUnread } from '@/lib/representatives';
 import {
   getActivityStats,
   getCompanyStatusStats,
   getConversionRates,
   getAgentPerformance,
-} from "@/lib/analytics";
-import { getCompanies } from "@/lib/companies";
-import { getCurrentUserWithRole } from "@/lib/auth";
+} from '@/lib/analytics';
+import { getCompanies } from '@/lib/companies';
+import { getCurrentUserWithRole } from '@/lib/auth';
 import {
   createRepresentative,
   updateRepresentative,
-} from "@/lib/representatives";
+} from '@/lib/representatives';
 import {
   subscribeToRepresentatives,
   handleRepresentativeUpdate,
   unsubscribeFromChannel,
-} from "@/lib/realtime";
+} from '@/lib/realtime';
 
 const STATUS_OPTIONS = [
-  { value: "all", label: "All Statuses" },
-  { value: "No Status", label: "No Status" },
-  { value: "No Reply", label: "No Reply" },
-  { value: "Not Interested", label: "Not Interested" },
-  { value: "Contacted", label: "Contacted" },
-  { value: "Not a Fit", label: "Not a Fit" },
-  { value: "Asked to Reach Out Later", label: "Asked to Reach Out Later" },
-  { value: "Declined", label: "Declined" },
-  { value: "Client", label: "Client" },
-  { value: "Pending Connection", label: "Pending Connection" },
+  { value: 'all', label: 'All Statuses' },
+  { value: 'No Status', label: 'No Status' },
+  { value: 'No Reply', label: 'No Reply' },
+  { value: 'Not Interested', label: 'Not Interested' },
+  { value: 'Contacted', label: 'Contacted' },
+  { value: 'Not a Fit', label: 'Not a Fit' },
+  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
+  { value: 'Declined', label: 'Declined' },
+  { value: 'Client', label: 'Client' },
+  { value: 'Pending Connection', label: 'Pending Connection' },
 ];
 
 const INLINE_STATUS_OPTIONS = [
-  { value: "No Status", label: "No Status" },
-  { value: "No Reply", label: "No Reply" },
-  { value: "Not Interested", label: "Not Interested" },
-  { value: "Contacted", label: "Contacted" },
-  { value: "Not a Fit", label: "Not a Fit" },
-  { value: "Asked to Reach Out Later", label: "Asked to Reach Out Later" },
-  { value: "Declined", label: "Declined" },
-  { value: "Client", label: "Client" },
-  { value: "Pending Connection", label: "Pending Connection" },
+  { value: 'No Status', label: 'No Status' },
+  { value: 'No Reply', label: 'No Reply' },
+  { value: 'Not Interested', label: 'Not Interested' },
+  { value: 'Contacted', label: 'Contacted' },
+  { value: 'Not a Fit', label: 'Not a Fit' },
+  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
+  { value: 'Declined', label: 'Declined' },
+  { value: 'Client', label: 'Client' },
+  { value: 'Pending Connection', label: 'Pending Connection' },
 ];
 
 const TABLE_COLUMNS = [
-  { key: "name", label: "Name", required: true },
-  { key: "company", label: "Company", required: false },
-  { key: "role", label: "Role", required: false },
+  { key: 'name', label: 'Name', required: true },
+  { key: 'company', label: 'Company', required: false },
+  { key: 'role', label: 'Role', required: false },
   {
-    key: "linkedin_profile_url",
-    label: "LinkedIn Profile URL",
+    key: 'linkedin_profile_url',
+    label: 'LinkedIn Profile URL',
     required: false,
   },
-  { key: "method_of_contact", label: "Method of Contact", required: false },
-  { key: "contact_source", label: "Contact Origin", required: false },
-  { key: "contact_date", label: "Contact Date", required: false },
-  { key: "follow_up_dates", label: "Follow-up Dates", required: false },
-  { key: "created_at", label: "Created At", required: false },
-  { key: "status", label: "Status", required: false },
-  { key: "outcome", label: "Outcome", required: false },
-  { key: "reminder", label: "Reminder", required: false },
-  { key: "contacted_by", label: "Contacted By", required: false },
-  { key: "assigned_to", label: "Assigned To", required: false },
-  { key: "notes", label: "Notes", required: false },
+  { key: 'method_of_contact', label: 'Method of Contact', required: false },
+  { key: 'contact_source', label: 'Contact Origin', required: false },
+  { key: 'contact_date', label: 'Contact Date', required: false },
+  { key: 'follow_up_dates', label: 'Follow-up Dates', required: false },
+  { key: 'status', label: 'Status', required: false },
+  { key: 'outcome', label: 'Outcome', required: false },
+  { key: 'reminder', label: 'Reminder', required: false },
+  { key: 'contacted_by', label: 'Contacted By', required: false },
+  { key: 'assigned_to', label: 'Assigned To', required: false },
+  { key: 'notes', label: 'Notes', required: false },
+  { key: 'created_at', label: 'Created At', required: false },
 ];
 
 const READ_STATUS_OPTIONS = [
-  { value: "all_read_status", label: "All" },
-  { value: "unread_only", label: "Unread Only" },
-  { value: "read_only", label: "Read Only" },
+  { value: 'all_read_status', label: 'All' },
+  { value: 'unread_only', label: 'Unread Only' },
+  { value: 'read_only', label: 'Read Only' },
 ];
 
 export default function Dashboard() {
@@ -140,7 +140,6 @@ export default function Dashboard() {
   const [agentPerformance, setAgentPerformance] = useState([]);
   const [users, setUsers] = useState([]);
   const [companies, setCompanies] = useState([]);
-  const [companySearchTerm, setCompanySearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRep, setEditingRep] = useState(null);
@@ -169,21 +168,21 @@ export default function Dashboard() {
     outcome: false,
     reminder: true,
     contacted_by: false,
-    created_at: false,
     assigned_to: true,
     notes: false,
+    created_at: false,
   });
   const [filters, setFilters] = useState({
-    search: "",
+    search: '',
     company_ids: [], // Array for multi-select
-    assigned_to: "",
-    status: "",
+    assigned_to: '',
+    status: '',
     contacted_by: [],
-    unread_filter: "",
-    rep_position: "",
-    exported_filter: "",
-    sort_field: "created_at",
-    sort_order: "desc",
+    unread_filter: '',
+    rep_position: '',
+    exported_filter: '',
+    sort_field: 'created_at',
+    sort_order: 'desc',
   });
 
   useEffect(() => {
@@ -193,7 +192,7 @@ export default function Dashboard() {
     getCurrentUser();
 
     // Check for repId in URL parameters
-    const repIdFromUrl = searchParams.get("repId");
+    const repIdFromUrl = searchParams.get('repId');
     if (repIdFromUrl) {
       setSelectedRepId(repIdFromUrl);
       setRepDetailModalOpen(true);
@@ -234,7 +233,7 @@ export default function Dashboard() {
       setConversionRates(conversionResult.data || []);
       setAgentPerformance(performanceResult.data || []);
     } catch (error) {
-      console.error("Error fetching stats:", error);
+      console.error('Error fetching stats:', error);
     }
   };
 
@@ -244,20 +243,14 @@ export default function Dashboard() {
   };
 
   const fetchUsers = async () => {
-    const { getUsers } = await import("@/lib/users");
+    const { getUsers } = await import('@/lib/users');
     const { data } = await getUsers();
     setUsers(data || []);
   };
 
   const fetchCompanies = async () => {
     const { data } = await getCompanies(1, 1000); // Get all companies for filter
-    // Sort companies alphabetically by company_name
-    const sortedCompanies = (data || []).sort((a, b) =>
-      (a.company_name || "").localeCompare(b.company_name || "", undefined, {
-        sensitivity: "base",
-      }),
-    );
-    setCompanies(sortedCompanies);
+    setCompanies(data || []);
   };
 
   const fetchData = async () => {
@@ -274,7 +267,7 @@ export default function Dashboard() {
       // Fetch stats separately
       await fetchStats();
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -282,12 +275,12 @@ export default function Dashboard() {
 
   const handleFilterChange = (key, value) => {
     const filterValue =
-      value === "all" ||
-      value === "all_assignees" ||
-      value === "all_read_status" ||
-      value === "all_positions" ||
-      value === "all_exported_status"
-        ? ""
+      value === 'all' ||
+      value === 'all_assignees' ||
+      value === 'all_read_status' ||
+      value === 'all_positions' ||
+      value === 'all_exported_status'
+        ? ''
         : value;
     setFilters((prev) => ({ ...prev, [key]: filterValue }));
     setCurrentPage(1); // Reset to first page when filtering
@@ -400,7 +393,7 @@ export default function Dashboard() {
   const handleBulkMarkReadUnread = async (markUnread) => {
     if (selectedRepresentatives.length === 0) return;
 
-    const action = markUnread ? "mark as unread" : "mark as read";
+    const action = markUnread ? 'mark as unread' : 'mark as read';
     if (
       window.confirm(
         `Are you sure you want to ${action} ${selectedRepresentatives.length} representatives?`,
@@ -419,7 +412,7 @@ export default function Dashboard() {
   };
 
   const handleStatusChange = async (representativeId, newStatus) => {
-    const statusValue = newStatus === "No Status" ? null : newStatus;
+    const statusValue = newStatus === 'No Status' ? null : newStatus;
     const { error } = await updateRepresentative(
       representativeId,
       { status: statusValue },
@@ -472,7 +465,7 @@ export default function Dashboard() {
         fetchData();
       }
     } catch (error) {
-      console.error("Error saving representative:", error);
+      console.error('Error saving representative:', error);
     } finally {
       setSaving(false);
     }
@@ -516,43 +509,36 @@ export default function Dashboard() {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString();
   };
 
   const getStatusBadgeColor = (status) => {
     switch (status) {
-      case "Client":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "Contacted":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "Not Interested":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "Declined":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "Not a Fit":
-        return "bg-orange-100 text-orange-800 border-orange-200";
-      case "Asked to Reach Out Later":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Pending Connection":
-        return "bg-purple-100 text-purple-800 border-purple-200";
-      case "No Reply":
-        return "bg-gray-100 text-gray-800 border-gray-200";
+      case 'Client':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'Contacted':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'Not Interested':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'Declined':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'Not a Fit':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'Asked to Reach Out Later':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'Pending Connection':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'No Reply':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const canEdit =
-    currentUser?.role === "Admin" || currentUser?.role === "Editor";
-  const canDelete = currentUser?.role === "Admin";
-
-  // Filter companies based on search term
-  const filteredCompanies = companies.filter((company) =>
-    company.company_name
-      ?.toLowerCase()
-      .includes(companySearchTerm.toLowerCase()),
-  );
+    currentUser?.role === 'Admin' || currentUser?.role === 'Editor';
+  const canDelete = currentUser?.role === 'Admin';
 
   return (
     <ProtectedRoute>
@@ -664,7 +650,7 @@ export default function Dashboard() {
                     placeholder="Search representatives..."
                     value={filters.search}
                     onChange={(e) =>
-                      handleFilterChange("search", e.target.value)
+                      handleFilterChange('search', e.target.value)
                     }
                     className="pl-10"
                   />
@@ -672,7 +658,7 @@ export default function Dashboard() {
 
                 <Select
                   value={filters.status}
-                  onValueChange={(value) => handleFilterChange("status", value)}
+                  onValueChange={(value) => handleFilterChange('status', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Filter by status" />
@@ -690,8 +676,8 @@ export default function Dashboard() {
                   value={filters.assigned_to}
                   onValueChange={(value) =>
                     handleFilterChange(
-                      "assigned_to",
-                      value === "all_assignees" ? "" : value,
+                      'assigned_to',
+                      value === 'all_assignees' ? '' : value,
                     )
                   }
                 >
@@ -711,7 +697,7 @@ export default function Dashboard() {
                 <Select
                   value={filters.unread_filter}
                   onValueChange={(value) =>
-                    handleFilterChange("unread_filter", value)
+                    handleFilterChange('unread_filter', value)
                   }
                 >
                   <SelectTrigger>
@@ -730,8 +716,8 @@ export default function Dashboard() {
                   value={filters.rep_position}
                   onValueChange={(value) =>
                     handleFilterChange(
-                      "rep_position",
-                      value === "all_positions" ? "" : value,
+                      'rep_position',
+                      value === 'all_positions' ? '' : value,
                     )
                   }
                 >
@@ -752,8 +738,8 @@ export default function Dashboard() {
                   value={filters.exported_filter}
                   onValueChange={(value) =>
                     handleFilterChange(
-                      "exported_filter",
-                      value === "all_exported_status" ? "" : value,
+                      'exported_filter',
+                      value === 'all_exported_status' ? '' : value,
                     )
                   }
                 >
@@ -776,21 +762,11 @@ export default function Dashboard() {
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Filter by Company">
                           {filters.company_ids.length === 0
-                            ? "Select companies..."
+                            ? 'Select companies...'
                             : `${filters.company_ids.length} companies selected`}
                         </SelectValue>
                       </SelectTrigger>
-                      <SelectContent className="max-h-96">
-                        <div className="p-2">
-                          <Input
-                            placeholder="Search companies..."
-                            value={companySearchTerm}
-                            onChange={(e) =>
-                              setCompanySearchTerm(e.target.value)
-                            }
-                            className="h-8"
-                          />
-                        </div>
+                      <SelectContent className="max-h-60">
                         <div className="p-2 border-b">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">
@@ -813,17 +789,17 @@ export default function Dashboard() {
                             className="flex items-center space-x-2 py-1.5 hover:bg-gray-100 cursor-pointer rounded"
                             onClick={() =>
                               handleFilterChange(
-                                "company_id",
-                                filters.company_id === "empty" ? "" : "empty",
+                                'company_id',
+                                filters.company_id === 'empty' ? '' : 'empty',
                               )
                             }
                           >
                             <Checkbox
-                              checked={filters.company_id === "empty"}
+                              checked={filters.company_id === 'empty'}
                               onCheckedChange={(checked) =>
                                 handleFilterChange(
-                                  "company_id",
-                                  checked ? "empty" : "",
+                                  'company_id',
+                                  checked ? 'empty' : '',
                                 )
                               }
                               onClick={(e) => e.stopPropagation()}
@@ -833,92 +809,22 @@ export default function Dashboard() {
                             </Label>
                           </div>
                         </div>
-                        <div className="max-h-64 overflow-y-auto">
-                          {(() => {
-                            // Split companies into selected and unselected
-                            const selectedCompanies = filteredCompanies.filter(
-                              (company) =>
-                                filters.company_ids.includes(company.id),
-                            );
-                            const unselectedCompanies =
-                              filteredCompanies.filter(
-                                (company) =>
-                                  !filters.company_ids.includes(company.id),
-                              );
-
-                            return { selectedCompanies, unselectedCompanies };
-                          })().selectedCompanies.map((company) => (
+                        <div className="max-h-48 overflow-y-auto">
+                          {companies.map((company) => (
                             <div
-                              key={`selected-${company.id}`}
-                              className="flex items-center space-x-2 px-2 py-1.5 hover:bg-blue-100 cursor-pointer bg-blue-50 border-l-2 border-blue-400"
-                              onClick={() =>
-                                handleCompanyFilterChange(company.id, false)
-                              }
-                            >
-                              <Checkbox
-                                checked={true}
-                                onCheckedChange={(checked) =>
-                                  handleCompanyFilterChange(company.id, checked)
-                                }
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <Label
-                                className="text-sm cursor-pointer flex-1 truncate font-medium text-blue-900"
-                                title={company.company_name}
-                              >
-                                {company.company_name}
-                                <span className="ml-2 text-xs text-blue-600">
-                                  ✓
-                                </span>
-                              </Label>
-                            </div>
-                          ))}
-
-                          {(() => {
-                            const selectedCompanies = filteredCompanies.filter(
-                              (company) =>
-                                filters.company_ids.includes(company.id),
-                            );
-                            const unselectedCompanies =
-                              filteredCompanies.filter(
-                                (company) =>
-                                  !filters.company_ids.includes(company.id),
-                              );
-
-                            // Show divider if we have both selected and unselected companies
-                            if (
-                              selectedCompanies.length > 0 &&
-                              unselectedCompanies.length > 0
-                            ) {
-                              return (
-                                <div className="border-t border-gray-200 my-1">
-                                  <div className="px-2 py-1 text-xs text-gray-500 bg-gray-50">
-                                    Other Companies
-                                  </div>
-                                </div>
-                              );
-                            }
-                            return null;
-                          })()}
-
-                          {(() => {
-                            const unselectedCompanies =
-                              filteredCompanies.filter(
-                                (company) =>
-                                  !filters.company_ids.includes(company.id),
-                              );
-
-                            return unselectedCompanies;
-                          })().map((company) => (
-                            <div
-                              key={`unselected-${company.id}`}
+                              key={company.id}
                               className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-50 cursor-pointer"
                               onClick={() =>
-                                handleCompanyFilterChange(company.id, true)
+                                handleCompanyFilterChange(
+                                  company.id,
+                                  !filters.company_ids.includes(company.id),
+                                )
                               }
                             >
                               <Checkbox
-                                checked={false}
+                                checked={filters.company_ids.includes(
+                                  company.id,
+                                )}
                                 onCheckedChange={(checked) =>
                                   handleCompanyFilterChange(company.id, checked)
                                 }
@@ -933,16 +839,10 @@ export default function Dashboard() {
                             </div>
                           ))}
                         </div>
-                        {filteredCompanies.length === 0 &&
-                          companySearchTerm && (
-                            <div className="p-2 text-sm text-gray-500 text-center">
-                              No companies found matching "{companySearchTerm}"
-                            </div>
-                          )}
                         {filters.company_ids.length > 0 && (
                           <div className="p-2 border-t bg-gray-50">
                             <div className="text-xs text-gray-600">
-                              {filters.company_ids.length} of {companies.length}{" "}
+                              {filters.company_ids.length} of {companies.length}{' '}
                               companies selected
                             </div>
                           </div>
@@ -960,7 +860,7 @@ export default function Dashboard() {
                         className="w-full justify-start"
                       >
                         {filters.contacted_by.length === 0 ? (
-                          "Contacted by"
+                          'Contacted by'
                         ) : (
                           <div className="flex items-center gap-1 flex-1 min-w-0">
                             <span className="truncate">
@@ -973,9 +873,9 @@ export default function Dashboard() {
                                     `${user.first_name} ${user.last_name}`,
                                 );
                                 if (names.length <= 2) {
-                                  return names.join(", ");
+                                  return names.join(', ');
                                 } else {
-                                  return `${names.slice(0, 2).join(", ")} +${names.length - 2} more`;
+                                  return `${names.slice(0, 2).join(', ')} +${names.length - 2} more`;
                                 }
                               })()}
                             </span>
@@ -998,7 +898,7 @@ export default function Dashboard() {
                             </Button>
                           )}
                         </div>
-                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                        <div className="space-y-3 max-h-48 overflow-y-auto">
                           {users.map((user) => (
                             <div
                               key={user.id}
@@ -1025,8 +925,8 @@ export default function Dashboard() {
                             <div className="text-xs text-gray-500">
                               {filters.contacted_by.length} user
                               {filters.contacted_by.length !== 1
-                                ? "s"
-                                : ""}{" "}
+                                ? 's'
+                                : ''}{' '}
                               selected
                             </div>
                           </div>
@@ -1047,7 +947,7 @@ export default function Dashboard() {
                     <Select
                       value={filters.sort_field}
                       onValueChange={(value) =>
-                        handleFilterChange("sort_field", value)
+                        handleFilterChange('sort_field', value)
                       }
                     >
                       <SelectTrigger className="w-40">
@@ -1066,20 +966,20 @@ export default function Dashboard() {
                   <div className="flex items-center space-x-1">
                     <Button
                       variant={
-                        filters.sort_order === "asc" ? "default" : "outline"
+                        filters.sort_order === 'asc' ? 'default' : 'outline'
                       }
                       size="sm"
-                      onClick={() => handleFilterChange("sort_order", "asc")}
+                      onClick={() => handleFilterChange('sort_order', 'asc')}
                       className="px-3"
                     >
                       ↑ ASC
                     </Button>
                     <Button
                       variant={
-                        filters.sort_order === "desc" ? "default" : "outline"
+                        filters.sort_order === 'desc' ? 'default' : 'outline'
                       }
                       size="sm"
-                      onClick={() => handleFilterChange("sort_order", "desc")}
+                      onClick={() => handleFilterChange('sort_order', 'desc')}
                       className="px-3"
                     >
                       ↓ DESC
@@ -1124,10 +1024,10 @@ export default function Dashboard() {
                                 />
                                 <Label
                                   htmlFor={column.key}
-                                  className={`text-sm ${column.required ? "text-gray-500" : "cursor-pointer"}`}
+                                  className={`text-sm ${column.required ? 'text-gray-500' : 'cursor-pointer'}`}
                                 >
                                   {column.label}
-                                  {column.required && " (Required)"}
+                                  {column.required && ' (Required)'}
                                 </Label>
                                 {visibleColumns[column.key] ? (
                                   <Eye className="h-3 w-3 text-green-600" />
@@ -1157,6 +1057,7 @@ export default function Dashboard() {
                                 contacted_by: true,
                                 assigned_to: true,
                                 notes: true,
+                                created_at: true,
                               })
                             }
                             className="w-full"
@@ -1260,12 +1161,12 @@ export default function Dashboard() {
                 <span>Representatives</span>
                 <span className="text-sm font-normal text-gray-500">
                   Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
-                  {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{" "}
+                  {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{' '}
                   {totalCount}
                 </span>
               </CardTitle>
               <CardDescription>
-                Representative contacts and their status (Page {currentPage} of{" "}
+                Representative contacts and their status (Page {currentPage} of{' '}
                 {totalPages})
               </CardDescription>
             </CardHeader>
@@ -1276,76 +1177,83 @@ export default function Dashboard() {
                 </div>
               ) : representatives.length === 0 ? (
                 <div className="text-center py-8">
-                  <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
                     No representatives found
                   </h3>
-                  <p className="text-gray-500">
-                    Try adjusting your filters or add some representatives to
-                    get started.
+                  <p className="text-gray-500 mb-4">
+                    Get started by adding your first representative.
                   </p>
+                  {canEdit && (
+                    <Button onClick={handleAddRepresentative}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add Representative
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                  <table className="min-w-full divide-y divide-gray-200 relative">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          <Checkbox
-                            checked={
-                              selectedRepresentatives.length ===
-                              representatives.length
-                            }
-                            onCheckedChange={handleSelectAll}
-                          />
-                        </th>
-                        {visibleColumns.name && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Name
+                        {canDelete && (
+                          <th className="px-6 py-3 text-left sticky left-0 bg-gray-50 z-10">
+                            <Checkbox
+                              checked={
+                                selectedRepresentatives.length ===
+                                representatives.length
+                              }
+                              onCheckedChange={handleSelectAll}
+                            />
                           </th>
                         )}
+                        <th
+                          className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky bg-gray-50 z-10 ${canDelete ? 'left-14' : 'left-0'}`}
+                        >
+                          Name
+                        </th>
                         {visibleColumns.company && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
                             Company
                           </th>
                         )}
                         {visibleColumns.role && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
                             Role
                           </th>
                         )}
                         {visibleColumns.linkedin_profile_url && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                             LinkedIn
                           </th>
                         )}
                         {visibleColumns.method_of_contact && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Contact Method
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Method of Contact
                           </th>
                         )}
                         {visibleColumns.contact_source && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
                             Contact Origin
                           </th>
                         )}
                         {visibleColumns.contact_date && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
                             Contact Date
                           </th>
                         )}
                         {visibleColumns.follow_up_dates && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                             Follow-up Dates
                           </th>
                         )}
                         {visibleColumns.status && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
                             Status
                           </th>
                         )}
                         {visibleColumns.outcome && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
                             Outcome
                           </th>
                         )}
@@ -1355,321 +1263,409 @@ export default function Dashboard() {
                           </th>
                         )}
                         {visibleColumns.contacted_by && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 group-hover:bg-gray-50">
                             Contacted By
                           </th>
                         )}
-                        {visibleColumns.created_at && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Created At
-                          </th>
-                        )}
                         {visibleColumns.assigned_to && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider group-hover:bg-gray-50">
                             Assigned To
                           </th>
                         )}
                         {visibleColumns.notes && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                             Notes
                           </th>
                         )}
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
+                        {visibleColumns.created_at && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Created At
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {representatives.map((rep) => (
                         <tr
                           key={rep.id}
-                          className={`hover:bg-gray-50 cursor-pointer ${
-                            rep.mark_unread ? "bg-blue-50" : ""
-                          }`}
-                          onClick={() => handleRepresentativeClick(rep.id)}
+                          className={`group hover:bg-gray-50 ${rep.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
                         >
-                          <td
-                            className="px-6 py-4 whitespace-nowrap"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Checkbox
-                              checked={selectedRepresentatives.includes(rep.id)}
-                              onCheckedChange={(checked) =>
-                                handleSelectRepresentative(rep.id, checked)
-                              }
-                            />
-                          </td>
-                          {visibleColumns.name && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div>
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {rep.full_name}
-                                    {rep.mark_unread && (
-                                      <Badge className="ml-2 bg-blue-100 text-blue-800 text-xs">
-                                        Unread
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
+                          {canDelete && (
+                            <td
+                              className={`px-6 py-4 whitespace-nowrap sticky left-0 z-10 ${rep.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}
+                            >
+                              <Checkbox
+                                checked={selectedRepresentatives.includes(
+                                  rep.id,
+                                )}
+                                onCheckedChange={(checked) =>
+                                  handleSelectRepresentative(rep.id, checked)
+                                }
+                              />
                             </td>
                           )}
+                          <td
+                            className={`px-6 py-4 whitespace-nowrap sticky z-10 ${canDelete ? 'left-14' : 'left-0'} ${rep.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}
+                          >
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                                  <span className="text-sm font-medium text-white">
+                                    {rep.first_name?.[0]}
+                                    {rep.last_name?.[0]}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-4 flex-1 flex items-center justify-between">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-2">
+                                        <button
+                                          onClick={() =>
+                                            handleRepresentativeClick(rep.id)
+                                          }
+                                          className="text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
+                                        >
+                                          {rep.first_name} {rep.last_name}
+                                        </button>
+                                        {rep.linkedin_profile_url && (
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const url =
+                                                rep.linkedin_profile_url.startsWith(
+                                                  'http',
+                                                )
+                                                  ? rep.linkedin_profile_url
+                                                  : `https://${rep.linkedin_profile_url}`;
+                                              window.open(
+                                                url,
+                                                '_blank',
+                                                'noopener,noreferrer',
+                                              );
+                                            }}
+                                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                                            title="Open LinkedIn Profile"
+                                          >
+                                            <img
+                                              src="/linkedinicon.webp"
+                                              alt="LinkedIn"
+                                              className="h-4 w-4 hover:opacity-80 transition-opacity"
+                                            />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {rep.contact_date
+                                      ? new Date(
+                                          rep.contact_date,
+                                        ).toLocaleDateString()
+                                      : 'Not contacted'}
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-center space-x-3">
+                                  {canEdit && (
+                                    <button
+                                      onClick={() =>
+                                        handleEditRepresentative(rep)
+                                      }
+                                      className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors"
+                                      title="Edit Representative"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  {canDelete && (
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteRepresentative(rep)
+                                      }
+                                      className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
+                                      title="Delete Representative"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
                           {visibleColumns.company && (
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
                               <div className="text-sm text-gray-900">
-                                {rep.company?.company_name || "N/A"}
+                                {rep.company?.company_name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {rep.company?.status}
                               </div>
                             </td>
                           )}
                           {visibleColumns.role && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {rep.role || "N/A"}
-                              </div>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
+                              {rep.role || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.linkedin_profile_url && (
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-4 py-4 text-sm truncate max-w-32 group-hover:bg-gray-50">
                               {rep.linkedin_profile_url ? (
-                                <a
-                                  href={rep.linkedin_profile_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:text-blue-800"
-                                  onClick={(e) => e.stopPropagation()}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const url =
+                                      rep.linkedin_profile_url.startsWith(
+                                        'http',
+                                      )
+                                        ? rep.linkedin_profile_url
+                                        : `https://${rep.linkedin_profile_url}`;
+                                    window.open(
+                                      url,
+                                      '_blank',
+                                      'noopener,noreferrer',
+                                    );
+                                  }}
+                                  className="text-blue-600 hover:text-blue-800 transition-colors flex items-center"
+                                  title="Open LinkedIn Profile"
                                 >
-                                  LinkedIn
-                                </a>
+                                  <img
+                                    src="/linkedinicon.webp"
+                                    alt="LinkedIn"
+                                    className="h-4 w-4 hover:opacity-80 transition-opacity"
+                                  />
+                                </button>
                               ) : (
                                 <span className="text-gray-400">N/A</span>
                               )}
                             </td>
                           )}
                           {visibleColumns.method_of_contact && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {rep.method_of_contact || "N/A"}
-                              </div>
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
+                              {rep.method_of_contact || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.contact_source && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {rep.contact_source || "N/A"}
-                              </div>
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
+                              {rep.contact_source || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.contact_date && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {formatDate(rep.contact_date)}
-                              </div>
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
+                              {rep.contact_date
+                                ? new Date(
+                                    rep.contact_date,
+                                  ).toLocaleDateString()
+                                : 'N/A'}
                             </td>
                           )}
                           {visibleColumns.follow_up_dates && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {rep.follow_up_dates || "N/A"}
-                              </div>
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
+                              {rep.follow_up_dates &&
+                              rep.follow_up_dates.length > 0 ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {rep.follow_up_dates
+                                    .slice(0, 2)
+                                    .map((date, index) => (
+                                      <span
+                                        key={index}
+                                        className="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded"
+                                      >
+                                        {new Date(date).toLocaleDateString()}
+                                      </span>
+                                    ))}
+                                  {rep.follow_up_dates.length > 2 && (
+                                    <span className="text-xs text-gray-500">
+                                      +{rep.follow_up_dates.length - 2}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                'N/A'
+                              )}
                             </td>
                           )}
                           {visibleColumns.status && (
-                            <td
-                              className="px-6 py-4 whitespace-nowrap"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Select
-                                value={rep.status || "No Status"}
-                                onValueChange={(value) =>
-                                  handleStatusChange(rep.id, value)
-                                }
-                                disabled={!canEdit}
-                              >
-                                <SelectTrigger className="w-40">
-                                  <SelectValue>
-                                    <Badge
-                                      className={getStatusBadgeColor(
-                                        rep.status,
-                                      )}
-                                    >
-                                      {rep.status || "No Status"}
-                                    </Badge>
-                                  </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {INLINE_STATUS_OPTIONS.map((option) => (
-                                    <SelectItem
-                                      key={option.value}
-                                      value={option.value}
-                                    >
-                                      {option.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                            <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
+                              {canEdit ? (
+                                <Select
+                                  value={rep.status || 'No Status'}
+                                  onValueChange={(value) =>
+                                    handleStatusChange(rep.id, value)
+                                  }
+                                >
+                                  <SelectTrigger className="w-full min-w-[140px] h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {INLINE_STATUS_OPTIONS.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                        className="text-xs"
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : rep.status ? (
+                                <span
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeColor(rep.status)}`}
+                                >
+                                  {rep.status}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400 text-sm">
+                                  No status
+                                </span>
+                              )}
                             </td>
                           )}
                           {visibleColumns.outcome && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {rep.outcome || "N/A"}
-                              </div>
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
+                              {rep.outcome || 'N/A'}
                             </td>
                           )}
                           {visibleColumns.reminder && (
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {formatDate(rep.reminder_date)}
-                              </div>
+                              {rep.reminder_date ? (
+                                <div className="flex items-center">
+                                  <div
+                                    className={`w-3 h-3 rounded-full mr-2 ${
+                                      new Date(rep.reminder_date) <= new Date()
+                                        ? 'bg-red-500'
+                                        : 'bg-orange-500'
+                                    }`}
+                                  ></div>
+                                  <span
+                                    className={`text-sm ${
+                                      new Date(rep.reminder_date) <= new Date()
+                                        ? 'text-red-600 font-medium'
+                                        : 'text-orange-600'
+                                    }`}
+                                  >
+                                    {formatDate(rep.reminder_date)}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-gray-400 text-sm">
+                                  No reminder
+                                </span>
+                              )}
                             </td>
                           )}
                           {visibleColumns.contacted_by && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {rep.contacted_user
-                                  ? `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
-                                  : "N/A"}
-                              </div>
-                            </td>
-                          )}
-                          {visibleColumns.created_at && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
-                              {new Date(rep.created_at).toLocaleDateString()}
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
+                              {rep.contacted_user
+                                ? `${rep.contacted_user.first_name} ${rep.contacted_user.last_name}`
+                                : 'N/A'}
                             </td>
                           )}
                           {visibleColumns.assigned_to && (
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {rep.assigned_user
-                                  ? `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
-                                  : "Unassigned"}
-                              </div>
-                            </td>
-                          )}
-                          {visibleColumns.notes && (
-                            <td className="px-6 py-4">
-                              <div className="text-sm text-gray-900 max-w-xs truncate">
-                                {rep.notes || "N/A"}
-                              </div>
-                            </td>
-                          )}
-                          <td
-                            className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <div className="flex space-x-2">
-                              {canEdit && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
+                              {rep.assigned_user ? (
+                                `${rep.assigned_user.first_name} ${rep.assigned_user.last_name}`
+                              ) : (
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
                                   onClick={() => handleAssignToMe(rep.id)}
                                   className="text-blue-600 hover:text-blue-800"
                                 >
-                                  <User className="h-4 w-4" />
+                                  Assign to me
                                 </Button>
                               )}
-                              {canEdit && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditRepresentative(rep)}
-                                  className="text-indigo-600 hover:text-indigo-800"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {canDelete && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleDeleteRepresentative(rep)
-                                  }
-                                  className="text-red-600 hover:text-red-800"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          </td>
+                            </td>
+                          )}
+                          {visibleColumns.notes && (
+                            <td
+                              className="px-4 py-4 text-sm text-gray-900 truncate max-w-32"
+                              title={rep.notes}
+                            >
+                              {rep.notes
+                                ? rep.notes.length > 50
+                                  ? `${rep.notes.substring(0, 50)}...`
+                                  : rep.notes
+                                : 'N/A'}
+                            </td>
+                          )}
+                          {visibleColumns.created_at && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
+                              {new Date(rep.created_at).toLocaleDateString()}
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               )}
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-6 flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
-                    Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
-                    {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{" "}
-                    {totalCount} results
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      onClick={handlePreviousPage}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </Button>
-                    <span className="flex items-center px-4 py-2 text-sm text-gray-700">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
 
-          {/* Modals */}
+          {/* Pagination Controls at Bottom */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{' '}
+                {totalCount} representatives
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="flex items-center px-3 py-2 text-sm text-gray-700">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Representative Dialog */}
           <RepresentativeDialog
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-            representative={editingRep}
+            isOpen={dialogOpen}
+            onClose={() => setDialogOpen(false)}
             onSave={handleSaveRepresentative}
+            representative={editingRep}
             saving={saving}
-            companies={companies}
-            users={users}
           />
 
+          {/* Representative Detail Modal */}
           <RepresentativeDetailModal
-            open={repDetailModalOpen}
-            onOpenChange={(open) => {
-              setRepDetailModalOpen(open);
-              if (!open) {
-                router.push("/dashboard", { scroll: false });
-              }
-            }}
+            isOpen={repDetailModalOpen}
+            onClose={() => setRepDetailModalOpen(false)}
             representativeId={selectedRepId}
-            companies={companies}
-            users={users}
-            onUpdate={fetchData}
           />
 
+          {/* CSV Import Modal */}
           <CSVImportModal
-            open={importModalOpen}
-            onOpenChange={setImportModalOpen}
+            isOpen={importModalOpen}
+            onClose={() => setImportModalOpen(false)}
             onImportComplete={handleImportComplete}
-            companies={companies}
-            users={users}
+            importType="representatives"
           />
 
+          {/* CSV Export Modal */}
           <CSVExportModal
-            open={exportModalOpen}
-            onOpenChange={setExportModalOpen}
+            isOpen={exportModalOpen}
+            onClose={() => setExportModalOpen(false)}
+            data={representatives}
+            exportType="representatives"
+            selectedItems={selectedRepresentatives}
             filters={filters}
-            visibleColumns={visibleColumns}
           />
         </main>
       </div>
