@@ -1161,12 +1161,6 @@ export default function Dashboard() {
                             }
                             className="w-full"
                           >
-                            Show All Columns
-                          </Button>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
                   <Button variant="outline" onClick={() => setImportModalOpen(true)}>
                     <Upload className="h-4 w-4 mr-2" />
                     Import Representatives CSV
@@ -1178,6 +1172,23 @@ export default function Dashboard() {
                   {canEdit && (
                     <Button onClick={handleAddRepresentative} className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="h-4 w-4 mr-2" />
+                      Add Representative
+                    </Button>
+                  )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setExportModalOpen(true)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                  {canEdit && (
+                    <Button
+                      onClick={handleAddRepresentative}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
                       Add Representative
                     </Button>
                   )}
