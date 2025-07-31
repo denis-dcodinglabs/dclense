@@ -1671,6 +1671,7 @@ export default function Dashboard() {
             filters={filters}
             visibleColumns={visibleColumns}
           />
+        </div>
         </main>
       </div>
     </ProtectedRoute>
