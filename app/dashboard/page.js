@@ -185,6 +185,7 @@ export default function Dashboard() {
     sort_field: "created_at",
     sort_order: "desc",
   });
+  const [exportedRepresentatives, setExportedRepresentatives] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -218,6 +219,13 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData();
   }, [currentPage, filters]);
+
+  useEffect(() => {
+    // Fetch export status when representatives change
+    if (representatives.length > 0 && currentUser) {
+      fetchExportStatus();
+    }
+  }, [representatives, currentUser]);
 
   const fetchStats = async () => {
     try {
@@ -256,7 +264,8 @@ export default function Dashboard() {
       (a.company_name || "").localeCompare(b.company_name || "", undefined, {
         sensitivity: "base",
       }),
-    );
+      const filtersWithUser = { ...filters, user_id: currentUser?.id };
+      const { data, count } = await getRepresentatives(currentPage, 50, filtersWithUser);
     setCompanies(sortedCompanies);
   };
 
@@ -278,6 +287,15 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchExportStatus = async () => {
+    if (!currentUser || representatives.length === 0) return;
+    
+    const { getRepresentativeExportStatus } = await import('@/lib/representatives');
+    const representativeIds = representatives.map(rep => rep.id);
+    const { data: exportedIds } = await getRepresentativeExportStatus(representativeIds, currentUser.id);
+    setExportedRepresentatives(exportedIds || []);
   };
 
   const handleFilterChange = (key, value) => {
@@ -551,6 +569,10 @@ export default function Dashboard() {
   const filteredCompanies = companies.filter((company) =>
     company.company_name
       ?.toLowerCase()
+  const isRepresentativeExported = (repId) => {
+    return exportedRepresentatives.includes(repId);
+  };
+
       .includes(companySearchTerm.toLowerCase()),
   );
 
@@ -1392,6 +1414,11 @@ export default function Dashboard() {
                             className="px-6 py-4 whitespace-nowrap"
                             onClick={(e) => e.stopPropagation()}
                           >
+                                  {isRepresentativeExported(rep.id) && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                      Exported
+                                    </span>
+                                  )}
                             <Checkbox
                               checked={selectedRepresentatives.includes(rep.id)}
                               onCheckedChange={(checked) =>
