@@ -567,7 +567,7 @@ export default function Dashboard() {
                   Representatives
                 </h1>
                 <p className="mt-2 text-gray-600">
-                  Welcome back! Here's what's happening with your leads.
+                  Welcome back! Here&apos;s what&apos;s happening with your leads.
                 </p>
               </div>
               <div className="flex space-x-3"></div>
@@ -936,7 +936,7 @@ export default function Dashboard() {
                         {filteredCompanies.length === 0 &&
                           companySearchTerm && (
                             <div className="p-2 text-sm text-gray-500 text-center">
-                              No companies found matching "{companySearchTerm}"
+                              No companies found matching &quot;{companySearchTerm}&quot;
                             </div>
                           )}
                         {filters.company_ids.length > 0 && (
@@ -1108,23 +1108,6 @@ export default function Dashboard() {
                           <h4 className="font-medium text-sm mb-3">
                             Show/Hide Columns
                           </h4>
-                          <div className="space-y-3">
-          {/* Action Buttons */}
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-3">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Settings className="h-4 w-4 mr-2" />
-                        Customize Table
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-64" align="start">
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-medium text-sm mb-3">Show/Hide Columns</h4>
                           <div className="space-y-3">
                             {TABLE_COLUMNS.map((column) => (
                               <div key={column.key} className="flex items-center space-x-2">
@@ -1671,7 +1654,6 @@ export default function Dashboard() {
             filters={filters}
             visibleColumns={visibleColumns}
           />
-        </div>
         </main>
       </div>
     </ProtectedRoute>
