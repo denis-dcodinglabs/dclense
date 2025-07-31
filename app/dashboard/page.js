@@ -263,8 +263,14 @@ export default function Dashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Add current user ID to filters for export filtering
+      const filtersWithUser = {
+        ...filters,
+        current_user_id: currentUser?.id
+      };
+      
       const [repsResult] = await Promise.all([
-        getRepresentatives(currentPage, ITEMS_PER_PAGE, {
+        getRepresentatives(currentPage, ITEMS_PER_PAGE, filtersWithUser),
           ...filters,
           current_user_id: currentUser?.id
         }),
