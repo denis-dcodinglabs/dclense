@@ -263,6 +263,8 @@ export default function Dashboard() {
     const sortedCompanies = (data || []).sort((a, b) =>
       (a.company_name || "").localeCompare(b.company_name || "", undefined, {
         sensitivity: "base",
+      })
+    );
     setCompanies(sortedCompanies);
   };
 
