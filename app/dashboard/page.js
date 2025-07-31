@@ -263,22 +263,20 @@ export default function Dashboard() {
     const sortedCompanies = (data || []).sort((a, b) =>
       (a.company_name || "").localeCompare(b.company_name || "", undefined, {
         sensitivity: "base",
-      }),
-      const filtersWithUser = { ...filters, user_id: currentUser?.id };
-      const { data, count } = await getRepresentatives(currentPage, 50, filtersWithUser);
+      })
+    );
     setCompanies(sortedCompanies);
   };
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [repsResult] = await Promise.all([
-        getRepresentatives(currentPage, ITEMS_PER_PAGE, filters),
-      ]);
+      const filtersWithUser = { ...filters, user_id: currentUser?.id };
+      const { data, count } = await getRepresentatives(currentPage, 50, filtersWithUser);
 
-      setRepresentatives(repsResult.data || []);
-      setTotalCount(repsResult.count || 0);
-      setTotalPages(Math.ceil((repsResult.count || 0) / ITEMS_PER_PAGE));
+      setRepresentatives(data || []);
+      setTotalCount(count || 0);
+      setTotalPages(Math.ceil((count || 0) / ITEMS_PER_PAGE));
 
       // Fetch stats separately
       await fetchStats();
@@ -569,12 +567,12 @@ export default function Dashboard() {
   const filteredCompanies = companies.filter((company) =>
     company.company_name
       ?.toLowerCase()
+      .includes(companySearchTerm.toLowerCase()),
+  );
+
   const isRepresentativeExported = (repId) => {
     return exportedRepresentatives.includes(repId);
   };
-
-      .includes(companySearchTerm.toLowerCase()),
-  );
 
   return (
     <ProtectedRoute>
@@ -1414,17 +1412,19 @@ export default function Dashboard() {
                             className="px-6 py-4 whitespace-nowrap"
                             onClick={(e) => e.stopPropagation()}
                           >
-                                  {isRepresentativeExported(rep.id) && (
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                                      Exported
-                                    </span>
-                                  )}
-                            <Checkbox
-                              checked={selectedRepresentatives.includes(rep.id)}
-                              onCheckedChange={(checked) =>
-                                handleSelectRepresentative(rep.id, checked)
-                              }
-                            />
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={selectedRepresentatives.includes(rep.id)}
+                                onCheckedChange={(checked) =>
+                                  handleSelectRepresentative(rep.id, checked)
+                                }
+                              />
+                              {isRepresentativeExported(rep.id) && (
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                  Exported
+                                </span>
+                              )}
+                            </div>
                           </td>
                           {visibleColumns.name && (
                             <td className="px-6 py-4 whitespace-nowrap">
