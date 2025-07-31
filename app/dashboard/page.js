@@ -264,7 +264,10 @@ export default function Dashboard() {
     setLoading(true);
     try {
       // Add current user ID to filters for user-specific export tracking
-      const filtersWithUser = {
+        getRepresentatives(currentPage, ITEMS_PER_PAGE, {
+          ...filters,
+          current_user_id: currentUser?.id
+        }),
         ...filters,
         current_user_id: currentUser?.id
       };
