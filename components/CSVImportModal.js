@@ -180,10 +180,48 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
       return;
     }
 
+    // Process field mappings to handle unmapped fields with proper defaults
+    const processedMappings = {};
+    const fields = importType === 'companies' ? COMPANY_FIELDS : REPRESENTATIVE_FIELDS;
+    
+    fields.forEach(field => {
+      const mappedValue = fieldMappings[field.key];
+      
+      if (!mappedValue || mappedValue === 'unmapped') {
+        // Set appropriate default values for unmapped fields
+        switch (field.key) {
+          case 'company_id':
+          case 'connection_status':
+          case 'contact_date':
+          case 'contacted_by':
+          case 'assigned_to':
+          case 'reminder_date':
+          case 'method_of_contact':
+            processedMappings[field.key] = 'NULL';
+            break;
+          case 'follow_up_dates':
+            processedMappings[field.key] = '[]';
+            break;
+          case 'role':
+          case 'linkedin_profile_url':
+          case 'contact_source':
+          case 'outcome':
+          case 'notes':
+          case 'last_name':
+          case 'status':
+            processedMappings[field.key] = 'EMPTY';
+            break;
+          default:
+            processedMappings[field.key] = 'EMPTY';
+        }
+      } else {
+        processedMappings[field.key] = mappedValue;
+      }
+    });
     const templateData = {
       template_name: templateName,
       template_type: importType,
-      field_mappings: fieldMappings
+      field_mappings: processedMappings
     };
 
     const { error } = await saveCSVTemplate(templateData, currentUser.id);
