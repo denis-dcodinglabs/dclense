@@ -567,7 +567,7 @@ export default function Dashboard() {
                   Representatives
                 </h1>
                 <p className="mt-2 text-gray-600">
-                  Welcome back! Here&apos;s what&apos;s happening with your leads.
+                  Welcome back! Here's what's happening with your leads.
                 </p>
               </div>
               <div className="flex space-x-3"></div>
@@ -936,7 +936,7 @@ export default function Dashboard() {
                         {filteredCompanies.length === 0 &&
                           companySearchTerm && (
                             <div className="p-2 text-sm text-gray-500 text-center">
-                              No companies found matching &quot;{companySearchTerm}&quot;
+                              No companies found matching "{companySearchTerm}"
                             </div>
                           )}
                         {filters.company_ids.length > 0 && (
@@ -1110,19 +1110,24 @@ export default function Dashboard() {
                           </h4>
                           <div className="space-y-3">
                             {TABLE_COLUMNS.map((column) => (
-                              <div key={column.key} className="flex items-center space-x-2">
+                              <div
+                                key={column.key}
+                                className="flex items-center space-x-2"
+                              >
                                 <Checkbox
                                   id={column.key}
                                   checked={visibleColumns[column.key]}
-                                  onCheckedChange={(checked) => handleColumnToggle(column.key, checked)}
+                                  onCheckedChange={(checked) =>
+                                    handleColumnToggle(column.key, checked)
+                                  }
                                   disabled={column.required}
                                 />
-                                <Label 
-                                  htmlFor={column.key} 
-                                  className={`text-sm ${column.required ? 'text-gray-500' : 'cursor-pointer'}`}
+                                <Label
+                                  htmlFor={column.key}
+                                  className={`text-sm ${column.required ? "text-gray-500" : "cursor-pointer"}`}
                                 >
                                   {column.label}
-                                  {column.required && ' (Required)'}
+                                  {column.required && " (Required)"}
                                 </Label>
                                 {visibleColumns[column.key] ? (
                                   <Eye className="h-3 w-3 text-green-600" />
@@ -1137,20 +1142,23 @@ export default function Dashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setVisibleColumns({
-                              representative: true,
-                              company: true,
-                              role: true,
-                              method_of_contact: true,
-                              contact_source: true,
-                              linkedin_profile_url: true,
-                              status: true,
-                              contact_date: true,
-                              outcome: true,
-                              assigned_to: true,
-                              contacted_by: true,
-                              created_at: true
-                            })}
+                            onClick={() =>
+                              setVisibleColumns({
+                                name: true,
+                                company: true,
+                                role: true,
+                                contact_source: true,
+                                linkedin_profile_url: true,
+                                contact_date: true,
+                                follow_up_dates: true,
+                                status: true,
+                                outcome: true,
+                                reminder: true,
+                                contacted_by: true,
+                                assigned_to: true,
+                                notes: true,
+                              })
+                            }
                             className="w-full"
                           >
                             Show All Columns
@@ -1161,17 +1169,26 @@ export default function Dashboard() {
                   </Popover>
                 </div>
                 <div className="flex space-x-3">
-                  <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setImportModalOpen(true)}
+                  >
                     <Upload className="h-4 w-4 mr-2" />
                     Import Representatives CSV
                   </Button>
-                  <Button variant="outline" onClick={() => setExportModalOpen(true)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setExportModalOpen(true)}
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Export
                   </Button>
                   {canEdit && (
-                    <Button onClick={handleAddRepresentative} className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="h-4 w-4 mr-2" />
+                    <Button
+                      onClick={handleAddRepresentative}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
                       Add Representative
                     </Button>
                   )}
