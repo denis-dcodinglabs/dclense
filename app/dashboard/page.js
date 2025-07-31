@@ -179,6 +179,7 @@ export default function Dashboard() {
     assigned_to: '',
     status: '',
     contacted_by: [],
+    exported_filter: '',
     unread_filter: '',
     rep_position: '',
     exported_filter: '',
@@ -263,8 +264,14 @@ export default function Dashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Add current user ID to filters for user-specific export tracking
+      const filtersWithUser = {
+        ...filters,
+        current_user_id: currentUser?.id
+      };
+      
       const [repsResult] = await Promise.all([
-        getRepresentatives(currentPage, ITEMS_PER_PAGE, filters),
+        getRepresentatives(currentPage, ITEMS_PER_PAGE, filtersWithUser),
       ]);
 
       setRepresentatives(repsResult.data || []);
