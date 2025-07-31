@@ -1161,20 +1161,20 @@ export default function Dashboard() {
                             }
                             className="w-full"
                           >
-                            Show All Columns
-                          </Button>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="flex space-x-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setImportModalOpen(true)}
-                  >
+                  <Button variant="outline" onClick={() => setImportModalOpen(true)}>
                     <Upload className="h-4 w-4 mr-2" />
                     Import Representatives CSV
+                  </Button>
+                  <Button variant="outline" onClick={() => setExportModalOpen(true)}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                  {canEdit && (
+                    <Button onClick={handleAddRepresentative} className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Representative
+                    </Button>
+                  )}
                   </Button>
                   <Button
                     variant="outline"
