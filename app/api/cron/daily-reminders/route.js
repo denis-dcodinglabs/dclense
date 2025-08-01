@@ -9,12 +9,6 @@ const supabase = createClient(
 );
 
 export async function GET(request) {
-  // Verify the request is from Vercel Cron (optional security)
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
     // Get today's date in Kosovo timezone (CET/CEST)
     const kosovoDate = new Date().toLocaleDateString('en-CA', { 
