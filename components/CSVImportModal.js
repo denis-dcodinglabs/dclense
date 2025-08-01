@@ -472,7 +472,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
                     
-                    
+                
                     
                     
                     
