@@ -47,7 +47,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
   const [csvData, setCsvData] = useState({ headers: [], rows: [] });
   const [fieldMappings, setFieldMappings] = useState({});
   const [templates, setTemplates] = useState([]);
-  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('no-template');
   const [templateName, setTemplateName] = useState('');
   const [saveTemplate, setSaveTemplate] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -78,7 +78,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     setCsvFile(null);
     setCsvData({ headers: [], rows: [] });
     setFieldMappings({});
-    setSelectedTemplate('');
+    setSelectedTemplate('no-template');
     setTemplateName('');
     setSaveTemplate(false);
     setError('');
@@ -117,7 +117,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
 
   const handleTemplateSelect = (templateId) => {
     setSelectedTemplate(templateId);
-    if (templateId && templateId !== 'new') {
+    if (templateId && templateId !== 'new' && templateId !== 'no-template') {
       const template = templates.find(t => t.id === templateId);
       if (template) {
         setFieldMappings(template.field_mappings || {});
@@ -238,7 +238,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
       if (!error) {
         await fetchTemplates();
         if (selectedTemplate === templateId) {
-          setSelectedTemplate('');
+          setSelectedTemplate('no-template');
           setFieldMappings({});
         }
       }
@@ -436,7 +436,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                         <SelectValue placeholder="Select a saved template" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No template</SelectItem>
+                        <SelectItem value="no-template">No template</SelectItem>
                         {templates.map((template) => (
                           <SelectItem key={template.id} value={template.id}>
                             {template.template_name} ({Object.keys(template.field_mappings || {}).length} mappings)
@@ -445,10 +445,10 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                       </SelectContent>
                     </Select>
                     
-                    {selectedTemplate && selectedTemplate !== '' && (
+                    {selectedTemplate && selectedTemplate !== 'no-template' && (
                       <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                         <p className="text-sm text-green-800">
-                          ✅ Template "{templates.find(t => t.id === selectedTemplate)?.template_name}" applied successfully!
+                          ✅ Template &quot;{templates.find(t => t.id === selectedTemplate)?.template_name}&quot; applied successfully!
                           Field mappings have been automatically set.
                         </p>
                       </div>
@@ -471,9 +471,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                   <Label className="font-medium">
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
-                    }
                     
-                    
+                
                     
                     
                     
@@ -492,9 +491,9 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                       <SelectValue placeholder="Select CSV column" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="unmapped">Don't map</SelectItem>
+                      <SelectItem value="unmapped">Don&apos;t map</SelectItem>
                       {csvData.headers.filter(header => header && header.trim() !== '').map((header) => (
-                        <SelectItem key={header} value={header || `header_${Math.random()}`}>
+                        <SelectItem key={header} value={header}>
                           {header}
                         </SelectItem>
                       ))}
