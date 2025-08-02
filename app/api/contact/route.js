@@ -3,8 +3,8 @@ import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-console.log('Resend API key:', process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
 export async function POST(request) {
   try {
     const { name, email, message } = await request.json();
@@ -23,6 +23,15 @@ export async function POST(request) {
       return NextResponse.json(
         { message: 'Please enter a valid email address' },
         { status: 400 }
+      );
+    }
+
+    // Check if Resend is configured
+    if (!resend) {
+      console.log('Resend not configured, skipping email send');
+      return NextResponse.json(
+        { message: 'Message received (email service not configured)' },
+        { status: 200 }
       );
     }
 
