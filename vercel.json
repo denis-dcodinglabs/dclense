@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/daily-reminders",
-      "schedule": "50 9 * * *"
+      "schedule": "30 8 * * *"
     }
   ]
 }
