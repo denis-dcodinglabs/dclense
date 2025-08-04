@@ -103,7 +103,7 @@ export async function GET(request) {
 }
 
 function generateReminderEmail(user, representatives) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dclense.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dclense1.vercel.app';
   const today = new Date().toLocaleDateString('en-US', { 
     timeZone: 'Europe/Belgrade',
     weekday: 'long',
