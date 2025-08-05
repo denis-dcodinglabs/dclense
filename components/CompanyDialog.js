@@ -11,14 +11,12 @@ import { getUsers } from '@/lib/users';
 
 const STATUS_OPTIONS = [
   { value: 'No Status', label: 'No Status' },
-  { value: 'No Reply', label: 'No Reply' },
-  { value: 'Not Interested', label: 'Not Interested' },
-  { value: 'Contacted', label: 'Contacted' },
-  { value: 'Not a Fit', label: 'Not a Fit' },
-  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
   { value: 'Declined', label: 'Declined' },
+  { value: 'Company Not a Fit', label: 'Company Not a Fit' },
+  { value: 'In Progress', label: 'In Progress' },
   { value: 'Client', label: 'Client' },
-  { value: 'Pending Connection', label: 'Pending Connection' }
+  { value: 'Revisit Later', label: 'Revisit Later' },
+  { value: 'No Reply', label: 'No Reply' }
 ];
 
 export default function CompanyDialog({ isOpen, onClose, onSave, company = null, loading = false }) {
