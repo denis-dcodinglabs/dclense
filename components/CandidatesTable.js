@@ -3,8 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { getCandidates, getCVPublicUrl } from '../app/candidates/candidatesHelpers';
+import { getCandidates, getCVPublicUrl, deleteCandidate } from '../app/candidates/candidatesHelpers';
 import CandidateDetailModal from './CandidateDetailModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog';
 
 export default function CandidatesTable() {
   const [candidates, setCandidates] = useState([]);
@@ -17,6 +27,9 @@ export default function CandidatesTable() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [candidateToDelete, setCandidateToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchCandidates();
@@ -32,6 +45,37 @@ export default function CandidatesTable() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteClick = (candidate) => {
+    setCandidateToDelete(candidate);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!candidateToDelete) return;
+    
+    try {
+      setDeleting(true);
+      await deleteCandidate(candidateToDelete.id);
+      
+      // Remove the candidate from the local state
+      setCandidates(prev => prev.filter(c => c.id !== candidateToDelete.id));
+      
+      // Close the dialog and reset state
+      setDeleteDialogOpen(false);
+      setCandidateToDelete(null);
+    } catch (error) {
+      console.error('Error deleting candidate:', error);
+      setError('Failed to delete candidate. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setCandidateToDelete(null);
   };
 
   const handleSort = (field) => {
@@ -331,10 +375,7 @@ export default function CandidatesTable() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        // TODO: Implement delete functionality
-                        console.log('Delete candidate:', candidate.id);
-                      }}
+                      onClick={() => handleDeleteClick(candidate)}
                     >
                       Delete
                     </Button>
@@ -389,6 +430,52 @@ export default function CandidatesTable() {
           setSelectedCandidate(null);
         }}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => !deleting && setDeleteDialogOpen(open)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Candidate</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{' '}
+              <strong>
+                {candidateToDelete?.first_name} {candidateToDelete?.last_name}
+              </strong>
+              ? This action cannot be undone.
+              {candidateToDelete?.cv_url && (
+                <span className="block mt-2 text-amber-600">
+                  This will also delete their CV file from storage.
+                </span>
+              )}
+              {deleting && (
+                <div className="flex items-center gap-2 mt-3 p-2 bg-blue-50 rounded-md">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-blue-700 text-sm">Deleting candidate...</span>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDeleteCancel} disabled={deleting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {deleting ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Deleting...
+                </div>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 } 

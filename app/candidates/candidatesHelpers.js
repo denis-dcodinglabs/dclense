@@ -176,19 +176,24 @@ export const updateCandidate = async (id, updates) => {
 };
 
 /**
- * Delete candidate
+ * Delete candidate and their CV file from storage
  * @param {string} id - The candidate ID
  * @returns {Promise<void>}
  */
 export const deleteCandidate = async (id) => {
   try {
-    const { error } = await supabase
-      .from('candidates')
-      .delete()
-      .eq('id', id);
+    const response = await fetch('/api/candidates/delete', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
     
-    if (error) {
-      throw new Error(`Failed to delete candidate: ${error.message}`);
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to delete candidate');
     }
   } catch (error) {
     console.error('Error deleting candidate:', error);
