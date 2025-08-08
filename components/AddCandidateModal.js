@@ -113,12 +113,29 @@ export default function AddCandidateModal({ onCandidateAdded }) {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     <Input name="current_salary" placeholder="Current Salary" value={form.current_salary} onChange={handleChange} />
                     <Input name="desired_salary" placeholder="Desired Salary" value={form.desired_salary} onChange={handleChange} />
-                    <Input name="date_available" type="date" placeholder="Date Available" value={form.date_available} onChange={handleChange} />
-                    <select name="willing_to_relocate" value={form.willing_to_relocate} onChange={handleChange} className="border rounded-md px-3 py-2 text-sm">
-                      <option value="">Willing to Relocate?</option>
-                      <option value="yes">Yes</option>
-                      <option value="no">No</option>
-                    </select>
+                    <div className="flex">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date Available</label>
+                      <Input 
+                        name="date_available" 
+                        type="date" 
+                        value={form.date_available} 
+                        onChange={handleChange}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="flex">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Willing to Relocate</label>
+                      <select 
+                        name="willing_to_relocate" 
+                        value={form.willing_to_relocate} 
+                        onChange={handleChange} 
+                        className="border rounded-md px-3 py-2 text-sm w-full"
+                      >
+                        <option value="">Select an option</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                      </select>
+                    </div>
                     <Input name="general_comments" placeholder="General Candidate Comments" value={form.general_comments} onChange={handleChange} />
                   </div>
                   <div className="font-semibold mt-2">Category & Skills</div>
@@ -127,10 +144,27 @@ export default function AddCandidateModal({ onCandidateAdded }) {
                     <Input name="skills" placeholder="Skills" value={form.skills} onChange={handleChange} />
                     <Input name="industry" placeholder="Industry" value={form.industry} onChange={handleChange} />
                     <Input name="years_of_experience" placeholder="Years of Experience" value={form.years_of_experience} onChange={handleChange} />
-                    <Input name="user_date_added" type="date" placeholder="User Date Added" value={form.user_date_added} onChange={handleChange} />
+                    <div className="flex">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date Added</label>
+                      <Input 
+                        name="user_date_added" 
+                        type="date" 
+                        value={form.user_date_added} 
+                        onChange={handleChange}
+                        className="w-full"
+                      />
+                    </div>
                   </div>
-                  <div className="font-semibold mt-2">Add CV</div>
-                  <input type="file" name="cv" accept="application/pdf" onChange={handleChange} />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">CV Document</label>
+                    <input 
+                      type="file" 
+                      name="cv" 
+                      accept="application/pdf" 
+                      onChange={handleChange}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </div>
                   {error && <div className="text-red-500 text-sm">{error}</div>}
                   <div className="flex justify-end gap-2 mt-4">
                     <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>Cancel</Button>
