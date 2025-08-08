@@ -50,6 +50,10 @@ export default function AddCandidateModal({ onCandidateAdded }) {
     }
   };
 
+  const handleRemoveCV = () => {
+    setForm((f) => ({ ...f, cv: null }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -157,13 +161,30 @@ export default function AddCandidateModal({ onCandidateAdded }) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">CV Document</label>
-                    <input 
-                      type="file" 
-                      name="cv" 
-                      accept="application/pdf" 
-                      onChange={handleChange}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
+                    {form.cv ? (
+                      <div className="flex items-center gap-2 p-3 border border-gray-300 rounded-md bg-gray-50">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-700">{form.cv.name}</p>
+                          <p className="text-xs text-gray-500">{(form.cv.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCV}
+                          className="text-red-500 hover:text-red-700 text-lg font-bold focus:outline-none"
+                          aria-label="Remove CV"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <input 
+                        type="file" 
+                        name="cv" 
+                        accept="application/pdf" 
+                        onChange={handleChange}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      />
+                    )}
                   </div>
                   {error && <div className="text-red-500 text-sm">{error}</div>}
                   <div className="flex justify-end gap-2 mt-4">
