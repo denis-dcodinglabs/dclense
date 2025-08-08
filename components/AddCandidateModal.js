@@ -31,7 +31,7 @@ const initialForm = {
   skills: '',
   industry: '',
   years_of_experience: '',
-  user_date_added: '',
+  user_date_added: new Date().toISOString().split('T')[0], // Set today's date as default
   cv: null,
 };
 
