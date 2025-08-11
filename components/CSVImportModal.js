@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, Save, Download, Trash2, AlertCircle } from 'lucide-react';
-import { parseCSV, getCSVTemplates, saveCSVTemplate, deleteCSVTemplate, importCompaniesFromCSV, importRepresentativesFromCSV } from '@/lib/csvUtils';
+import { parseCSV, getCSVTemplates, saveCSVTemplate, deleteCSVTemplate, importCompaniesFromCSV, importRepresentativesFromCSV, modifyCompaniesFromCSV } from '@/lib/csvUtils';
 import { getCurrentUserWithRole } from '@/lib/auth';
 
 const COMPANY_FIELDS = [
@@ -293,6 +293,43 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
       }
     } catch (err) {
       setError('Import failed: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModifyImport = async () => {
+    if (importType !== 'companies') {
+      setError('Modify Imports is only available for Companies.');
+      return;
+    }
+    if (!checkValidationAndSetError()) return;
+
+    setLoading(true);
+    try {
+      // Transform CSV data according to mappings
+      const mappedData = csvData.rows.map(row => {
+        const mappedRow = {};
+        COMPANY_FIELDS.forEach(field => {
+          const csvColumn = fieldMappings[field.key];
+          let value = csvColumn ? row[csvColumn] : null;
+          if (field.key === 'number_of_employees' && value) {
+            value = value || null;
+          }
+          mappedRow[field.key] = value || null;
+        });
+        return mappedRow;
+      });
+
+      const result = await modifyCompaniesFromCSV(mappedData, currentUser.id);
+      if (result.error) {
+        setError('Modify import failed');
+      } else {
+        onImportComplete(result.data.length);
+        onClose();
+      }
+    } catch (err) {
+      setError('Modify import failed: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -596,6 +633,11 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
               {step === 2 && (
                 <Button onClick={generatePreview} disabled={!validateMappings()}>
                   Preview Import
+                </Button>
+              )}
+              {step === 3 && importType === 'companies' && (
+                <Button variant="outline" onClick={handleModifyImport} disabled={loading}>
+                  {loading ? 'Modifying...' : 'Modify Imports'}
                 </Button>
               )}
               {step === 3 && (
