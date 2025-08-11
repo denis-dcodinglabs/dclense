@@ -200,3 +200,29 @@ export const deleteCandidate = async (id) => {
     throw error;
   }
 };
+
+/**
+ * Remove candidate CV (deletes from storage and nulls cv_url)
+ * @param {string} id - The candidate ID
+ * @returns {Promise<object>} - Updated candidate
+ */
+export const removeCandidateCV = async (id) => {
+  try {
+    const response = await fetch('/api/candidates/delete-cv', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to remove CV');
+    }
+    return result.candidate;
+  } catch (error) {
+    console.error('Error removing candidate CV:', error);
+    throw error;
+  }
+};

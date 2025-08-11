@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { getCandidates, getCVPublicUrl, deleteCandidate } from '../app/candidates/candidatesHelpers';
 import CandidateDetailModal from './CandidateDetailModal';
+import EditCandidateModal from './EditCandidateModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,7 @@ export default function CandidatesTable() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [candidateToDelete, setCandidateToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -366,8 +368,8 @@ export default function CandidatesTable() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        // TODO: Implement edit functionality
-                        console.log('Edit candidate:', candidate.id);
+                        setSelectedCandidate(candidate);
+                        setEditModalOpen(true);
                       }}
                     >
                       Edit
@@ -428,6 +430,22 @@ export default function CandidatesTable() {
         onClose={() => {
           setDetailModalOpen(false);
           setSelectedCandidate(null);
+        }}
+      />
+
+      {/* Edit Modal */}
+      <EditCandidateModal
+        candidate={selectedCandidate}
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedCandidate(null);
+        }}
+        onCandidateUpdated={(updated) => {
+          // Update the candidate list with the edited candidate
+          setCandidates((prev) => prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c)));
+          // Keep modal state in sync with latest candidate
+          setSelectedCandidate((prev) => (prev && prev.id === updated.id ? { ...prev, ...updated } : prev));
         }}
       />
 
