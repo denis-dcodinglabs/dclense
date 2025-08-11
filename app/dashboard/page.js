@@ -83,6 +83,7 @@ const STATUS_OPTIONS = [
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
   { value: 'Contacted', label: 'Contacted' },
+  { value: 'In Communication', label: 'In Communication' },
   { value: 'Not a Fit', label: 'Not a Fit' },
   { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
   { value: 'Declined', label: 'Declined' },
@@ -95,6 +96,7 @@ const INLINE_STATUS_OPTIONS = [
   { value: 'No Reply', label: 'No Reply' },
   { value: 'Not Interested', label: 'Not Interested' },
   { value: 'Contacted', label: 'Contacted' },
+  { value: 'In Communication', label: 'In Communication' },
   { value: 'Not a Fit', label: 'Not a Fit' },
   { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
   { value: 'Declined', label: 'Declined' },
@@ -533,6 +535,8 @@ export default function Dashboard() {
         return 'bg-green-100 text-green-800 border-green-200';
       case 'Contacted':
         return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'In Communication':
+        return 'bg-indigo-100 text-indigo-800 border-indigo-200';
       case 'Not Interested':
         return 'bg-red-100 text-red-800 border-red-200';
       case 'Declined':
