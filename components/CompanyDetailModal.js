@@ -3,11 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Building2, MapPin, Users, Calendar, User, Phone, Mail, Linkedin, Globe } from 'lucide-react';
 import { getCompanyById } from '@/lib/companies';
 import RepresentativeDetailModal from './RepresentativeDetailModal';
+import RepresentativeDialog from './RepresentativeDialog';
+import { createRepresentative } from '@/lib/representatives';
+import { getCurrentUserWithRole } from '@/lib/auth';
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -71,12 +75,23 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
   const [error, setError] = useState('');
   const [repModalOpen, setRepModalOpen] = useState(false);
   const [selectedRepId, setSelectedRepId] = useState(null);
+  const [repFormOpen, setRepFormOpen] = useState(false);
+  const [savingRep, setSavingRep] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     if (isOpen && companyId) {
       fetchCompanyDetails();
     }
   }, [isOpen, companyId]);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const user = await getCurrentUserWithRole();
+      setCurrentUser(user);
+    };
+    loadUser();
+  }, []);
 
   const fetchCompanyDetails = async () => {
     setLoading(true);
@@ -112,6 +127,23 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
   const handleRepresentativeClick = (repId) => {
     setSelectedRepId(repId);
     setRepModalOpen(true);
+  };
+
+  const handleSaveRepresentative = async (repData) => {
+    if (!currentUser) return;
+    setSavingRep(true);
+    try {
+      const result = await createRepresentative(repData, currentUser.id);
+      if (!result.error) {
+        setRepFormOpen(false);
+        // Refresh company details to include the new representative with joined fields
+        await fetchCompanyDetails();
+      }
+    } catch (err) {
+      console.error('Error creating representative:', err);
+    } finally {
+      setSavingRep(false);
+    }
   };
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -280,12 +312,26 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
           onClose={() => setRepModalOpen(false)}
           representativeId={selectedRepId}
         />
+        {/* Add/Edit Representative Dialog */}
+        <RepresentativeDialog
+          isOpen={repFormOpen}
+          onClose={() => setRepFormOpen(false)}
+          onSave={handleSaveRepresentative}
+          representative={null}
+          loading={savingRep}
+          preselectedCompanyId={companyId}
+        />
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <User className="h-5 w-5 mr-2" />
-                  Representatives ({company.representatives?.length || 0})
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center">
+                    <User className="h-5 w-5 mr-2" />
+                    Representatives ({company.representatives?.length || 0})
+                  </CardTitle>
+                  <Button variant="outline" onClick={() => setRepFormOpen(true)}>
+                    Add Representative
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {!company.representatives || company.representatives.length === 0 ? (
