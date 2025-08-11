@@ -228,6 +228,7 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
                   <SelectItem value="No Reply">No Reply</SelectItem>
                   <SelectItem value="Not Interested">Not Interested</SelectItem>
                   <SelectItem value="Contacted">Contacted</SelectItem>
+                  <SelectItem value="In Communication">In Communication</SelectItem>
                   <SelectItem value="Not a Fit">Not a Fit</SelectItem>
                   <SelectItem value="Asked to Reach Out Later">Asked to Reach Out Later</SelectItem>
                   <SelectItem value="Declined">Declined</SelectItem>
