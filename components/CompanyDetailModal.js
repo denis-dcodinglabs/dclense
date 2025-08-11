@@ -145,6 +145,9 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
       setSavingRep(false);
     }
   };
+  
+  // Filter out soft-deleted representatives from view
+  const visibleRepresentatives = (company?.representatives || []).filter((rep) => rep?.is_deleted !== true);
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
@@ -326,7 +329,7 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center">
                     <User className="h-5 w-5 mr-2" />
-                    Representatives ({company.representatives?.length || 0})
+                    Representatives ({visibleRepresentatives.length})
                   </CardTitle>
                   <Button variant="outline" onClick={() => setRepFormOpen(true)}>
                     Add Representative
@@ -334,14 +337,14 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
                 </div>
               </CardHeader>
               <CardContent>
-                {!company.representatives || company.representatives.length === 0 ? (
+                {visibleRepresentatives.length === 0 ? (
                   <div className="text-center py-8">
                     <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-500">No representatives found for this company.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {company.representatives.map((rep) => (
+                    {visibleRepresentatives.map((rep) => (
                       <div key={rep.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center">
