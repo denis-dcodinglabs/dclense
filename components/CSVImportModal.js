@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, Save, Download, Trash2, AlertCircle } from 'lucide-react';
-import { parseCSV, getCSVTemplates, saveCSVTemplate, deleteCSVTemplate, importCompaniesFromCSV, importRepresentativesFromCSV } from '@/lib/csvUtils';
+import { parseCSV, getCSVTemplates, saveCSVTemplate, deleteCSVTemplate, importCompaniesFromCSV, importRepresentativesFromCSV, modifyCompaniesFromCSV, modifyRepresentativesFromCSV } from '@/lib/csvUtils';
 import { getCurrentUserWithRole } from '@/lib/auth';
 
 const COMPANY_FIELDS = [
@@ -41,7 +41,7 @@ const REPRESENTATIVE_FIELDS = [
   { key: 'assigned_to', label: 'Assigned To (Email)', required: false }
 ];
 
-export default function CSVImportModal({ isOpen, onClose, onImportComplete, importType = 'companies' }) {
+export default function CSVImportModal({ isOpen, onClose, onImportComplete, importType = 'companies', mode = 'import' }) {
   const [step, setStep] = useState(1); // 1: Upload, 2: Map, 3: Review
   const [csvFile, setCsvFile] = useState(null);
   const [csvData, setCsvData] = useState({ headers: [], rows: [] });
@@ -298,6 +298,46 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     }
   };
 
+  const handleModifyImport = async () => {
+    if (!checkValidationAndSetError()) return;
+
+    setLoading(true);
+    try {
+      // Transform CSV data according to mappings
+      const fields = importType === 'companies' ? COMPANY_FIELDS : REPRESENTATIVE_FIELDS;
+      const mappedData = csvData.rows.map(row => {
+        const mappedRow = {};
+        fields.forEach(field => {
+          const csvColumn = fieldMappings[field.key];
+          let value = csvColumn ? row[csvColumn] : null;
+          if (importType === 'companies' && field.key === 'number_of_employees' && value) {
+            value = value || null;
+          }
+          mappedRow[field.key] = value || null;
+        });
+        return mappedRow;
+      });
+
+      let result;
+      if (importType === 'companies') {
+        result = await modifyCompaniesFromCSV(mappedData, currentUser.id);
+      } else {
+        result = await modifyRepresentativesFromCSV(mappedData, currentUser.id);
+      }
+
+      if (result.error) {
+        setError('Modify import failed');
+      } else {
+        onImportComplete(result.data.length);
+        onClose();
+      }
+    } catch (err) {
+      setError('Modify import failed: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const downloadTemplate = () => {
     const fields = importType === 'companies' ? COMPANY_FIELDS : REPRESENTATIVE_FIELDS;
     const headers = fields.map(f => f.label.replace(' *', '')).join(',');
@@ -547,7 +587,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      {COMPANY_FIELDS.filter(f => fieldMappings[f.key]).map((field) => (
+                      {(importType === 'companies' ? COMPANY_FIELDS : REPRESENTATIVE_FIELDS).filter(f => fieldMappings[f.key]).map((field) => (
                         <th key={field.key} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           {field.label}
                         </th>
@@ -598,7 +638,12 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                   Preview Import
                 </Button>
               )}
-              {step === 3 && (
+              {step === 3 && mode === 'modify' && (
+                <Button variant="outline" onClick={handleModifyImport} disabled={loading}>
+                  {loading ? 'Modifying...' : 'Modify Imports'}
+                </Button>
+              )}
+              {step === 3 && mode !== 'modify' && (
                 <Button onClick={handleImport} disabled={loading}>
                   {loading ? 'Importing...' : `Import ${csvData.rows.length} ${importType === 'companies' ? 'Companies' : 'Representatives'}`}
                 </Button>
