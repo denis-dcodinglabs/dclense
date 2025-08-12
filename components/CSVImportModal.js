@@ -41,7 +41,7 @@ const REPRESENTATIVE_FIELDS = [
   { key: 'assigned_to', label: 'Assigned To (Email)', required: false }
 ];
 
-export default function CSVImportModal({ isOpen, onClose, onImportComplete, importType = 'companies' }) {
+export default function CSVImportModal({ isOpen, onClose, onImportComplete, importType = 'companies', mode = 'import' }) {
   const [step, setStep] = useState(1); // 1: Upload, 2: Map, 3: Review
   const [csvFile, setCsvFile] = useState(null);
   const [csvData, setCsvData] = useState({ headers: [], rows: [] });
@@ -635,12 +635,12 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                   Preview Import
                 </Button>
               )}
-              {step === 3 && importType === 'companies' && (
+              {step === 3 && mode === 'modify' && importType === 'companies' && (
                 <Button variant="outline" onClick={handleModifyImport} disabled={loading}>
                   {loading ? 'Modifying...' : 'Modify Imports'}
                 </Button>
               )}
-              {step === 3 && (
+              {step === 3 && (mode !== 'modify' || importType !== 'companies') && (
                 <Button onClick={handleImport} disabled={loading}>
                   {loading ? 'Importing...' : `Import ${csvData.rows.length} ${importType === 'companies' ? 'Companies' : 'Representatives'}`}
                 </Button>

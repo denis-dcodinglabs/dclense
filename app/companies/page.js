@@ -72,6 +72,7 @@ export default function CompaniesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importMode, setImportMode] = useState('import'); // 'import' | 'modify'
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
@@ -498,9 +499,24 @@ export default function CompaniesPage() {
                   </Popover>
                 </div>
                 <div className="flex space-x-3">
-                <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setImportMode('import');
+                    setImportModalOpen(true);
+                  }}
+                >
                   <Upload className="h-4 w-4 mr-2" />
                   Import Companies CSV
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setImportMode('modify');
+                    setImportModalOpen(true);
+                  }}
+                >
+                  Modify Imports
                 </Button>
                 <Button variant="outline" onClick={() => setExportModalOpen(true)}>
                   <Download className="h-4 w-4 mr-2" />
@@ -920,6 +936,7 @@ export default function CompaniesPage() {
             isOpen={importModalOpen}
             onClose={() => setImportModalOpen(false)}
             onImportComplete={handleImportComplete}
+            mode={importMode}
           />
 
           {/* CSV Export Modal */}
