@@ -152,6 +152,7 @@ export default function Dashboard() {
   const [repDetailModalOpen, setRepDetailModalOpen] = useState(false);
   const [selectedRepId, setSelectedRepId] = useState(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importMode, setImportMode] = useState('import'); // 'import' | 'modify'
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -1183,10 +1184,22 @@ export default function Dashboard() {
                 <div className="flex space-x-3">
                   <Button
                     variant="outline"
-                    onClick={() => setImportModalOpen(true)}
+                    onClick={() => {
+                      setImportMode('import');
+                      setImportModalOpen(true);
+                    }}
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Import Representatives CSV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setImportMode('modify');
+                      setImportModalOpen(true);
+                    }}
+                  >
+                    Modify Imports
                   </Button>
                   <Button
                     variant="outline"
@@ -1767,6 +1780,7 @@ export default function Dashboard() {
             onClose={() => setImportModalOpen(false)}
             onImportComplete={handleImportComplete}
             importType="representatives"
+            mode={importMode}
           />
 
           {/* CSV Export Modal */}
