@@ -23,6 +23,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import RepresentativeDialog from '@/components/RepresentativeDialog';
 import RepresentativeDetailModal from '@/components/RepresentativeDetailModal';
+import CompanyDetailModal from '@/components/CompanyDetailModal';
 import CSVImportModal from '@/components/CSVImportModal';
 import CSVExportModal from '@/components/CSVExportModal';
 import { Button } from '@/components/ui/button';
@@ -153,6 +154,8 @@ export default function Dashboard() {
   const [selectedRepresentatives, setSelectedRepresentatives] = useState([]);
   const [repDetailModalOpen, setRepDetailModalOpen] = useState(false);
   const [selectedRepId, setSelectedRepId] = useState(null);
+  const [companyModalOpen, setCompanyModalOpen] = useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = useState(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importMode, setImportMode] = useState('import'); // 'import' | 'modify'
   const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -1524,7 +1527,19 @@ export default function Dashboard() {
                           {visibleColumns.company && (
                             <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
                               <div className="text-sm text-gray-900">
-                                {rep.company?.company_name}
+                                {rep.company?.company_name && rep.company_id ? (
+                                  <button
+                                    onClick={() => {
+                                      setSelectedCompanyId(rep.company_id);
+                                      setCompanyModalOpen(true);
+                                    }}
+                                    className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                                  >
+                                    {rep.company.company_name}
+                                  </button>
+                                ) : (
+                                  <span>{rep.company?.company_name || 'N/A'}</span>
+                                )}
                               </div>
                               <div className="text-sm text-gray-500">
                                 {rep.company?.status}
@@ -1776,6 +1791,13 @@ export default function Dashboard() {
             isOpen={repDetailModalOpen}
             onClose={() => setRepDetailModalOpen(false)}
             representativeId={selectedRepId}
+          />
+
+          {/* Company Detail Modal */}
+          <CompanyDetailModal
+            isOpen={companyModalOpen}
+            onClose={() => setCompanyModalOpen(false)}
+            companyId={selectedCompanyId}
           />
 
           {/* CSV Import Modal */}
