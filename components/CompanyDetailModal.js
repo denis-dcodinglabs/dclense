@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Building2, MapPin, Users, Calendar, User, Phone, Mail, Linkedin, Globe } from 'lucide-react';
-import { getCompanyById } from '@/lib/companies';
+import { getCompanyById, updateCompany } from '@/lib/companies';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import RepresentativeDetailModal from './RepresentativeDetailModal';
 import RepresentativeDialog from './RepresentativeDialog';
 import { createRepresentative } from '@/lib/representatives';
@@ -68,7 +69,7 @@ const ClickableLink = ({ url, children, icon: Icon }) => {
   );
 };
 
-export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
+export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompanyUpdated }) {
   const router = useRouter();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -78,6 +79,17 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
   const [repFormOpen, setRepFormOpen] = useState(false);
   const [savingRep, setSavingRep] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [savingStatus, setSavingStatus] = useState(false);
+
+  const INLINE_STATUS_OPTIONS = [
+    { value: 'No Status', label: 'No Status' },
+    { value: 'Declined', label: 'Declined' },
+    { value: 'Company Not a Fit', label: 'Company Not a Fit' },
+    { value: 'In Progress', label: 'In Progress' },
+    { value: 'Client', label: 'Client' },
+    { value: 'Revisit Later', label: 'Revisit Later' },
+    { value: 'No Reply', label: 'No Reply' },
+  ];
 
   useEffect(() => {
     if (isOpen && companyId) {
@@ -122,6 +134,22 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
     router.replace(currentUrl.pathname + currentUrl.search, { scroll: false });
     
     onClose();
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    if (!currentUser || !company) return;
+    setSavingStatus(true);
+    try {
+      await updateCompany(company.id, { status: newStatus }, currentUser.id);
+      setCompany((prev) => ({ ...prev, status: newStatus }));
+      if (onCompanyUpdated) {
+        onCompanyUpdated(company.id, newStatus);
+      }
+    } catch (err) {
+      console.error('Error updating company status:', err);
+    } finally {
+      setSavingStatus(false);
+    }
   };
 
   const handleRepresentativeClick = (repId) => {
@@ -200,11 +228,25 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId }) {
                     </div>
                   </div>
                   <div className="flex flex-col items-end space-y-2">
-                    {company.status && (
-                      <Badge className={`${getStatusBadgeColor(company.status)} border`}>
-                        {company.status}
-                      </Badge>
-                    )}
+                    <div className="w-56">
+                      <label className="text-xs font-medium text-gray-500">Status</label>
+                      <Select
+                        value={company.status || 'No Status'}
+                        onValueChange={handleStatusChange}
+                        disabled={savingStatus}
+                      >
+                        <SelectTrigger className="w-full h-8 text-xs mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INLINE_STATUS_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value} className="text-xs">
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     {company.number_of_employees && (
                       <div className="flex items-center text-sm text-gray-600">
                         <Users className="h-4 w-4 mr-1" />
