@@ -562,6 +562,16 @@ export default function Dashboard() {
     }
   };
 
+  const handleCompanyUpdated = (companyId, newStatus) => {
+    setRepresentatives((prev) =>
+      prev.map((rep) =>
+        rep.company_id === companyId
+          ? { ...rep, company: { ...(rep.company || {}), status: newStatus } }
+          : rep,
+      ),
+    );
+  };
+
   const canEdit =
     currentUser?.role === 'Admin' || currentUser?.role === 'Editor';
   const canDelete = currentUser?.role === 'Admin';
@@ -1798,6 +1808,7 @@ export default function Dashboard() {
             isOpen={companyModalOpen}
             onClose={() => setCompanyModalOpen(false)}
             companyId={selectedCompanyId}
+            onCompanyUpdated={handleCompanyUpdated}
           />
 
           {/* CSV Import Modal */}
