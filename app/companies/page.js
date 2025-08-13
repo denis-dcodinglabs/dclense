@@ -291,6 +291,12 @@ export default function CompaniesPage() {
     }
   };
 
+  const handleCompanyUpdated = (companyId, newStatus) => {
+    setCompanies(prev => prev.map(company => 
+      company.id === companyId ? { ...company, status: newStatus } : company
+    ));
+  };
+
   const getStatusBadgeColor = (status) => {
     switch (status) {
       case 'Client':
@@ -929,6 +935,7 @@ export default function CompaniesPage() {
             isOpen={detailModalOpen}
             onClose={() => setDetailModalOpen(false)}
             companyId={selectedCompanyId}
+            onCompanyUpdated={handleCompanyUpdated}
           />
         </main>
           {/* CSV Import Modal */}
