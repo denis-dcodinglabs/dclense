@@ -335,7 +335,7 @@ export default function RemindersPage() {
               </Card>
 
               {/* Companies Reminders */}
-              <Card>
+              {/* <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Building2 className="h-5 w-5 mr-2" />
@@ -389,7 +389,7 @@ export default function RemindersPage() {
                     </div>
                   )}
                 </CardContent>
-              </Card>
+              </Card> */}
             </TabsContent>
 
             <TabsContent value="notifications" className="space-y-6">
