@@ -7,7 +7,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Save, Download, Trash2, AlertCircle } from 'lucide-react';
+import { Upload, Save, Download, Trash2, AlertCircle, Edit } from 'lucide-react';
+import { 
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import CompanyDialog from '@/components/CompanyDialog';
+import { getCompanyById, updateCompany, deleteCompany } from '@/lib/companies';
+import RepresentativeDuplicatesModal from '@/components/RepresentativeDuplicatesModal';
+import CompanyDetailModal from '@/components/CompanyDetailModal';
 import { parseCSV, getCSVTemplates, saveCSVTemplate, deleteCSVTemplate, importCompaniesFromCSV, importRepresentativesFromCSV, modifyCompaniesFromCSV, modifyRepresentativesFromCSV } from '@/lib/csvUtils';
 import { getCurrentUserWithRole } from '@/lib/auth';
 
@@ -54,6 +69,15 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
   const [error, setError] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [previewData, setPreviewData] = useState([]);
+  const [duplicateCompanies, setDuplicateCompanies] = useState([]);
+  const [showDuplicatesDialog, setShowDuplicatesDialog] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailCompanyId, setDetailCompanyId] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState(null);
+  const [savingCompany, setSavingCompany] = useState(false);
+  const [repDuplicateData, setRepDuplicateData] = useState([]);
+  const [showRepDuplicatesDialog, setShowRepDuplicatesDialog] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -83,6 +107,13 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     setSaveTemplate(false);
     setError('');
     setPreviewData([]);
+    setDuplicateCompanies([]);
+    setShowDuplicatesDialog(false);
+    setDetailModalOpen(false);
+    setDetailCompanyId(null);
+    setEditDialogOpen(false);
+    setEditingCompany(null);
+    setSavingCompany(false);
   };
 
   const handleFileUpload = (event) => {
@@ -289,12 +320,95 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         setError('Import failed: ' + result.error.message);
       } else {
         onImportComplete(result.data.length);
-        onClose();
+        // If importing companies and duplicates were detected, show the dialog
+        if (importType === 'companies' && Array.isArray(result.duplicates) && result.duplicates.length > 0) {
+          const nameToInsertedId = new Map(
+            (result.data || [])
+              .filter(r => r?.company_name)
+              .map(r => [r.company_name.trim().toLowerCase(), r.id])
+          );
+          const enriched = result.duplicates.map(d => ({
+            ...d,
+            imported_id: nameToInsertedId.get((d.imported_name || '').trim().toLowerCase()) || null
+          }));
+          setDuplicateCompanies(enriched);
+          setShowDuplicatesDialog(true);
+          // Close the import modal so both are not open at the same time
+          onClose();
+        } else if (importType === 'representatives' && Array.isArray(result.duplicates) && result.duplicates.length > 0) {
+          setRepDuplicateData(result.duplicates);
+          setShowRepDuplicatesDialog(true);
+          onClose();
+        } else {
+          onClose();
+        }
       }
     } catch (err) {
       setError('Import failed: ' + err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openEditForCompany = async (companyId) => {
+    try {
+      const { data } = await getCompanyById(companyId);
+      if (data) {
+        setEditingCompany(data);
+        setEditDialogOpen(true);
+      }
+    } catch (e) {
+      // noop
+    }
+  };
+
+  const handleEditSave = async (companyData) => {
+    if (!editingCompany || !currentUser) return;
+    setSavingCompany(true);
+    try {
+      const result = await updateCompany(editingCompany.id, companyData, currentUser.id);
+      if (!result.error) {
+        const updated = result.data;
+        // Reflect name change in duplicates list and mark as edited
+        setDuplicateCompanies((prev) => prev.map((entry) => {
+          if (entry.existing_id === updated.id) {
+            return { ...entry, existing_name: updated.company_name, existing_edited: true };
+          }
+          if (entry.imported_id === updated.id) {
+            return { ...entry, imported_name: updated.company_name, imported_edited: true };
+          }
+          return entry;
+        }));
+        setEditDialogOpen(false);
+        setEditingCompany(null);
+      }
+    } finally {
+      setSavingCompany(false);
+    }
+  };
+
+  const handleDeleteCompany = async (companyId) => {
+    if (!currentUser || !companyId) return;
+    if (!window.confirm('Are you sure you want to delete this company?')) return;
+    try {
+      const { error } = await deleteCompany(companyId, currentUser.id);
+      if (!error) {
+        // Remove any duplicate entries that reference this company
+        setDuplicateCompanies(prev => prev.filter(entry => entry.existing_id !== companyId && entry.imported_id !== companyId));
+        // If the details modal is showing this company, close it
+        if (detailModalOpen && detailCompanyId === companyId) {
+          setDetailModalOpen(false);
+          setDetailCompanyId(null);
+        }
+        // Refresh parent table
+        if (typeof onImportComplete === 'function') {
+          onImportComplete(0);
+        }
+      } else {
+        setError('Failed to delete company');
+      }
+    } catch (e) {
+      setError('Failed to delete company');
     }
   };
 
@@ -369,6 +483,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -653,5 +768,143 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Duplicates Info Dialog (only shown post-import for companies) */}
+    <AlertDialog open={showDuplicatesDialog} onOpenChange={(open) => {
+      if (!open) {
+        setShowDuplicatesDialog(false);
+        // Trigger parent refresh to re-fetch companies table after edits
+        if (typeof onImportComplete === 'function') {
+          onImportComplete(0);
+        }
+        onClose();
+      }
+    }}>
+      <AlertDialogContent className="sm:max-w-[1000px] max-h-[80vh] overflow-y-auto">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Some companies already exist</AlertDialogTitle>
+          <AlertDialogDescription>
+            We detected {duplicateCompanies.length} compan{duplicateCompanies.length === 1 ? 'y' : 'ies'} with names that already exist in the database. Imports were completed; this is for your review.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="mt-2 max-h-[300px] overflow-y-auto border rounded">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-3 py-2 text-left font-medium text-gray-600">Existing Name</th>
+                <th className="px-3 py-2 text-left font-medium text-gray-600">Imported Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {duplicateCompanies.map((d, idx) => (
+                <tr key={idx} className="border-t">
+                  <td className="px-3 py-2">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        className={d.existing_id ? 'text-blue-600 hover:text-blue-800 hover:underline text-left' : 'text-gray-900 text-left'}
+                        onClick={() => {
+                          if (d.existing_id) {
+                            setDetailCompanyId(d.existing_id);
+                            setDetailModalOpen(true);
+                          }
+                        }}
+                      >{d.existing_name}</button>
+                      {d.existing_edited && (
+                        <Badge className="text-[10px]">Edited</Badge>
+                      )}
+                      {d.existing_id && (
+                        <button
+                          className="text-gray-500 hover:text-gray-700"
+                          title="Edit company"
+                          onClick={() => openEditForCompany(d.existing_id)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                      )}
+                      {d.existing_id && (
+                        <button
+                          className="text-red-600 hover:text-red-800"
+                          title="Delete company"
+                          onClick={() => handleDeleteCompany(d.existing_id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        className={d.imported_id ? 'text-blue-600 hover:text-blue-800 hover:underline text-left' : 'text-gray-900 text-left'}
+                        onClick={() => {
+                          if (d.imported_id) {
+                            setDetailCompanyId(d.imported_id);
+                            setDetailModalOpen(true);
+                          }
+                        }}
+                      >{d.imported_name}</button>
+                      {d.imported_edited && (
+                        <Badge className="text-[10px]">Edited</Badge>
+                      )}
+                      {d.imported_id && (
+                        <button
+                          className="text-gray-500 hover:text-gray-700"
+                          title="Edit company"
+                          onClick={() => openEditForCompany(d.imported_id)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                      )}
+                      {d.imported_id && (
+                        <button
+                          className="text-red-600 hover:text-red-800"
+                          title="Delete company"
+                          onClick={() => handleDeleteCompany(d.imported_id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogAction onClick={() => {
+            setShowDuplicatesDialog(false);
+            if (typeof onImportComplete === 'function') {
+              onImportComplete(0);
+            }
+            onClose();
+          }}>OK</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    <RepresentativeDuplicatesModal
+      isOpen={showRepDuplicatesDialog}
+      onClose={() => {
+        setShowRepDuplicatesDialog(false);
+        if (typeof onImportComplete === 'function') {
+          onImportComplete(0);
+        }
+      }}
+      duplicates={repDuplicateData}
+    />
+    <CompanyDialog
+      isOpen={editDialogOpen}
+      onClose={() => { setEditDialogOpen(false); setEditingCompany(null); }}
+      onSave={handleEditSave}
+      company={editingCompany}
+      loading={savingCompany}
+    />
+    <CompanyDetailModal
+      isOpen={detailModalOpen}
+      onClose={() => setDetailModalOpen(false)}
+      companyId={detailCompanyId}
+      onCompanyUpdated={() => {}}
+    />
+    </>
   );
 }
