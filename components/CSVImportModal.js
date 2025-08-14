@@ -21,6 +21,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import CompanyDialog from '@/components/CompanyDialog';
 import { getCompanyById, updateCompany, deleteCompany } from '@/lib/companies';
+import RepresentativeDuplicatesModal from '@/components/RepresentativeDuplicatesModal';
 import CompanyDetailModal from '@/components/CompanyDetailModal';
 import { parseCSV, getCSVTemplates, saveCSVTemplate, deleteCSVTemplate, importCompaniesFromCSV, importRepresentativesFromCSV, modifyCompaniesFromCSV, modifyRepresentativesFromCSV } from '@/lib/csvUtils';
 import { getCurrentUserWithRole } from '@/lib/auth';
@@ -75,6 +76,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
   const [savingCompany, setSavingCompany] = useState(false);
+  const [repDuplicateData, setRepDuplicateData] = useState([]);
+  const [showRepDuplicatesDialog, setShowRepDuplicatesDialog] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -331,6 +334,10 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
           setDuplicateCompanies(enriched);
           setShowDuplicatesDialog(true);
           // Close the import modal so both are not open at the same time
+          onClose();
+        } else if (importType === 'representatives' && Array.isArray(result.duplicates) && result.duplicates.length > 0) {
+          setRepDuplicateData(result.duplicates);
+          setShowRepDuplicatesDialog(true);
           onClose();
         } else {
           onClose();
@@ -875,6 +882,16 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    <RepresentativeDuplicatesModal
+      isOpen={showRepDuplicatesDialog}
+      onClose={() => {
+        setShowRepDuplicatesDialog(false);
+        if (typeof onImportComplete === 'function') {
+          onImportComplete(0);
+        }
+      }}
+      duplicates={repDuplicateData}
+    />
     <CompanyDialog
       isOpen={editDialogOpen}
       onClose={() => { setEditDialogOpen(false); setEditingCompany(null); }}
