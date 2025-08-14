@@ -18,6 +18,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel
 } from '@/components/ui/alert-dialog';
+import CompanyDetailModal from '@/components/CompanyDetailModal';
 import { parseCSV, getCSVTemplates, saveCSVTemplate, deleteCSVTemplate, importCompaniesFromCSV, importRepresentativesFromCSV, modifyCompaniesFromCSV, modifyRepresentativesFromCSV } from '@/lib/csvUtils';
 import { getCurrentUserWithRole } from '@/lib/auth';
 
@@ -66,6 +67,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
   const [previewData, setPreviewData] = useState([]);
   const [duplicateCompanies, setDuplicateCompanies] = useState([]);
   const [showDuplicatesDialog, setShowDuplicatesDialog] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailCompanyId, setDetailCompanyId] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -305,7 +308,16 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         onImportComplete(result.data.length);
         // If importing companies and duplicates were detected, show the dialog
         if (importType === 'companies' && Array.isArray(result.duplicates) && result.duplicates.length > 0) {
-          setDuplicateCompanies(result.duplicates);
+          const nameToInsertedId = new Map(
+            (result.data || [])
+              .filter(r => r?.company_name)
+              .map(r => [r.company_name.trim().toLowerCase(), r.id])
+          );
+          const enriched = result.duplicates.map(d => ({
+            ...d,
+            imported_id: nameToInsertedId.get((d.imported_name || '').trim().toLowerCase()) || null
+          }));
+          setDuplicateCompanies(enriched);
           setShowDuplicatesDialog(true);
         } else {
           onClose();
@@ -700,8 +712,24 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
             <tbody>
               {duplicateCompanies.map((d, idx) => (
                 <tr key={idx} className="border-t">
-                  <td className="px-3 py-2 text-gray-900">{d.existing_name}</td>
-                  <td className="px-3 py-2 text-gray-900">{d.imported_name}</td>
+                  <td
+                    className={`px-3 py-2 ${d.existing_id ? 'text-blue-600 hover:text-blue-800 hover:underline cursor-pointer' : 'text-gray-900'}`}
+                    onClick={() => {
+                      if (d.existing_id) {
+                        setDetailCompanyId(d.existing_id);
+                        setDetailModalOpen(true);
+                      }
+                    }}
+                  >{d.existing_name}</td>
+                  <td
+                    className={`px-3 py-2 ${d.imported_id ? 'text-blue-600 hover:text-blue-800 hover:underline cursor-pointer' : 'text-gray-900'}`}
+                    onClick={() => {
+                      if (d.imported_id) {
+                        setDetailCompanyId(d.imported_id);
+                        setDetailModalOpen(true);
+                      }
+                    }}
+                  >{d.imported_name}</td>
                 </tr>
               ))}
             </tbody>
@@ -715,6 +743,12 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    <CompanyDetailModal
+      isOpen={detailModalOpen}
+      onClose={() => setDetailModalOpen(false)}
+      companyId={detailCompanyId}
+      onCompanyUpdated={() => {}}
+    />
     </>
   );
 }
