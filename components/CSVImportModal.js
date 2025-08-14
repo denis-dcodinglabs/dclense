@@ -330,6 +330,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
           }));
           setDuplicateCompanies(enriched);
           setShowDuplicatesDialog(true);
+          // Close the import modal so both are not open at the same time
+          onClose();
         } else {
           onClose();
         }
