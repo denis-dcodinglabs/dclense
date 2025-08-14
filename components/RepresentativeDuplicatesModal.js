@@ -29,18 +29,14 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-3 py-2 text-left font-medium text-gray-600">Existing Representative</th>
-                <th className="px-3 py-2 text-left font-medium text-gray-600">Existing Company</th>
                 <th className="px-3 py-2 text-left font-medium text-gray-600">Imported Representative</th>
-                <th className="px-3 py-2 text-left font-medium text-gray-600">Imported Company</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((d, idx) => (
                 <tr key={idx} className="border-t">
                   <td className="px-3 py-2 text-gray-900">{d.existing_name}</td>
-                  <td className="px-3 py-2 text-gray-900">{d.existing_company_name}</td>
                   <td className="px-3 py-2 text-gray-900">{d.imported_name}</td>
-                  <td className="px-3 py-2 text-gray-900">{d.imported_company_name}</td>
                 </tr>
               ))}
             </tbody>
