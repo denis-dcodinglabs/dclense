@@ -10,7 +10,7 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
-import { Edit } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import RepresentativeDetailModal from '@/components/RepresentativeDetailModal';
 import RepresentativeDialog from '@/components/RepresentativeDialog';
@@ -109,6 +109,44 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
     }
   };
 
+  const handleDeleteRepresentative = async (repId) => {
+    if (!repId) return;
+    
+    if (!window.confirm('Are you sure you want to delete this representative?')) {
+      return;
+    }
+    
+    try {
+      const { deleteRepresentative } = await import('@/lib/representatives');
+      const { getCurrentUserWithRole } = await import('@/lib/auth');
+      
+      const currentUser = await getCurrentUserWithRole();
+      if (!currentUser) {
+        console.error('No current user found');
+        return;
+      }
+      
+      const { error } = await deleteRepresentative(repId, currentUser.id);
+      
+      if (!error) {
+        // Remove the deleted representative from local duplicates
+        setLocalDuplicates(prev => prev.filter(entry => 
+          entry.existing_id !== repId && entry.imported_id !== repId
+        ));
+        
+        // Close detail modal if it's showing the deleted representative
+        if (detailModalOpen && selectedRepId === repId) {
+          setDetailModalOpen(false);
+          setSelectedRepId(null);
+        }
+      } else {
+        console.error('Error deleting representative:', error);
+      }
+    } catch (err) {
+      console.error('Error deleting representative:', err);
+    }
+  };
+
   return (
     <>
     <AlertDialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -148,13 +186,22 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
                         </Badge>
                       )}
                       {d.existing_id && (
-                        <button
-                          className="text-gray-500 hover:text-gray-700"
-                          title="Edit representative"
-                          onClick={() => handleEditClick(d.existing_id)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
+                        <>
+                          <button
+                            className="text-gray-500 hover:text-gray-700"
+                            title="Edit representative"
+                            onClick={() => handleEditClick(d.existing_id)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            className="text-red-600 hover:text-red-800"
+                            title="Delete representative"
+                            onClick={() => handleDeleteRepresentative(d.existing_id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
@@ -176,13 +223,22 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
                         </Badge>
                       )}
                       {d.imported_id && (
-                        <button
-                          className="text-gray-500 hover:text-gray-700"
-                          title="Edit representative"
-                          onClick={() => handleEditClick(d.imported_id)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
+                        <>
+                          <button
+                            className="text-gray-500 hover:text-gray-700"
+                            title="Edit representative"
+                            onClick={() => handleEditClick(d.imported_id)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            className="text-red-600 hover:text-red-800"
+                            title="Delete representative"
+                            onClick={() => handleDeleteRepresentative(d.imported_id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
