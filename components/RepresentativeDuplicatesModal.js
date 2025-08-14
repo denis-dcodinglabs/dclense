@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { 
   AlertDialog,
   AlertDialogContent,
@@ -11,17 +11,24 @@ import {
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
 import { Edit } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import RepresentativeDetailModal from '@/components/RepresentativeDetailModal';
 import RepresentativeDialog from '@/components/RepresentativeDialog';
 
 export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplicates = [] }) {
   const total = duplicates?.length || 0;
-  const rows = useMemo(() => duplicates || [], [duplicates]);
+  const [localDuplicates, setLocalDuplicates] = useState(duplicates || []);
+  const rows = useMemo(() => localDuplicates, [localDuplicates]);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedRepId, setSelectedRepId] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingRepresentative, setEditingRepresentative] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
+
+  // Update local duplicates when prop changes
+  useEffect(() => {
+    setLocalDuplicates(duplicates || []);
+  }, [duplicates]);
 
   const handleRepresentativeClick = (repId) => {
     if (repId) {
@@ -67,11 +74,31 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
       
       const result = await updateRepresentative(editingRepresentative.id, representativeData, currentUser.id);
       
-      if (!result.error) {
+      if (!result.error && result.data) {
+        const updatedRep = result.data;
+        
+        // Update local duplicates state to reflect changes and mark as edited
+        setLocalDuplicates(prev => prev.map(entry => {
+          if (entry.existing_id === updatedRep.id) {
+            return { 
+              ...entry, 
+              existing_name: updatedRep.full_name, 
+              existing_edited: true 
+            };
+          }
+          if (entry.imported_id === updatedRep.id) {
+            return { 
+              ...entry, 
+              imported_name: updatedRep.full_name, 
+              imported_edited: true 
+            };
+          }
+          return entry;
+        }));
+        
         // Close edit dialog
         setEditDialogOpen(false);
         setEditingRepresentative(null);
-        // Optionally refresh the duplicates list or show success message
       } else {
         console.error('Error updating representative:', result.error);
       }
@@ -115,6 +142,11 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
                       ) : (
                         <span className="text-gray-900">{d.existing_name}</span>
                       )}
+                      {d.existing_edited && (
+                        <Badge className="text-[10px] bg-green-100 text-green-800 border-green-200">
+                          Edited
+                        </Badge>
+                      )}
                       {d.existing_id && (
                         <button
                           className="text-gray-500 hover:text-gray-700"
@@ -137,6 +169,11 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
                         </button>
                       ) : (
                         <span className="text-gray-900">{d.imported_name}</span>
+                      )}
+                      {d.imported_edited && (
+                        <Badge className="text-[10px] bg-green-100 text-green-800 border-green-200">
+                          Edited
+                        </Badge>
                       )}
                       {d.imported_id && (
                         <button
