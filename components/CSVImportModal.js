@@ -8,6 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, Save, Download, Trash2, AlertCircle } from 'lucide-react';
+import { 
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel
+} from '@/components/ui/alert-dialog';
 import { parseCSV, getCSVTemplates, saveCSVTemplate, deleteCSVTemplate, importCompaniesFromCSV, importRepresentativesFromCSV, modifyCompaniesFromCSV, modifyRepresentativesFromCSV } from '@/lib/csvUtils';
 import { getCurrentUserWithRole } from '@/lib/auth';
 
@@ -54,6 +64,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
   const [error, setError] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [previewData, setPreviewData] = useState([]);
+  const [duplicateCompanies, setDuplicateCompanies] = useState([]);
+  const [showDuplicatesDialog, setShowDuplicatesDialog] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -83,6 +95,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     setSaveTemplate(false);
     setError('');
     setPreviewData([]);
+    setDuplicateCompanies([]);
+    setShowDuplicatesDialog(false);
   };
 
   const handleFileUpload = (event) => {
@@ -289,7 +303,13 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         setError('Import failed: ' + result.error.message);
       } else {
         onImportComplete(result.data.length);
-        onClose();
+        // If importing companies and duplicates were detected, show the dialog
+        if (importType === 'companies' && Array.isArray(result.duplicates) && result.duplicates.length > 0) {
+          setDuplicateCompanies(result.duplicates);
+          setShowDuplicatesDialog(true);
+        } else {
+          onClose();
+        }
       }
     } catch (err) {
       setError('Import failed: ' + err.message);
@@ -369,6 +389,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -653,5 +674,47 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Duplicates Info Dialog (only shown post-import for companies) */}
+    <AlertDialog open={showDuplicatesDialog} onOpenChange={(open) => {
+      if (!open) {
+        setShowDuplicatesDialog(false);
+        onClose();
+      }
+    }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Some companies already exist</AlertDialogTitle>
+          <AlertDialogDescription>
+            We detected {duplicateCompanies.length} compan{duplicateCompanies.length === 1 ? 'y' : 'ies'} with names that already exist in the database. Imports were completed; this is for your review.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="mt-2 max-h-[300px] overflow-y-auto border rounded">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-3 py-2 text-left font-medium text-gray-600">Existing Name</th>
+                <th className="px-3 py-2 text-left font-medium text-gray-600">Imported Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {duplicateCompanies.map((d, idx) => (
+                <tr key={idx} className="border-t">
+                  <td className="px-3 py-2 text-gray-900">{d.existing_name}</td>
+                  <td className="px-3 py-2 text-gray-900">{d.imported_name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogAction onClick={() => {
+            setShowDuplicatesDialog(false);
+            onClose();
+          }}>OK</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
