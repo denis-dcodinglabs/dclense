@@ -773,7 +773,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         onClose();
       }
     }}>
-      <AlertDialogContent>
+      <AlertDialogContent className="sm:max-w-[1000px] max-h-[80vh] overflow-y-auto">
         <AlertDialogHeader>
           <AlertDialogTitle>Some companies already exist</AlertDialogTitle>
           <AlertDialogDescription>
