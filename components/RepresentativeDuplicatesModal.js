@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { 
   AlertDialog,
   AlertDialogContent,
@@ -10,12 +10,23 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
+import RepresentativeDetailModal from '@/components/RepresentativeDetailModal';
 
 export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplicates = [] }) {
   const total = duplicates?.length || 0;
   const rows = useMemo(() => duplicates || [], [duplicates]);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedRepId, setSelectedRepId] = useState(null);
+
+  const handleRepresentativeClick = (repId) => {
+    if (repId) {
+      setSelectedRepId(repId);
+      setDetailModalOpen(true);
+    }
+  };
 
   return (
+    <>
     <AlertDialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <AlertDialogContent className="sm:max-w-[1000px] max-h-[80vh] overflow-y-auto">
         <AlertDialogHeader>
@@ -35,8 +46,30 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
             <tbody>
               {rows.map((d, idx) => (
                 <tr key={idx} className="border-t">
-                  <td className="px-3 py-2 text-gray-900">{d.existing_name}</td>
-                  <td className="px-3 py-2 text-gray-900">{d.imported_name}</td>
+                  <td className="px-3 py-2">
+                    {d.existing_id ? (
+                      <button
+                        className="text-blue-600 hover:text-blue-800 hover:underline text-left"
+                        onClick={() => handleRepresentativeClick(d.existing_id)}
+                      >
+                        {d.existing_name}
+                      </button>
+                    ) : (
+                      <span className="text-gray-900">{d.existing_name}</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    {d.imported_id ? (
+                      <button
+                        className="text-blue-600 hover:text-blue-800 hover:underline text-left"
+                        onClick={() => handleRepresentativeClick(d.imported_id)}
+                      >
+                        {d.imported_name}
+                      </button>
+                    ) : (
+                      <span className="text-gray-900">{d.imported_name}</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -47,6 +80,13 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    <RepresentativeDetailModal
+      isOpen={detailModalOpen}
+      onClose={() => setDetailModalOpen(false)}
+      representativeId={selectedRepId}
+    />
+    </>
   );
 }
 
