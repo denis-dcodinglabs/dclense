@@ -739,6 +739,10 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     <AlertDialog open={showDuplicatesDialog} onOpenChange={(open) => {
       if (!open) {
         setShowDuplicatesDialog(false);
+        // Trigger parent refresh to re-fetch companies table after edits
+        if (typeof onImportComplete === 'function') {
+          onImportComplete(0);
+        }
         onClose();
       }
     }}>
@@ -818,6 +822,9 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         <AlertDialogFooter>
           <AlertDialogAction onClick={() => {
             setShowDuplicatesDialog(false);
+            if (typeof onImportComplete === 'function') {
+              onImportComplete(0);
+            }
             onClose();
           }}>OK</AlertDialogAction>
         </AlertDialogFooter>
