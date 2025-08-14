@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Save, Download, Trash2, AlertCircle } from 'lucide-react';
+import { Upload, Save, Download, Trash2, AlertCircle, Edit } from 'lucide-react';
 import { 
   AlertDialog,
   AlertDialogContent,
@@ -18,6 +18,9 @@ import {
   AlertDialogAction,
   AlertDialogCancel
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import CompanyDialog from '@/components/CompanyDialog';
+import { getCompanyById, updateCompany } from '@/lib/companies';
 import CompanyDetailModal from '@/components/CompanyDetailModal';
 import { parseCSV, getCSVTemplates, saveCSVTemplate, deleteCSVTemplate, importCompaniesFromCSV, importRepresentativesFromCSV, modifyCompaniesFromCSV, modifyRepresentativesFromCSV } from '@/lib/csvUtils';
 import { getCurrentUserWithRole } from '@/lib/auth';
@@ -69,6 +72,9 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
   const [showDuplicatesDialog, setShowDuplicatesDialog] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailCompanyId, setDetailCompanyId] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState(null);
+  const [savingCompany, setSavingCompany] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -100,6 +106,11 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
     setPreviewData([]);
     setDuplicateCompanies([]);
     setShowDuplicatesDialog(false);
+    setDetailModalOpen(false);
+    setDetailCompanyId(null);
+    setEditDialogOpen(false);
+    setEditingCompany(null);
+    setSavingCompany(false);
   };
 
   const handleFileUpload = (event) => {
@@ -327,6 +338,43 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
       setError('Import failed: ' + err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openEditForCompany = async (companyId) => {
+    try {
+      const { data } = await getCompanyById(companyId);
+      if (data) {
+        setEditingCompany(data);
+        setEditDialogOpen(true);
+      }
+    } catch (e) {
+      // noop
+    }
+  };
+
+  const handleEditSave = async (companyData) => {
+    if (!editingCompany || !currentUser) return;
+    setSavingCompany(true);
+    try {
+      const result = await updateCompany(editingCompany.id, companyData, currentUser.id);
+      if (!result.error) {
+        const updated = result.data;
+        // Reflect name change in duplicates list and mark as edited
+        setDuplicateCompanies((prev) => prev.map((entry) => {
+          if (entry.existing_id === updated.id) {
+            return { ...entry, existing_name: updated.company_name, existing_edited: true };
+          }
+          if (entry.imported_id === updated.id) {
+            return { ...entry, imported_name: updated.company_name, imported_edited: true };
+          }
+          return entry;
+        }));
+        setEditDialogOpen(false);
+        setEditingCompany(null);
+      }
+    } finally {
+      setSavingCompany(false);
     }
   };
 
@@ -712,24 +760,56 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
             <tbody>
               {duplicateCompanies.map((d, idx) => (
                 <tr key={idx} className="border-t">
-                  <td
-                    className={`px-3 py-2 ${d.existing_id ? 'text-blue-600 hover:text-blue-800 hover:underline cursor-pointer' : 'text-gray-900'}`}
-                    onClick={() => {
-                      if (d.existing_id) {
-                        setDetailCompanyId(d.existing_id);
-                        setDetailModalOpen(true);
-                      }
-                    }}
-                  >{d.existing_name}</td>
-                  <td
-                    className={`px-3 py-2 ${d.imported_id ? 'text-blue-600 hover:text-blue-800 hover:underline cursor-pointer' : 'text-gray-900'}`}
-                    onClick={() => {
-                      if (d.imported_id) {
-                        setDetailCompanyId(d.imported_id);
-                        setDetailModalOpen(true);
-                      }
-                    }}
-                  >{d.imported_name}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        className={d.existing_id ? 'text-blue-600 hover:text-blue-800 hover:underline text-left' : 'text-gray-900 text-left'}
+                        onClick={() => {
+                          if (d.existing_id) {
+                            setDetailCompanyId(d.existing_id);
+                            setDetailModalOpen(true);
+                          }
+                        }}
+                      >{d.existing_name}</button>
+                      {d.existing_edited && (
+                        <Badge className="text-[10px]">Edited</Badge>
+                      )}
+                      {d.existing_id && (
+                        <button
+                          className="text-gray-500 hover:text-gray-700"
+                          title="Edit company"
+                          onClick={() => openEditForCompany(d.existing_id)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        className={d.imported_id ? 'text-blue-600 hover:text-blue-800 hover:underline text-left' : 'text-gray-900 text-left'}
+                        onClick={() => {
+                          if (d.imported_id) {
+                            setDetailCompanyId(d.imported_id);
+                            setDetailModalOpen(true);
+                          }
+                        }}
+                      >{d.imported_name}</button>
+                      {d.imported_edited && (
+                        <Badge className="text-[10px]">Edited</Badge>
+                      )}
+                      {d.imported_id && (
+                        <button
+                          className="text-gray-500 hover:text-gray-700"
+                          title="Edit company"
+                          onClick={() => openEditForCompany(d.imported_id)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -743,6 +823,13 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    <CompanyDialog
+      isOpen={editDialogOpen}
+      onClose={() => { setEditDialogOpen(false); setEditingCompany(null); }}
+      onSave={handleEditSave}
+      company={editingCompany}
+      loading={savingCompany}
+    />
     <CompanyDetailModal
       isOpen={detailModalOpen}
       onClose={() => setDetailModalOpen(false)}
