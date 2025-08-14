@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import CompanyDialog from '@/components/CompanyDialog';
-import { getCompanyById, updateCompany } from '@/lib/companies';
+import { getCompanyById, updateCompany, deleteCompany } from '@/lib/companies';
 import CompanyDetailModal from '@/components/CompanyDetailModal';
 import { parseCSV, getCSVTemplates, saveCSVTemplate, deleteCSVTemplate, importCompaniesFromCSV, importRepresentativesFromCSV, modifyCompaniesFromCSV, modifyRepresentativesFromCSV } from '@/lib/csvUtils';
 import { getCurrentUserWithRole } from '@/lib/auth';
@@ -375,6 +375,31 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
       }
     } finally {
       setSavingCompany(false);
+    }
+  };
+
+  const handleDeleteCompany = async (companyId) => {
+    if (!currentUser || !companyId) return;
+    if (!window.confirm('Are you sure you want to delete this company?')) return;
+    try {
+      const { error } = await deleteCompany(companyId, currentUser.id);
+      if (!error) {
+        // Remove any duplicate entries that reference this company
+        setDuplicateCompanies(prev => prev.filter(entry => entry.existing_id !== companyId && entry.imported_id !== companyId));
+        // If the details modal is showing this company, close it
+        if (detailModalOpen && detailCompanyId === companyId) {
+          setDetailModalOpen(false);
+          setDetailCompanyId(null);
+        }
+        // Refresh parent table
+        if (typeof onImportComplete === 'function') {
+          onImportComplete(0);
+        }
+      } else {
+        setError('Failed to delete company');
+      }
+    } catch (e) {
+      setError('Failed to delete company');
     }
   };
 
@@ -787,6 +812,15 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                           <Edit className="h-4 w-4" />
                         </button>
                       )}
+                      {d.existing_id && (
+                        <button
+                          className="text-red-600 hover:text-red-800"
+                          title="Delete company"
+                          onClick={() => handleDeleteCompany(d.existing_id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                   <td className="px-3 py-2">
@@ -810,6 +844,15 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete, impo
                           onClick={() => openEditForCompany(d.imported_id)}
                         >
                           <Edit className="h-4 w-4" />
+                        </button>
+                      )}
+                      {d.imported_id && (
+                        <button
+                          className="text-red-600 hover:text-red-800"
+                          title="Delete company"
+                          onClick={() => handleDeleteCompany(d.imported_id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       )}
                     </div>
