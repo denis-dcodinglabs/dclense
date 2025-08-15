@@ -182,10 +182,10 @@ export default function CompaniesPage() {
     }
   };
 
-  const handleBulkAssignToMe = async () => {
+    const handleBulkAssignToMe = async () => {
     if (selectedCompanies.length === 0) return;
-
-    if (window.confirm(`Are you sure you want to assign ${selectedCompanies.length} companies to yourself?`)) {
+    
+    if (window.confirm(`Are you sure you want to assign ${selectedCompanies.length} companies and all their representatives to yourself?`)) {
       const { error } = await bulkAssignCompaniesToMe(selectedCompanies, currentUser.id);
       if (!error) {
         setSelectedCompanies([]);
@@ -203,7 +203,7 @@ export default function CompaniesPage() {
 
     if (
       window.confirm(
-        `Are you sure you want to assign ${selectedCompanies.length} companies to ${assigneeName}?`,
+        `Are you sure you want to assign ${selectedCompanies.length} companies and all their representatives to ${assigneeName}?`,
       )
     ) {
       const { error } = await bulkAssignCompaniesToUser(
