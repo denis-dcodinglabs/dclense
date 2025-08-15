@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies, bulkAssignCompaniesToMe, bulkMarkCompaniesReadUnread } from '@/lib/companies';
+import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies, bulkAssignCompaniesToMe, bulkAssignCompaniesToUser, bulkMarkCompaniesReadUnread } from '@/lib/companies';
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } from '@/lib/realtime';
@@ -68,6 +68,7 @@ export default function CompaniesPage() {
   const [saving, setSaving] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedCompanies, setSelectedCompanies] = useState([]);
+  const [selectedAssigneeUser, setSelectedAssigneeUser] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -104,20 +105,20 @@ export default function CompaniesPage() {
     fetchData();
     fetchUsers();
     getCurrentUser();
-    
+
     // Check for companyId in URL parameters
     const companyId = searchParams.get('companyId');
     if (companyId) {
       setSelectedCompanyId(companyId);
       setDetailModalOpen(true);
     }
-    
+
     // Set up real-time subscription
     const subscription = subscribeToCompanies((payload) => {
       handleCompanyUpdate(payload, companies, setCompanies);
     });
     setRealtimeSubscription(subscription);
-    
+
     // Cleanup subscription on unmount
     return () => {
       if (subscription) {
@@ -171,7 +172,7 @@ export default function CompaniesPage() {
 
   const handleBulkDelete = async () => {
     if (selectedCompanies.length === 0) return;
-    
+
     if (window.confirm(`Are you sure you want to delete ${selectedCompanies.length} companies?`)) {
       const { error } = await bulkDeleteCompanies(selectedCompanies, currentUser.id);
       if (!error) {
@@ -181,10 +182,10 @@ export default function CompaniesPage() {
     }
   };
 
-  const handleBulkAssignToMe = async () => {
+    const handleBulkAssignToMe = async () => {
     if (selectedCompanies.length === 0) return;
     
-    if (window.confirm(`Are you sure you want to assign ${selectedCompanies.length} companies to yourself?`)) {
+    if (window.confirm(`Are you sure you want to assign ${selectedCompanies.length} companies and all their representatives to yourself?`)) {
       const { error } = await bulkAssignCompaniesToMe(selectedCompanies, currentUser.id);
       if (!error) {
         setSelectedCompanies([]);
@@ -193,9 +194,34 @@ export default function CompaniesPage() {
     }
   };
 
+  const handleBulkAssignToUser = async (userId = null) => {
+    const assigneeUserId = userId || selectedAssigneeUser;
+    if (selectedCompanies.length === 0 || !assigneeUserId) return;
+
+    const assigneeUser = users.find(user => user.id === assigneeUserId);
+    const assigneeName = assigneeUser ? `${assigneeUser.first_name} ${assigneeUser.last_name}` : 'selected user';
+
+    if (
+      window.confirm(
+        `Are you sure you want to assign ${selectedCompanies.length} companies and all their representatives to ${assigneeName}?`,
+      )
+    ) {
+      const { error } = await bulkAssignCompaniesToUser(
+        selectedCompanies,
+        assigneeUserId,
+        currentUser.id,
+      );
+      if (!error) {
+        setSelectedCompanies([]);
+        setSelectedAssigneeUser('');
+        fetchData();
+      }
+    }
+  };
+
   const handleBulkMarkReadUnread = async (markUnread) => {
     if (selectedCompanies.length === 0) return;
-    
+
     const action = markUnread ? 'mark as unread' : 'mark as read';
     if (window.confirm(`Are you sure you want to ${action} ${selectedCompanies.length} companies?`)) {
       const { error } = await bulkMarkCompaniesReadUnread(selectedCompanies, markUnread, currentUser.id);
@@ -267,7 +293,7 @@ export default function CompaniesPage() {
     const { error } = await updateCompany(companyId, { mark_unread: false }, currentUser.id);
     if (!error) {
       // Update local state to reflect the change
-      setCompanies(prev => prev.map(company => 
+      setCompanies(prev => prev.map(company =>
         company.id === companyId ? { ...company, mark_unread: false } : company
       ));
     }
@@ -285,14 +311,14 @@ export default function CompaniesPage() {
     const { error } = await updateCompany(companyId, { status: statusValue }, currentUser.id);
     if (!error) {
       // Update local state
-      setCompanies(prev => prev.map(company => 
+      setCompanies(prev => prev.map(company =>
         company.id === companyId ? { ...company, status: statusValue } : company
       ));
     }
   };
 
   const handleCompanyUpdated = (companyId, newStatus) => {
-    setCompanies(prev => prev.map(company => 
+    setCompanies(prev => prev.map(company =>
       company.id === companyId ? { ...company, status: newStatus } : company
     ));
   };
@@ -413,7 +439,7 @@ export default function CompaniesPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="flex items-center space-x-1">
                   <Button
                     variant={filters.sort_order === 'asc' ? 'default' : 'outline'}
@@ -461,8 +487,8 @@ export default function CompaniesPage() {
                                   onCheckedChange={(checked) => handleColumnToggle(column.key, checked)}
                                   disabled={column.required}
                                 />
-                                <Label 
-                                  htmlFor={column.key} 
+                                <Label
+                                  htmlFor={column.key}
                                   className={`text-sm ${column.required ? 'text-gray-500' : 'cursor-pointer'}`}
                                 >
                                   {column.label}
@@ -505,35 +531,35 @@ export default function CompaniesPage() {
                   </Popover>
                 </div>
                 <div className="flex space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setImportMode('import');
-                    setImportModalOpen(true);
-                  }}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Companies CSV
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setImportMode('modify');
-                    setImportModalOpen(true);
-                  }}
-                >
-                  Modify Imports
-                </Button>
-                <Button variant="outline" onClick={() => setExportModalOpen(true)}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-                {canEdit && (
-                  <Button onClick={handleAddCompany} className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Company
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setImportMode('import');
+                      setImportModalOpen(true);
+                    }}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import Companies CSV
                   </Button>
-                )}
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setImportMode('modify');
+                      setImportModalOpen(true);
+                    }}
+                  >
+                    Modify Imports
+                  </Button>
+                  <Button variant="outline" onClick={() => setExportModalOpen(true)}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                  {canEdit && (
+                    <Button onClick={handleAddCompany} className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Company
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -548,15 +574,37 @@ export default function CompaniesPage() {
                 </span>
                 <div className="flex space-x-2">
                   {canEdit && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleBulkAssignToMe}
-                      className="text-blue-600 hover:text-blue-800 border-blue-200 hover:border-blue-300"
-                    >
-                      <User className="h-4 w-4 mr-2" />
-                      Assign Selected to Me
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleBulkAssignToMe}
+                        className="text-blue-600 hover:text-blue-800 border-blue-200 hover:border-blue-300"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Assign Selected to Me
+                      </Button>
+                      {canDelete && <Select
+                        value={selectedAssigneeUser}
+                        onValueChange={(userId) => {
+                          setSelectedAssigneeUser(userId);
+                          if (userId && selectedCompanies.length > 0) {
+                            handleBulkAssignToUser(userId);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-48 h-8 text-sm">
+                          <SelectValue placeholder="Select user to assign" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.first_name} {user.last_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>}
+                    </>
                   )}
                   {canEdit && (
                     <>
@@ -721,17 +769,17 @@ export default function CompaniesPage() {
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            const url = company.linkedin_url.startsWith('http') 
-                                              ? company.linkedin_url 
+                                            const url = company.linkedin_url.startsWith('http')
+                                              ? company.linkedin_url
                                               : `https://${company.linkedin_url}`;
                                             window.open(url, '_blank', 'noopener,noreferrer');
                                           }}
                                           className="text-blue-600 hover:text-blue-800 transition-colors"
                                           title="Open LinkedIn Profile"
                                         >
-                                          <img 
-                                            src="/linkedinicon.webp" 
-                                            alt="LinkedIn" 
+                                          <img
+                                            src="/linkedinicon.webp"
+                                            alt="LinkedIn"
                                             className="h-4 w-4 hover:opacity-80 transition-opacity"
                                           />
                                         </button>
@@ -786,17 +834,17 @@ export default function CompaniesPage() {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const url = company.linkedin_url.startsWith('http') 
-                                      ? company.linkedin_url 
+                                    const url = company.linkedin_url.startsWith('http')
+                                      ? company.linkedin_url
                                       : `https://${company.linkedin_url}`;
                                     window.open(url, '_blank', 'noopener,noreferrer');
                                   }}
                                   className="text-blue-600 hover:text-blue-800 transition-colors flex items-center"
                                   title="Open LinkedIn Profile"
                                 >
-                                  <img 
-                                    src="/linkedinicon.webp" 
-                                    alt="LinkedIn" 
+                                  <img
+                                    src="/linkedinicon.webp"
+                                    alt="LinkedIn"
                                     className="h-4 w-4 hover:opacity-80 transition-opacity"
                                   />
                                 </button>
@@ -811,8 +859,8 @@ export default function CompaniesPage() {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const url = company.website.startsWith('http') 
-                                      ? company.website 
+                                    const url = company.website.startsWith('http')
+                                      ? company.website
                                       : `https://${company.website}`;
                                     window.open(url, '_blank', 'noopener,noreferrer');
                                   }}
@@ -834,8 +882,8 @@ export default function CompaniesPage() {
                           {visibleColumns.status && (
                             <td className="px-6 py-4 whitespace-nowrap group-hover:bg-gray-50">
                               {canEdit ? (
-                                <Select 
-                                  value={company.status || 'No Status'} 
+                                <Select
+                                  value={company.status || 'No Status'}
                                   onValueChange={(value) => handleStatusChange(company.id, value)}
                                 >
                                   <SelectTrigger className="h-8 text-xs min-w-[140px]">
@@ -867,8 +915,8 @@ export default function CompaniesPage() {
                           )}
                           {visibleColumns.assigned_to && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
-                              {company.assigned_user ? 
-                                `${company.assigned_user.first_name} ${company.assigned_user.last_name}` : 
+                              {company.assigned_user ?
+                                `${company.assigned_user.first_name} ${company.assigned_user.last_name}` :
                                 <span className="text-gray-400">Unassigned</span>
                               }
                             </td>
@@ -898,7 +946,7 @@ export default function CompaniesPage() {
               <div className="text-sm text-gray-700">
                 Showing {((currentPage - 1) * 50) + 1}-{Math.min(currentPage * 50, totalCount)} of {totalCount} companies
               </div>
-              
+
               <div className="text-sm text-gray-700">
                 Page {currentPage} of {totalPages}
               </div>
@@ -938,23 +986,23 @@ export default function CompaniesPage() {
             onCompanyUpdated={handleCompanyUpdated}
           />
         </main>
-          {/* CSV Import Modal */}
-          <CSVImportModal
-            isOpen={importModalOpen}
-            onClose={() => setImportModalOpen(false)}
-            onImportComplete={handleImportComplete}
-            mode={importMode}
-          />
+        {/* CSV Import Modal */}
+        <CSVImportModal
+          isOpen={importModalOpen}
+          onClose={() => setImportModalOpen(false)}
+          onImportComplete={handleImportComplete}
+          mode={importMode}
+        />
 
-          {/* CSV Export Modal */}
-          <CSVExportModal
-            isOpen={exportModalOpen}
-            onClose={() => setExportModalOpen(false)}
-            data={companies}
-            exportType="companies"
-            selectedItems={selectedCompanies}
-            filters={filters}
-          />
+        {/* CSV Export Modal */}
+        <CSVExportModal
+          isOpen={exportModalOpen}
+          onClose={() => setExportModalOpen(false)}
+          data={companies}
+          exportType="companies"
+          selectedItems={selectedCompanies}
+          filters={filters}
+        />
       </div>
     </ProtectedRoute>
   );

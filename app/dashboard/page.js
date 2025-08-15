@@ -58,6 +58,7 @@ import {
 import {
   bulkDeleteRepresentatives,
   bulkAssignRepresentativesToMe,
+  bulkAssignRepresentativesToUser,
 } from '@/lib/representatives';
 import { bulkMarkRepresentativesReadUnread } from '@/lib/representatives';
 import {
@@ -152,6 +153,7 @@ export default function Dashboard() {
   const [saving, setSaving] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedRepresentatives, setSelectedRepresentatives] = useState([]);
+  const [selectedAssigneeUser, setSelectedAssigneeUser] = useState('');
   const [repDetailModalOpen, setRepDetailModalOpen] = useState(false);
   const [selectedRepId, setSelectedRepId] = useState(null);
   const [companyModalOpen, setCompanyModalOpen] = useState(false);
@@ -277,7 +279,7 @@ export default function Dashboard() {
         ...filters,
         current_user_id: currentUser?.id
       };
-      
+
       const [repsResult] = await Promise.all([
         getRepresentatives(currentPage, ITEMS_PER_PAGE, filtersWithUser),
       ]);
@@ -298,10 +300,10 @@ export default function Dashboard() {
   const handleFilterChange = (key, value) => {
     const filterValue =
       value === 'all' ||
-      value === 'all_assignees' ||
-      value === 'all_read_status' ||
-      value === 'all_positions' ||
-      value === 'all_exported_status'
+        value === 'all_assignees' ||
+        value === 'all_read_status' ||
+        value === 'all_positions' ||
+        value === 'all_exported_status'
         ? ''
         : value;
     setFilters((prev) => ({ ...prev, [key]: filterValue }));
@@ -407,6 +409,31 @@ export default function Dashboard() {
       );
       if (!error) {
         setSelectedRepresentatives([]);
+        fetchData();
+      }
+    }
+  };
+
+  const handleBulkAssignToUser = async (userId = null) => {
+    const assigneeUserId = userId || selectedAssigneeUser;
+    if (selectedRepresentatives.length === 0 || !assigneeUserId) return;
+
+    const assigneeUser = users.find(user => user.id === assigneeUserId);
+    const assigneeName = assigneeUser ? `${assigneeUser.first_name} ${assigneeUser.last_name}` : 'selected user';
+
+    if (
+      window.confirm(
+        `Are you sure you want to assign ${selectedRepresentatives.length} representatives to ${assigneeName}?`,
+      )
+    ) {
+      const { error } = await bulkAssignRepresentativesToUser(
+        selectedRepresentatives,
+        assigneeUserId,
+        currentUser.id,
+      );
+      if (!error) {
+        setSelectedRepresentatives([]);
+        setSelectedAssigneeUser('');
         fetchData();
       }
     }
@@ -667,9 +694,9 @@ export default function Dashboard() {
                 <div className="text-2xl font-bold">
                   {stats.totalCompanies > 0
                     ? (
-                        (stats.clientCount / stats.totalCompanies) *
-                        100
-                      ).toFixed(1)
+                      (stats.clientCount / stats.totalCompanies) *
+                      100
+                    ).toFixed(1)
                     : 0}
                   %
                 </div>
@@ -1270,15 +1297,37 @@ export default function Dashboard() {
                     </>
                   )}
                   {canEdit && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleBulkAssignToMe}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      <User className="h-4 w-4 mr-2" />
-                      Assign Selected to Me
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleBulkAssignToMe}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Assign Selected to Me
+                      </Button>
+                      {canDelete && <Select
+                        value={selectedAssigneeUser}
+                        onValueChange={(userId) => {
+                          setSelectedAssigneeUser(userId);
+                          if (userId && selectedRepresentatives.length > 0) {
+                            handleBulkAssignToUser(userId);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-48 h-8 text-sm">
+                          <SelectValue placeholder="Select user to assign" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.first_name} {user.last_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>}
+                    </>
                   )}
                   {canDelete && (
                     <Button
@@ -1502,8 +1551,8 @@ export default function Dashboard() {
                                   <div className="text-sm text-gray-500">
                                     {rep.contact_date
                                       ? new Date(
-                                          rep.contact_date,
-                                        ).toLocaleDateString()
+                                        rep.contact_date,
+                                      ).toLocaleDateString()
                                       : 'Not contacted'}
                                   </div>
                                 </div>
@@ -1607,15 +1656,15 @@ export default function Dashboard() {
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {rep.contact_date
                                 ? new Date(
-                                    rep.contact_date,
-                                  ).toLocaleDateString()
+                                  rep.contact_date,
+                                ).toLocaleDateString()
                                 : 'N/A'}
                             </td>
                           )}
                           {visibleColumns.follow_up_dates && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
                               {rep.follow_up_dates &&
-                              rep.follow_up_dates.length > 0 ? (
+                                rep.follow_up_dates.length > 0 ? (
                                 <div className="flex flex-wrap gap-1">
                                   {rep.follow_up_dates
                                     .slice(0, 2)
@@ -1685,18 +1734,16 @@ export default function Dashboard() {
                               {rep.reminder_date ? (
                                 <div className="flex items-center">
                                   <div
-                                    className={`w-3 h-3 rounded-full mr-2 ${
-                                      new Date(rep.reminder_date) <= new Date()
-                                        ? 'bg-red-500'
-                                        : 'bg-orange-500'
-                                    }`}
+                                    className={`w-3 h-3 rounded-full mr-2 ${new Date(rep.reminder_date) <= new Date()
+                                      ? 'bg-red-500'
+                                      : 'bg-orange-500'
+                                      }`}
                                   ></div>
                                   <span
-                                    className={`text-sm ${
-                                      new Date(rep.reminder_date) <= new Date()
-                                        ? 'text-red-600 font-medium'
-                                        : 'text-orange-600'
-                                    }`}
+                                    className={`text-sm ${new Date(rep.reminder_date) <= new Date()
+                                      ? 'text-red-600 font-medium'
+                                      : 'text-orange-600'
+                                      }`}
                                   >
                                     {formatDate(rep.reminder_date)}
                                   </span>
