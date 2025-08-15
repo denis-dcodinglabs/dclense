@@ -58,6 +58,7 @@ import {
 import {
   bulkDeleteRepresentatives,
   bulkAssignRepresentativesToMe,
+  bulkAssignRepresentativesToUser,
 } from '@/lib/representatives';
 import { bulkMarkRepresentativesReadUnread } from '@/lib/representatives';
 import {
@@ -152,6 +153,7 @@ export default function Dashboard() {
   const [saving, setSaving] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedRepresentatives, setSelectedRepresentatives] = useState([]);
+  const [selectedAssigneeUser, setSelectedAssigneeUser] = useState('');
   const [repDetailModalOpen, setRepDetailModalOpen] = useState(false);
   const [selectedRepId, setSelectedRepId] = useState(null);
   const [companyModalOpen, setCompanyModalOpen] = useState(false);
@@ -407,6 +409,31 @@ export default function Dashboard() {
       );
       if (!error) {
         setSelectedRepresentatives([]);
+        fetchData();
+      }
+    }
+  };
+
+  const handleBulkAssignToUser = async (userId = null) => {
+    const assigneeUserId = userId || selectedAssigneeUser;
+    if (selectedRepresentatives.length === 0 || !assigneeUserId) return;
+
+    const assigneeUser = users.find(user => user.id === assigneeUserId);
+    const assigneeName = assigneeUser ? `${assigneeUser.first_name} ${assigneeUser.last_name}` : 'selected user';
+
+    if (
+      window.confirm(
+        `Are you sure you want to assign ${selectedRepresentatives.length} representatives to ${assigneeName}?`,
+      )
+    ) {
+      const { error } = await bulkAssignRepresentativesToUser(
+        selectedRepresentatives,
+        assigneeUserId,
+        currentUser.id,
+      );
+      if (!error) {
+        setSelectedRepresentatives([]);
+        setSelectedAssigneeUser('');
         fetchData();
       }
     }
@@ -1270,15 +1297,37 @@ export default function Dashboard() {
                     </>
                   )}
                   {canEdit && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleBulkAssignToMe}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      <User className="h-4 w-4 mr-2" />
-                      Assign Selected to Me
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleBulkAssignToMe}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Assign Selected to Me
+                      </Button>
+                    {canDelete &&  <Select 
+                        value={selectedAssigneeUser} 
+                        onValueChange={(userId) => {
+                          setSelectedAssigneeUser(userId);
+                          if (userId && selectedRepresentatives.length > 0) {
+                            handleBulkAssignToUser(userId);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-48 h-8 text-sm">
+                          <SelectValue placeholder="Select user to assign" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.first_name} {user.last_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>}
+                    </>
                   )}
                   {canDelete && (
                     <Button
