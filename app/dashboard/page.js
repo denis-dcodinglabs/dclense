@@ -279,7 +279,7 @@ export default function Dashboard() {
         ...filters,
         current_user_id: currentUser?.id
       };
-      
+
       const [repsResult] = await Promise.all([
         getRepresentatives(currentPage, ITEMS_PER_PAGE, filtersWithUser),
       ]);
@@ -300,10 +300,10 @@ export default function Dashboard() {
   const handleFilterChange = (key, value) => {
     const filterValue =
       value === 'all' ||
-      value === 'all_assignees' ||
-      value === 'all_read_status' ||
-      value === 'all_positions' ||
-      value === 'all_exported_status'
+        value === 'all_assignees' ||
+        value === 'all_read_status' ||
+        value === 'all_positions' ||
+        value === 'all_exported_status'
         ? ''
         : value;
     setFilters((prev) => ({ ...prev, [key]: filterValue }));
@@ -694,9 +694,9 @@ export default function Dashboard() {
                 <div className="text-2xl font-bold">
                   {stats.totalCompanies > 0
                     ? (
-                        (stats.clientCount / stats.totalCompanies) *
-                        100
-                      ).toFixed(1)
+                      (stats.clientCount / stats.totalCompanies) *
+                      100
+                    ).toFixed(1)
                     : 0}
                   %
                 </div>
@@ -1307,8 +1307,8 @@ export default function Dashboard() {
                         <User className="h-4 w-4 mr-2" />
                         Assign Selected to Me
                       </Button>
-                    {canDelete &&  <Select 
-                        value={selectedAssigneeUser} 
+                      {canDelete && <Select
+                        value={selectedAssigneeUser}
                         onValueChange={(userId) => {
                           setSelectedAssigneeUser(userId);
                           if (userId && selectedRepresentatives.length > 0) {
@@ -1551,8 +1551,8 @@ export default function Dashboard() {
                                   <div className="text-sm text-gray-500">
                                     {rep.contact_date
                                       ? new Date(
-                                          rep.contact_date,
-                                        ).toLocaleDateString()
+                                        rep.contact_date,
+                                      ).toLocaleDateString()
                                       : 'Not contacted'}
                                   </div>
                                 </div>
@@ -1656,15 +1656,15 @@ export default function Dashboard() {
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {rep.contact_date
                                 ? new Date(
-                                    rep.contact_date,
-                                  ).toLocaleDateString()
+                                  rep.contact_date,
+                                ).toLocaleDateString()
                                 : 'N/A'}
                             </td>
                           )}
                           {visibleColumns.follow_up_dates && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32">
                               {rep.follow_up_dates &&
-                              rep.follow_up_dates.length > 0 ? (
+                                rep.follow_up_dates.length > 0 ? (
                                 <div className="flex flex-wrap gap-1">
                                   {rep.follow_up_dates
                                     .slice(0, 2)
@@ -1734,18 +1734,16 @@ export default function Dashboard() {
                               {rep.reminder_date ? (
                                 <div className="flex items-center">
                                   <div
-                                    className={`w-3 h-3 rounded-full mr-2 ${
-                                      new Date(rep.reminder_date) <= new Date()
-                                        ? 'bg-red-500'
-                                        : 'bg-orange-500'
-                                    }`}
+                                    className={`w-3 h-3 rounded-full mr-2 ${new Date(rep.reminder_date) <= new Date()
+                                      ? 'bg-red-500'
+                                      : 'bg-orange-500'
+                                      }`}
                                   ></div>
                                   <span
-                                    className={`text-sm ${
-                                      new Date(rep.reminder_date) <= new Date()
-                                        ? 'text-red-600 font-medium'
-                                        : 'text-orange-600'
-                                    }`}
+                                    className={`text-sm ${new Date(rep.reminder_date) <= new Date()
+                                      ? 'text-red-600 font-medium'
+                                      : 'text-orange-600'
+                                      }`}
                                   >
                                     {formatDate(rep.reminder_date)}
                                   </span>
