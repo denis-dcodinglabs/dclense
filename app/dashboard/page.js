@@ -658,7 +658,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {stats.totalRepresentatives || 0}
+                  {totalCount}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   +{stats.recentContacts || 0} contacted this month
