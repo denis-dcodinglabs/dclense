@@ -164,6 +164,7 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [companyCount, setCompanyCount] = useState(0);
   const ITEMS_PER_PAGE = 50;
   const [realtimeSubscription, setRealtimeSubscription] = useState(null);
   const [visibleColumns, setVisibleColumns] = useState({
@@ -261,7 +262,7 @@ export default function Dashboard() {
   };
 
   const fetchCompanies = async () => {
-    const { data } = await getCompanies(1, 1000); // Get all companies for filter
+    const { data, count } = await getCompanies(1, 1000); // Get all companies for filter
     // Sort companies alphabetically by company_name
     const sortedCompanies = (data || []).sort((a, b) =>
       (a.company_name || "").localeCompare(b.company_name || "", undefined, {
@@ -269,6 +270,7 @@ export default function Dashboard() {
       }),
     );
     setCompanies(sortedCompanies);
+    setCompanyCount(count || 0);
   };
 
   const fetchData = async () => {
@@ -641,7 +643,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {stats.totalCompanies || 0}
+                  {companyCount || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   +{stats.recentCompanies || 0} this month
@@ -658,7 +660,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {stats.totalRepresentatives || 0}
+                  {totalCount}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   +{stats.recentContacts || 0} contacted this month
