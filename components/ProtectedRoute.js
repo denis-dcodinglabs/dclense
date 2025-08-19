@@ -3,11 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
+import { useIdleTimer } from '@/hooks/useIdleTimer';
 
 export default function ProtectedRoute({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  
+  // Initialize idle timer for automatic logout after 2 minutes of inactivity
+  useIdleTimer();
 
   useEffect(() => {
     const checkUser = async () => {
