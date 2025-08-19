@@ -396,6 +396,7 @@ export default function CompaniesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all_assignees">All Assignees</SelectItem>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.first_name} {user.last_name}
