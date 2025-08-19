@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Calendar, Bell, BellOff, Trash2, Eye, EyeOff, Building2, User, Clock, CheckCircle } from 'lucide-react';
+import { Calendar, Bell, BellOff, Trash2, Eye, EyeOff, Building2, User, Clock, CheckCircle, Edit } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
+import RepresentativeDetailModal from '@/components/RepresentativeDetailModal';
+import RepresentativeDialog from '@/components/RepresentativeDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Toaster } from '@/components/ui/sonner';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { getUserReminders, getUserNotifications, markNotificationAsRead, markNotificationAsUnread, deleteNotification, markAllNotificationsAsRead } from '@/lib/reminders';
+import { updateRepresentative } from '@/lib/representatives';
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -59,6 +62,11 @@ export default function RemindersPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('reminders');
   const [notificationPermission, setNotificationPermission] = useState('default');
+  const [isRepModalOpen, setIsRepModalOpen] = useState(false);
+  const [selectedRepresentativeId, setSelectedRepresentativeId] = useState(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingRepresentative, setEditingRepresentative] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -208,7 +216,47 @@ export default function RemindersPage() {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const handleRepresentativeClick = (repId) => {
-    router.push(`/dashboard?repId=${repId}`);
+    setSelectedRepresentativeId(repId);
+    setIsRepModalOpen(true);
+  };
+
+  const handleCloseRepModal = () => {
+    setIsRepModalOpen(false);
+    setSelectedRepresentativeId(null);
+  };
+
+  const handleEditRepresentative = (representative) => {
+    setEditingRepresentative(representative);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+    setEditingRepresentative(null);
+  };
+
+  const handleSaveRepresentative = async (repData) => {
+    if (!editingRepresentative || !currentUser) return;
+
+    setEditLoading(true);
+    try {
+      const { error } = await updateRepresentative(editingRepresentative.id, repData, currentUser.id);
+      
+      if (error) {
+        console.error('Error updating representative:', error);
+        toast.error('Failed to update representative');
+      } else {
+        toast.success('Representative updated successfully');
+        // Refresh the reminders to show updated data
+        await fetchReminders();
+        handleCloseEditDialog();
+      }
+    } catch (error) {
+      console.error('Error updating representative:', error);
+      toast.error('An error occurred while updating the representative');
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   if (loading) {
@@ -297,12 +345,24 @@ export default function RemindersPage() {
                                 </div>
                               </div>
                               <div className="ml-3">
-                                <button
-                                  onClick={() => handleRepresentativeClick(rep.id)}
-                                  className="text-lg font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
-                                >
-                                  {rep.first_name} {rep.last_name}
-                                </button>
+                                <div className="flex items-center space-x-2">
+                                  <button
+                                    onClick={() => handleRepresentativeClick(rep.id)}
+                                    className="text-lg font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors text-left"
+                                  >
+                                    {rep.first_name} {rep.last_name}
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditRepresentative(rep);
+                                    }}
+                                    className="text-gray-500 hover:text-blue-600 transition-colors p-1"
+                                    title="Edit representative"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </button>
+                                </div>
                                 <p className="text-sm text-gray-600">{rep.role}</p>
                                 {rep.company && (
                                   <p className="text-sm text-gray-500">
@@ -483,6 +543,22 @@ export default function RemindersPage() {
         </main>
       </div>
       <Toaster />
+      
+      {/* Representative Detail Modal */}
+      <RepresentativeDetailModal 
+        isOpen={isRepModalOpen}
+        onClose={handleCloseRepModal}
+        representativeId={selectedRepresentativeId}
+      />
+      
+      {/* Representative Edit Dialog */}
+      <RepresentativeDialog 
+        isOpen={isEditDialogOpen}
+        onClose={handleCloseEditDialog}
+        onSave={handleSaveRepresentative}
+        representative={editingRepresentative}
+        loading={editLoading}
+      />
     </ProtectedRoute>
   );
 }
