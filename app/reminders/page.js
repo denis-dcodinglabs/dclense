@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Calendar, Bell, BellOff, Trash2, Eye, EyeOff, Building2, User, Clock, CheckCircle } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
+import RepresentativeDetailModal from '@/components/RepresentativeDetailModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +60,8 @@ export default function RemindersPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('reminders');
   const [notificationPermission, setNotificationPermission] = useState('default');
+  const [isRepModalOpen, setIsRepModalOpen] = useState(false);
+  const [selectedRepresentativeId, setSelectedRepresentativeId] = useState(null);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -208,7 +211,13 @@ export default function RemindersPage() {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const handleRepresentativeClick = (repId) => {
-    router.push(`/dashboard?repId=${repId}`);
+    setSelectedRepresentativeId(repId);
+    setIsRepModalOpen(true);
+  };
+
+  const handleCloseRepModal = () => {
+    setIsRepModalOpen(false);
+    setSelectedRepresentativeId(null);
   };
 
   if (loading) {
@@ -483,6 +492,13 @@ export default function RemindersPage() {
         </main>
       </div>
       <Toaster />
+      
+      {/* Representative Detail Modal */}
+      <RepresentativeDetailModal 
+        isOpen={isRepModalOpen}
+        onClose={handleCloseRepModal}
+        representativeId={selectedRepresentativeId}
+      />
     </ProtectedRoute>
   );
 }
