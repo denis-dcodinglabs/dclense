@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Input } from './ui/input';
+import { FloatingLabelInput } from './ui/floating-label-input';
 import { Button } from './ui/button';
 import { saveCandidateWithCV } from '../app/candidates/candidatesHelpers';
 import GeminiCVParser from './GeminiCVParser'; // Import the new component
@@ -143,38 +143,38 @@ export default function AddCandidateModal({ onCandidateAdded }) {
                   </button>
                 </div>
                 <form className="space-y-4 px-6 py-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 64px)' }} onSubmit={handleSubmit}>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <Input name="first_name" placeholder="First Name" value={form.first_name} onChange={handleChange} required />
-                    <Input name="middle_name" placeholder="Middle Name" value={form.middle_name} onChange={handleChange} />
-                    <Input name="last_name" placeholder="Last Name" value={form.last_name} onChange={handleChange} required />
-                    <Input name="status" placeholder="Status" value={form.status} onChange={handleChange} />
-                    <Input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
-                    <Input name="current_company" placeholder="Current Company" value={form.current_company} onChange={handleChange} />
-                    <Input name="source" placeholder="Source" value={form.source} onChange={handleChange} />
-                    <Input name="referred_by" placeholder="Referred By" value={form.referred_by} onChange={handleChange} />
-                    <Input name="ownership" placeholder="Ownership" value={form.ownership} onChange={handleChange} />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <FloatingLabelInput name="first_name" placeholder="First Name" value={form.first_name} onChange={handleChange} label="First Name" required />
+                    <FloatingLabelInput name="middle_name" placeholder="Middle Name" value={form.middle_name} onChange={handleChange} label="Middle Name" />
+                    <FloatingLabelInput name="last_name" placeholder="Last Name" value={form.last_name} onChange={handleChange} label="Last Name" required />
+                    <FloatingLabelInput name="status" placeholder="Status" value={form.status} onChange={handleChange} label="Status" />
+                    <FloatingLabelInput name="title" placeholder="Title" value={form.title} onChange={handleChange} label="Title" />
+                    <FloatingLabelInput name="current_company" placeholder="Current Company" value={form.current_company} onChange={handleChange} label="Current Company" />
+                    <FloatingLabelInput name="source" placeholder="Source" value={form.source} onChange={handleChange} label="Source" />
+                    <FloatingLabelInput name="referred_by" placeholder="Referred By" value={form.referred_by} onChange={handleChange} label="Referred By" />
+                    <FloatingLabelInput name="ownership" placeholder="Ownership" value={form.ownership} onChange={handleChange} label="Ownership" />
                   </div>
                   <div className="font-semibold mt-2">Contact Information</div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <Input name="email_1" placeholder="Email 1" value={form.email_1} onChange={handleChange} />
-                    <Input name="email_2" placeholder="Email 2" value={form.email_2} onChange={handleChange} />
-                    <Input name="mobile_phone" placeholder="Mobile Phone" value={form.mobile_phone} onChange={handleChange} />
-                    <Input name="address" placeholder="Address" value={form.address} onChange={handleChange} />
-                    <Input name="city" placeholder="City" value={form.city} onChange={handleChange} />
-                    <Input name="state" placeholder="State" value={form.state} onChange={handleChange} />
-                    <Input name="zip" placeholder="Zip" value={form.zip} onChange={handleChange} />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <FloatingLabelInput name="email_1" placeholder="Email 1" value={form.email_1} onChange={handleChange} label="Primary Email" />
+                    <FloatingLabelInput name="email_2" placeholder="Email 2" value={form.email_2} onChange={handleChange} label="Secondary Email" />
+                    <FloatingLabelInput name="mobile_phone" placeholder="Mobile Phone" value={form.mobile_phone} onChange={handleChange} label="Mobile Phone" />
+                    <FloatingLabelInput name="address" placeholder="Address" value={form.address} onChange={handleChange} label="Address" />
+                    <FloatingLabelInput name="city" placeholder="City" value={form.city} onChange={handleChange} label="City" />
+                    <FloatingLabelInput name="state" placeholder="State" value={form.state} onChange={handleChange} label="State" />
+                    <FloatingLabelInput name="zip" placeholder="Zip" value={form.zip} onChange={handleChange} label="Zip Code" />
                   </div>
                   <div className="font-semibold mt-2">General Information</div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <Input name="current_salary" placeholder="Current Salary" value={form.current_salary} onChange={handleChange} />
-                    <Input name="desired_salary" placeholder="Desired Salary" value={form.desired_salary} onChange={handleChange} />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <FloatingLabelInput name="current_salary" placeholder="Current Salary" value={form.current_salary} onChange={handleChange} label="Current Salary" />
+                    <FloatingLabelInput name="desired_salary" placeholder="Desired Salary" value={form.desired_salary} onChange={handleChange} label="Desired Salary" />
                     <div className="flex">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Date Available</label>
-                      <Input 
+                      <FloatingLabelInput 
                         name="date_available" 
                         type="date" 
                         value={form.date_available} 
                         onChange={handleChange}
+                        label="Date Available"
                         className="w-full"
                       />
                     </div>
@@ -191,21 +191,21 @@ export default function AddCandidateModal({ onCandidateAdded }) {
                         <option value="no">No</option>
                       </select>
                     </div>
-                    <Input name="general_comments" placeholder="General Candidate Comments" value={form.general_comments} onChange={handleChange} />
+                    <FloatingLabelInput name="general_comments" placeholder="General Candidate Comments" value={form.general_comments} onChange={handleChange} label="Comments" />
                   </div>
                   <div className="font-semibold mt-2">Category & Skills</div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <Input name="category" placeholder="Category" value={form.category} onChange={handleChange} />
-                    <Input name="skills" placeholder="Skills" value={form.skills} onChange={handleChange} />
-                    <Input name="industry" placeholder="Industry" value={form.industry} onChange={handleChange} />
-                    <Input name="years_of_experience" placeholder="Years of Experience" value={form.years_of_experience} onChange={handleChange} />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <FloatingLabelInput name="category" placeholder="Category" value={form.category} onChange={handleChange} label="Category" />
+                    <FloatingLabelInput name="skills" placeholder="Skills" value={form.skills} onChange={handleChange} label="Skills" />
+                    <FloatingLabelInput name="industry" placeholder="Industry" value={form.industry} onChange={handleChange} label="Industry" />
+                    <FloatingLabelInput name="years_of_experience" placeholder="Years of Experience" value={form.years_of_experience} onChange={handleChange} label="Years of Experience" />
                     <div className="flex">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Date Added</label>
-                      <Input 
+                      <FloatingLabelInput 
                         name="user_date_added" 
                         type="date" 
                         value={form.user_date_added} 
                         onChange={handleChange}
+                        label="Date Added"
                         className="w-full"
                       />
                     </div>
