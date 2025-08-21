@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getUsers } from '@/lib/users';
+import { checkCompanyNameExists } from '@/lib/companies';
+import CompanyDetailModal from './CompanyDetailModal';
 
 const STATUS_OPTIONS = [
   { value: 'No Status', label: 'No Status' },
@@ -36,6 +38,8 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
   });
   const [errors, setErrors] = useState({});
   const [users, setUsers] = useState([]);
+  const [existingCompany, setExistingCompany] = useState(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -74,6 +78,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
       });
     }
     setErrors({});
+    setExistingCompany(null); // Reset existing company when dialog opens/closes
   }, [company, isOpen]);
 
   const fetchUsers = async () => {
@@ -81,21 +86,35 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
     setUsers(data || []);
   };
 
-  const validateForm = () => {
+  const validateForm = async () => {
     const newErrors = {};
+    setExistingCompany(null); // Reset existing company
 
     if (!formData.company_name.trim()) {
       newErrors.company_name = 'Company name is required';
+    } else {
+      // Check for duplicate company name
+      const { exists, error, existingCompany: foundCompany } = await checkCompanyNameExists(
+        formData.company_name.trim(), 
+        company?.id // Exclude current company when editing
+      );
+      
+      if (error) {
+        newErrors.company_name = 'Error checking company name. Please try again.';
+      } else if (exists && foundCompany) {
+        newErrors.company_name = 'A company with this name already exists';
+        setExistingCompany(foundCompany);
+      }
     }
-
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
+    const isValid = await validateForm();
+    if (isValid) {
       const submitData = {
         ...formData,
         status: formData.status === 'No Status' ? null : formData.status,
@@ -111,6 +130,10 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    // Reset existing company when company name changes
+    if (field === 'company_name') {
+      setExistingCompany(null);
     }
   };
 
@@ -135,7 +158,20 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
                 className={errors.company_name ? 'border-red-500' : ''}
               />
               {errors.company_name && (
-                <p className="text-sm text-red-500">{errors.company_name}</p>
+                <div className="text-sm text-red-500">
+                  {errors.company_name}
+                  {existingCompany && (
+                    <div className="mt-1">
+                      <button
+                        type="button"
+                        onClick={() => setDetailModalOpen(true)}
+                        className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                      >
+                        View existing company: "{existingCompany.company_name}"
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
             
@@ -293,6 +329,17 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
           </DialogFooter>
         </form>
       </DialogContent>
+      
+      {/* Company Detail Modal for existing company */}
+      <CompanyDetailModal
+        isOpen={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        companyId={existingCompany?.id}
+        onCompanyUpdated={() => {
+          // Refresh validation when existing company is updated
+          setDetailModalOpen(false);
+        }}
+      />
     </Dialog>
   );
 }
