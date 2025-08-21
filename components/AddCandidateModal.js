@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { saveCandidateWithCV } from '../app/candidates/candidatesHelpers';
+import GeminiCVParser from './GeminiCVParser'; // Import the new component
 
 const initialForm = {
   first_name: '',
@@ -40,6 +41,7 @@ export default function AddCandidateModal({ onCandidateAdded }) {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [parsedData, setParsedData] = useState(null); // New state for parsed data
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -52,6 +54,55 @@ export default function AddCandidateModal({ onCandidateAdded }) {
 
   const handleRemoveCV = () => {
     setForm((f) => ({ ...f, cv: null }));
+  };
+
+  const handleParseCV = async () => {
+    if (!form.cv) {
+      setError('Please upload a CV first.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const data = await GeminiCVParser(form.cv);
+      if (data && !data.error) {
+        setForm((f) => ({
+          ...f,
+          first_name: data.first_name || '',
+          middle_name: data.middle_name || '',
+          last_name: data.last_name || '',
+          email_1: data.email_1 || '',
+          mobile_phone: data.mobile_phone || '',
+          address: data.address || '',
+          city: data.city || '',
+          state: data.state || '',
+          zip: data.zip || '',
+          current_salary: data.current_salary || '',
+          desired_salary: data.desired_salary || '',
+          years_of_experience: data.years_of_experience || '',
+          skills: data.skills || '',
+          current_company: data.current_company || '',
+          title: data.title || '',
+          source: data.source || '',
+          referred_by: data.referred_by || '',
+          ownership: data.ownership || '',
+          general_comments: data.general_comments || '',
+          category: data.category || '',
+          industry: data.industry || '',
+          willing_to_relocate: data.willing_to_relocate ? (data.willing_to_relocate.toLowerCase() === 'yes' ? 'yes' : 'no') : '',
+          date_available: data.date_available || '',
+        }));
+        setParsedData(data);
+      } else if (data && data.error) {
+        setError(data.error);
+      } else {
+        setError('Failed to parse CV: No data returned.');
+      }
+    } catch (err) {
+      setError(err.message || 'Error parsing CV');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -175,12 +226,20 @@ export default function AddCandidateModal({ onCandidateAdded }) {
                         >
                           ×
                         </button>
+                        <Button
+                          type="button"
+                          onClick={handleParseCV}
+                          disabled={loading}
+                          className="ml-2"
+                        >
+                          Parse CV
+                        </Button>
                       </div>
                     ) : (
-                      <input 
-                        type="file" 
-                        name="cv" 
-                        accept="application/pdf" 
+                      <input
+                        type="file"
+                        name="cv"
+                        accept="application/pdf"
                         onChange={handleChange}
                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       />
