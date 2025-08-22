@@ -34,6 +34,8 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
   const [users, setUsers] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [followUpDate, setFollowUpDate] = useState('');
+  const [companySearchQuery, setCompanySearchQuery] = useState('');
+  const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -60,6 +62,13 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
         assigned_to: representative.assigned_to || '',
         mark_unread: false
       });
+      // Set company search query for editing
+      if (representative.company_id && companies.length > 0) {
+        const selectedCompany = companies.find(company => company.id === representative.company_id);
+        setCompanySearchQuery(selectedCompany ? selectedCompany.company_name : '');
+      } else {
+        setCompanySearchQuery('');
+      }
     } else {
       setFormData({
         company_id: preselectedCompanyId || '',
@@ -79,9 +88,17 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
         assigned_to: '',
         mark_unread: true
       });
+      // Set company search query for preselected company
+      if (preselectedCompanyId && companies.length > 0) {
+        const selectedCompany = companies.find(company => company.id === preselectedCompanyId);
+        setCompanySearchQuery(selectedCompany ? selectedCompany.company_name : '');
+      } else {
+        setCompanySearchQuery('');
+      }
     }
     setErrors({});
-  }, [representative, isOpen, preselectedCompanyId]);
+    setIsCompanyDropdownOpen(false);
+  }, [representative, isOpen, preselectedCompanyId, companies]);
 
   const fetchUsers = async () => {
     const { data } = await getUsers();
@@ -91,6 +108,35 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
   const fetchCompanies = async () => {
     const { data } = await getCompanies(1, 1000); // Get all companies for dropdown
     setCompanies(data || []);
+  };
+
+  const getFilteredCompanies = () => {
+    if (!companySearchQuery.trim()) {
+      return companies;
+    }
+    return companies.filter(company =>
+      company.company_name.toLowerCase().includes(companySearchQuery.trim().toLowerCase())
+    );
+  };
+
+  const getSelectedCompanyName = () => {
+    if (!formData.company_id) return '';
+    const selectedCompany = companies.find(company => company.id === formData.company_id);
+    return selectedCompany ? selectedCompany.company_name : '';
+  };
+
+  const handleCompanySelect = (companyId, companyName) => {
+    handleInputChange('company_id', companyId);
+    setCompanySearchQuery(companyName || '');
+    setIsCompanyDropdownOpen(false);
+  };
+
+  const handleCompanySearchChange = (value) => {
+    setCompanySearchQuery(value);
+    setIsCompanyDropdownOpen(true);
+    if (!value.trim()) {
+      handleInputChange('company_id', '');
+    }
   };
 
   const validateForm = () => {
@@ -176,21 +222,50 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="company_id">Company</Label>
-              <Select value={formData.company_id} onValueChange={(value) => handleInputChange('company_id', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select company" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="null_company_option">No company</SelectItem>
-                  {companies.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.company_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-2 relative">
+              <Label htmlFor="company_search">Company</Label>
+              <div className="relative">
+                <Input
+                  id="company_search"
+                  value={companySearchQuery}
+                  onChange={(e) => handleCompanySearchChange(e.target.value)}
+                  onClick={() => setIsCompanyDropdownOpen(true)}
+                  placeholder="Search for a company..."
+                  className="w-full"
+                  autoComplete="off"
+                />
+                {isCompanyDropdownOpen && (
+                  <div className="absolute top-full left-0 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto z-50 mt-1 min-w-[300px]">
+                    <div
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b"
+                      onClick={() => handleCompanySelect('', '')}
+                    >
+                      No company
+                    </div>
+                    {getFilteredCompanies().map((company) => (
+                      <div
+                        key={company.id}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => handleCompanySelect(company.id, company.company_name)}
+                      >
+                        {company.company_name}
+                      </div>
+                    ))}
+                    {getFilteredCompanies().length === 0 && companySearchQuery.trim() && (
+                      <div className="px-4 py-2 text-gray-500">
+                        No companies found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {/* Click outside handler */}
+              {isCompanyDropdownOpen && (
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsCompanyDropdownOpen(false)}
+                />
+              )}
             </div>
             
             <div className="space-y-2">
