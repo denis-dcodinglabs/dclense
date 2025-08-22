@@ -20,6 +20,7 @@ import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCo
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } from '@/lib/realtime';
+import { useToast } from '@/hooks/use-toast';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },
@@ -60,6 +61,7 @@ const TABLE_COLUMNS = [
 export default function CompaniesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -242,12 +244,37 @@ export default function CompaniesPage() {
         result = await createCompany(companyData, currentUser.id);
       }
 
-      if (!result.error) {
+      if (result.error) {
+        // Show error message to user
+        let errorMessage = result.error.message || 'Failed to save company';
+        
+        // If it's a duplicate company error and we have existing company data, enhance the message
+        if (result.error.code === 'DUPLICATE_COMPANY_NAME' && result.error.existingCompany) {
+          const existingCompany = result.error.existingCompany;
+          errorMessage += `. Click to view: ${existingCompany.company_name}`;
+        }
+        
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
         setDialogOpen(false);
         fetchData();
+        // Show success message
+        toast({
+          title: "Success",
+          description: `Company ${editingCompany ? 'updated' : 'created'} successfully`,
+        });
       }
     } catch (error) {
       console.error('Error saving company:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while saving the company",
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }

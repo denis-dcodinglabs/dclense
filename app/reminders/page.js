@@ -67,6 +67,7 @@ export default function RemindersPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingRepresentative, setEditingRepresentative] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
+  const [editErrorMessage, setEditErrorMessage] = useState(null);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -233,27 +234,39 @@ export default function RemindersPage() {
   const handleCloseEditDialog = () => {
     setIsEditDialogOpen(false);
     setEditingRepresentative(null);
+    setEditErrorMessage(null);
   };
 
   const handleSaveRepresentative = async (repData) => {
     if (!editingRepresentative || !currentUser) return;
 
     setEditLoading(true);
+    setEditErrorMessage(null); // Clear any previous errors
     try {
-      const { error } = await updateRepresentative(editingRepresentative.id, repData, currentUser.id);
+      const result = await updateRepresentative(editingRepresentative.id, repData, currentUser.id);
       
-      if (error) {
-        console.error('Error updating representative:', error);
-        toast.error('Failed to update representative');
-      } else {
+      if (!result.error) {
         toast.success('Representative updated successfully');
+        setEditErrorMessage(null);
         // Refresh the reminders to show updated data
         await fetchReminders();
         handleCloseEditDialog();
+      } else {
+        // Handle duplicate error or other errors
+        if (result.error.code === 'DUPLICATE_REPRESENTATIVE') {
+          setEditErrorMessage(result.error.message);
+          toast.error(result.error.message);
+        } else {
+          const errorMessage = 'Failed to update representative: ' + (result.error.message || 'Unknown error');
+          setEditErrorMessage(errorMessage);
+          toast.error(errorMessage);
+        }
       }
     } catch (error) {
       console.error('Error updating representative:', error);
-      toast.error('An error occurred while updating the representative');
+      const errorMessage = 'An unexpected error occurred while updating the representative';
+      setEditErrorMessage(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setEditLoading(false);
     }
@@ -558,6 +571,8 @@ export default function RemindersPage() {
         onSave={handleSaveRepresentative}
         representative={editingRepresentative}
         loading={editLoading}
+        errorMessage={editErrorMessage}
+        onClearError={() => setEditErrorMessage(null)}
       />
     </ProtectedRoute>
   );
