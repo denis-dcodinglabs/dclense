@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import {
   Plus,
   Upload,
@@ -151,6 +152,7 @@ export default function Dashboard() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRep, setEditingRep] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [repErrorMessage, setRepErrorMessage] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedRepresentatives, setSelectedRepresentatives] = useState([]);
   const [selectedAssigneeUser, setSelectedAssigneeUser] = useState('');
@@ -499,6 +501,7 @@ export default function Dashboard() {
 
   const handleSaveRepresentative = async (repData) => {
     setSaving(true);
+    setRepErrorMessage(null); // Clear any previous errors
     try {
       let result;
       if (editingRep) {
@@ -513,10 +516,25 @@ export default function Dashboard() {
 
       if (!result.error) {
         setDialogOpen(false);
+        setRepErrorMessage(null);
         fetchData();
+        toast.success('Representative saved successfully');
+      } else {
+        // Handle duplicate error or other errors
+        if (result.error.code === 'DUPLICATE_REPRESENTATIVE') {
+          setRepErrorMessage(result.error.message);
+          toast.error(result.error.message);
+        } else {
+          const errorMessage = 'Failed to save representative: ' + (result.error.message || 'Unknown error');
+          setRepErrorMessage(errorMessage);
+          toast.error(errorMessage);
+        }
       }
     } catch (error) {
       console.error('Error saving representative:', error);
+      const errorMessage = 'An unexpected error occurred while saving the representative';
+      setRepErrorMessage(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -1840,10 +1858,15 @@ export default function Dashboard() {
           {/* Representative Dialog */}
           <RepresentativeDialog
             isOpen={dialogOpen}
-            onClose={() => setDialogOpen(false)}
+            onClose={() => {
+              setDialogOpen(false);
+              setRepErrorMessage(null); // Clear error when closing
+            }}
             onSave={handleSaveRepresentative}
             representative={editingRep}
-            saving={saving}
+            loading={saving}
+            errorMessage={repErrorMessage}
+            onClearError={() => setRepErrorMessage(null)}
           />
 
           {/* Representative Detail Modal */}

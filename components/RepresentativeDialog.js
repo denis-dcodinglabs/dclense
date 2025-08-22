@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getUsers } from '@/lib/users';
 import { getCompanies } from '@/lib/companies';
 
-export default function RepresentativeDialog({ isOpen, onClose, onSave, representative = null, loading = false, preselectedCompanyId = null }) {
+export default function RepresentativeDialog({ isOpen, onClose, onSave, representative = null, loading = false, preselectedCompanyId = null, errorMessage = null, onClearError = null }) {
   const [formData, setFormData] = useState({
     company_id: '',
     first_name: '',
@@ -132,6 +133,11 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+    
+    // Clear parent error message when user starts typing
+    if (errorMessage && onClearError) {
+      onClearError();
+    }
   };
 
   const addFollowUpDate = () => {
@@ -159,6 +165,14 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
             {representative ? 'Edit Representative' : 'Add New Representative'}
           </DialogTitle>
         </DialogHeader>
+        
+        {errorMessage && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {errorMessage}
+            </AlertDescription>
+          </Alert>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">

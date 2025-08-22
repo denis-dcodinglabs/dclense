@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { 
   AlertDialog,
   AlertDialogContent,
@@ -24,6 +25,7 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingRepresentative, setEditingRepresentative] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
+  const [editErrorMessage, setEditErrorMessage] = useState(null);
 
   // Update local duplicates when prop changes
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
     if (!editingRepresentative) return;
     
     setEditLoading(true);
+    setEditErrorMessage(null); // Clear any previous errors
     try {
       const { updateRepresentative } = await import('@/lib/representatives');
       const { getCurrentUserWithRole } = await import('@/lib/auth');
@@ -69,6 +72,7 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
       const currentUser = await getCurrentUserWithRole();
       if (!currentUser) {
         console.error('No current user found');
+        toast.error('Authentication error. Please try again.');
         return;
       }
       
@@ -99,11 +103,25 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
         // Close edit dialog
         setEditDialogOpen(false);
         setEditingRepresentative(null);
+        setEditErrorMessage(null);
+        toast.success('Representative updated successfully');
       } else {
         console.error('Error updating representative:', result.error);
+        // Handle duplicate error or other errors
+        if (result.error.code === 'DUPLICATE_REPRESENTATIVE') {
+          setEditErrorMessage(result.error.message);
+          toast.error(result.error.message);
+        } else {
+          const errorMessage = 'Failed to update representative: ' + (result.error.message || 'Unknown error');
+          setEditErrorMessage(errorMessage);
+          toast.error(errorMessage);
+        }
       }
     } catch (err) {
       console.error('Error saving representative:', err);
+      const errorMessage = 'An unexpected error occurred while updating the representative';
+      setEditErrorMessage(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setEditLoading(false);
     }
@@ -264,10 +282,13 @@ export default function RepresentativeDuplicatesModal({ isOpen, onClose, duplica
       onClose={() => {
         setEditDialogOpen(false);
         setEditingRepresentative(null);
+        setEditErrorMessage(null); // Clear error when closing
       }}
       onSave={handleEditSave}
       representative={editingRepresentative}
       loading={editLoading}
+      errorMessage={editErrorMessage}
+      onClearError={() => setEditErrorMessage(null)}
     />
     </>
   );
