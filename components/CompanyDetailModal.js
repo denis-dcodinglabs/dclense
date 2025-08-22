@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -78,6 +79,7 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
   const [selectedRepId, setSelectedRepId] = useState(null);
   const [repFormOpen, setRepFormOpen] = useState(false);
   const [savingRep, setSavingRep] = useState(false);
+  const [repErrorMessage, setRepErrorMessage] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [savingStatus, setSavingStatus] = useState(false);
 
@@ -160,15 +162,31 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
   const handleSaveRepresentative = async (repData) => {
     if (!currentUser) return;
     setSavingRep(true);
+    setRepErrorMessage(null); // Clear any previous errors
     try {
       const result = await createRepresentative(repData, currentUser.id);
       if (!result.error) {
         setRepFormOpen(false);
+        setRepErrorMessage(null);
         // Refresh company details to include the new representative with joined fields
         await fetchCompanyDetails();
+        toast.success('Representative created successfully');
+      } else {
+        // Handle duplicate error or other errors
+        if (result.error.code === 'DUPLICATE_REPRESENTATIVE') {
+          setRepErrorMessage(result.error.message);
+          toast.error(result.error.message);
+        } else {
+          const errorMessage = 'Failed to create representative: ' + (result.error.message || 'Unknown error');
+          setRepErrorMessage(errorMessage);
+          toast.error(errorMessage);
+        }
       }
     } catch (err) {
       console.error('Error creating representative:', err);
+      const errorMessage = 'An unexpected error occurred while creating the representative';
+      setRepErrorMessage(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setSavingRep(false);
     }
@@ -360,11 +378,16 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
         {/* Add/Edit Representative Dialog */}
         <RepresentativeDialog
           isOpen={repFormOpen}
-          onClose={() => setRepFormOpen(false)}
+          onClose={() => {
+            setRepFormOpen(false);
+            setRepErrorMessage(null); // Clear error when closing
+          }}
           onSave={handleSaveRepresentative}
           representative={null}
           loading={savingRep}
           preselectedCompanyId={companyId}
+          errorMessage={repErrorMessage}
+          onClearError={() => setRepErrorMessage(null)}
         />
             <Card>
               <CardHeader>
