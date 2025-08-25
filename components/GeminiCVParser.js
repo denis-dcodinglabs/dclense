@@ -12,7 +12,7 @@ export default async function GeminiCVParser(file) {
     const base64 = await fileToBase64(file);
     const mimeType = file.type;
 
-    const prompt = "Extract the following information from the CV and return it as a JSON object. If a field is not found, leave it as an empty string: first_name, middle_name, last_name, email_1, mobile_phone, address, city, state, zip, current_salary, desired_salary, years_of_experience, skills, current_company, title, source, referred_by, ownership, general_comments, category, industry, willing_to_relocate (yes/no), date_available (YYYY-MM-DD).";
+    const prompt = "Extract the following information from the CV and return it as a JSON object. If a field is not found, leave it as an empty string: first_name, middle_name, last_name, email_1, mobile_phone, address, city, state, zip, current_salary, desired_salary, years_of_experience, skills, current_company, title, source, referred_by, ownership, general_comments, category, industry, willing_to_relocate (yes/no), date_available (YYYY-MM-DD). IMPORTANT: For years_of_experience, calculate ONLY the experience that is directly relevant to the parsed 'title' field. Sum up the total years from all relevant positions and format the result as follows: if 1-2 years use '1+', if 3-4 years use '3+', if 5+ years use '5+'. If no relevant experience is found, leave as empty string.";
 
     const result = await model.generateContent([
       prompt,
