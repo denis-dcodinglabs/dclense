@@ -72,7 +72,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
         number_of_employees: '',
         status: 'No Status',
         notes: '',
-        last_activity_date: '',
+        last_activity_date: new Date().toISOString().split('T')[0],
         assigned_to: 'unassigned',
         mark_unread: true
       });
