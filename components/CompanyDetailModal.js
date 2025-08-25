@@ -386,6 +386,7 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
           representative={null}
           loading={savingRep}
           preselectedCompanyId={companyId}
+          preselectedAssignedTo={company.assigned_to}
           errorMessage={repErrorMessage}
           onClearError={() => setRepErrorMessage(null)}
         />
