@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getUsers } from '@/lib/users';
 import { getCompanies } from '@/lib/companies';
 
-export default function RepresentativeDialog({ isOpen, onClose, onSave, representative = null, loading = false, preselectedCompanyId = null, errorMessage = null, onClearError = null }) {
+export default function RepresentativeDialog({ isOpen, onClose, onSave, representative = null, loading = false, preselectedCompanyId = null, preselectedAssignedTo = null, errorMessage = null, onClearError = null }) {
   const [formData, setFormData] = useState({
     company_id: '',
     first_name: '',
@@ -85,7 +85,7 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
         outcome: '',
         notes: '',
         contacted_by: '',
-        assigned_to: '',
+        assigned_to: preselectedAssignedTo || '',
         mark_unread: true
       });
       // Set company search query for preselected company
@@ -98,8 +98,8 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
     }
     setErrors({});
     setIsCompanyDropdownOpen(false);
-  }, [representative, isOpen, preselectedCompanyId, companies]);
-
+  }, [representative, isOpen, preselectedCompanyId, preselectedAssignedTo, companies]);
+  
   const fetchUsers = async () => {
     const { data } = await getUsers();
     setUsers(data || []);
