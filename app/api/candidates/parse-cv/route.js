@@ -30,7 +30,12 @@ export async function POST(request) {
 
     // Initialize Gemini AI
     const genAI = new GoogleGenerativeAI(API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-pro",
+      generationConfig: {
+        responseMimeType: "application/json",
+      },
+    });
 
     const prompt = "Extract the following information from the CV and return it as a JSON object. If a field is not found, leave it as an empty string: first_name, middle_name, last_name, email_1, mobile_phone, address, city, state, zip, current_salary, desired_salary, skills, current_company, title, source, referred_by, ownership, general_comments, category, industry, willing_to_relocate (yes/no), date_available (YYYY-MM-DD). Also, extract job experiences relevant to the 'title' into a field called 'relevant_experience'. 'relevant_experience' should be an array of JSON objects, where each object has 'start_date' and 'end_date'. Dates should be in 'YYYY-MM' format. If the end date is the current job, use 'Present'. If no relevant experience is found, leave 'relevant_experience' as an empty array.";
 
@@ -49,13 +54,9 @@ export async function POST(request) {
     const text = response.text();
     console.log("Gemini Response:", text);
 
-    // Remove markdown fences if present
-    const jsonString = text.replace(/^```json\n/, '').replace(/\n```$/, '');
-    console.log("Cleaned JSON String:", jsonString);
-
     // Attempt to parse the text as JSON
     try {
-      const parsed = JSON.parse(jsonString);
+      const parsed = JSON.parse(text);
 
       let totalExperienceYears = 0;
       if (parsed.relevant_experience && Array.isArray(parsed.relevant_experience)) {
