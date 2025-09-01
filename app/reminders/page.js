@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Calendar, Bell, BellOff, Trash2, Eye, EyeOff, Building2, User, Clock, CheckCircle, Edit } from 'lucide-react';
+import { Calendar, Bell, BellOff, Trash2, Eye, EyeOff, Building2, User, Clock, CheckCircle, Edit, RotateCcw } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import RepresentativeDetailModal from '@/components/RepresentativeDetailModal';
@@ -16,6 +16,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { getUserReminders, getUserNotifications, markNotificationAsRead, markNotificationAsUnread, deleteNotification, markAllNotificationsAsRead } from '@/lib/reminders';
 import { updateRepresentative } from '@/lib/representatives';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -68,6 +69,8 @@ export default function RemindersPage() {
   const [editingRepresentative, setEditingRepresentative] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
   const [editErrorMessage, setEditErrorMessage] = useState(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [selectedRepForDelete, setSelectedRepForDelete] = useState(null);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -272,6 +275,50 @@ export default function RemindersPage() {
     }
   };
 
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Belgrade' });
+  const handleDone = async (rep) => {
+    const newFollowUp = [...(rep.follow_up_dates || []), today];
+    const updatedData = { follow_up_dates: newFollowUp };
+    const result = await updateRepresentative(rep.id, updatedData, currentUser.id);
+    if (!result.error) {
+      toast.success('Marked as done! Today\'s date added to follow-up dates.');
+      fetchReminders();
+    } else {
+      toast.error('Failed to mark as done: ' + (result.error.message || 'Unknown error'));
+    }
+  };
+
+  const handleUndo = async (rep) => {
+    const newFollowUp = (rep.follow_up_dates || []).filter(d => d !== today);
+    const updatedData = { follow_up_dates: newFollowUp };
+    const result = await updateRepresentative(rep.id, updatedData, currentUser.id);
+    if (!result.error) {
+      toast.success('Undo successful! Today\'s date removed from follow-up dates.');
+      fetchReminders();
+    } else {
+      toast.error('Failed to undo: ' + (result.error.message || 'Unknown error'));
+    }
+  };
+
+  const handleOpenDeleteConfirm = (rep) => {
+    setSelectedRepForDelete(rep);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedRepForDelete) return;
+    const updatedData = { reminder_date: null };
+    const result = await updateRepresentative(selectedRepForDelete.id, updatedData, currentUser.id);
+    if (!result.error) {
+      toast.success('Reminder date cleared successfully');
+      fetchReminders();
+    } else {
+      toast.error('Failed to clear reminder date: ' + (result.error.message || 'Unknown error'));
+    }
+    setIsDeleteConfirmOpen(false);
+    setSelectedRepForDelete(null);
+  };
+
   if (loading) {
     return (
       <ProtectedRoute>
@@ -393,6 +440,35 @@ export default function RemindersPage() {
                               <span className="text-xs text-gray-500">
                                 {new Date(rep.reminder_date).toLocaleDateString()}
                               </span>
+                              <div className="flex items-center space-x-2 mt-2">
+                                {!(rep.follow_up_dates?.some(d => d === today) ?? false) ? (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => handleDone(rep)}
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    Done
+                                  </Button>
+                                ) : (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => handleUndo(rep)}
+                                  >
+                                    <RotateCcw className="h-4 w-4 mr-1" />
+                                    Undo
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-800"
+                                  onClick={() => handleOpenDeleteConfirm(rep)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                           {rep.notes && (
@@ -574,6 +650,21 @@ export default function RemindersPage() {
         errorMessage={editErrorMessage}
         onClearError={() => setEditErrorMessage(null)}
       />
+
+      <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to clear the reminder date for this representative?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>Confirm</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ProtectedRoute>
   );
 }
