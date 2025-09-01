@@ -272,8 +272,8 @@ export default function RemindersPage() {
     }
   };
 
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Belgrade' });
   const handleDone = async (rep) => {
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Belgrade' });
     const newFollowUp = [...(rep.follow_up_dates || []), today];
     const updatedData = { follow_up_dates: newFollowUp };
     const result = await updateRepresentative(rep.id, updatedData, currentUser.id);
@@ -411,6 +411,7 @@ export default function RemindersPage() {
                                 size="sm" 
                                 className="mt-2" 
                                 onClick={() => handleDone(rep)}
+                                disabled={rep.follow_up_dates?.some(d => d === today) ?? false}
                               >
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Done
