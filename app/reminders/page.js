@@ -272,6 +272,19 @@ export default function RemindersPage() {
     }
   };
 
+  const handleDone = async (rep) => {
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Belgrade' });
+    const newFollowUp = [...(rep.follow_up_dates || []), today];
+    const updatedData = { follow_up_dates: newFollowUp };
+    const result = await updateRepresentative(rep.id, updatedData, currentUser.id);
+    if (!result.error) {
+      toast.success('Marked as done! Today\'s date added to follow-up dates.');
+      fetchReminders();
+    } else {
+      toast.error('Failed to mark as done: ' + (result.error.message || 'Unknown error'));
+    }
+  };
+
   if (loading) {
     return (
       <ProtectedRoute>
@@ -393,6 +406,15 @@ export default function RemindersPage() {
                               <span className="text-xs text-gray-500">
                                 {new Date(rep.reminder_date).toLocaleDateString()}
                               </span>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="mt-2" 
+                                onClick={() => handleDone(rep)}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Done
+                              </Button>
                             </div>
                           </div>
                           {rep.notes && (
