@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Calendar, Bell, BellOff, Trash2, Eye, EyeOff, Building2, User, Clock, CheckCircle, Edit } from 'lucide-react';
+import { Calendar, Bell, BellOff, Trash2, Eye, EyeOff, Building2, User, Clock, CheckCircle, Edit, RotateCcw } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
 import RepresentativeDetailModal from '@/components/RepresentativeDetailModal';
@@ -288,6 +288,18 @@ export default function RemindersPage() {
     }
   };
 
+  const handleUndo = async (rep) => {
+    const newFollowUp = (rep.follow_up_dates || []).filter(d => d !== today);
+    const updatedData = { follow_up_dates: newFollowUp };
+    const result = await updateRepresentative(rep.id, updatedData, currentUser.id);
+    if (!result.error) {
+      toast.success('Undo successful! Today\'s date removed from follow-up dates.');
+      fetchReminders();
+    } else {
+      toast.error('Failed to undo: ' + (result.error.message || 'Unknown error'));
+    }
+  };
+
   const handleOpenDeleteConfirm = (rep) => {
     setSelectedRepForDelete(rep);
     setIsDeleteConfirmOpen(true);
@@ -429,15 +441,25 @@ export default function RemindersPage() {
                                 {new Date(rep.reminder_date).toLocaleDateString()}
                               </span>
                               <div className="flex items-center space-x-2 mt-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => handleDone(rep)}
-                                  disabled={rep.follow_up_dates?.some(d => d === today) ?? false}
-                                >
-                                  <CheckCircle className="h-4 w-4 mr-1" />
-                                  Done
-                                </Button>
+                                {!(rep.follow_up_dates?.some(d => d === today) ?? false) ? (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => handleDone(rep)}
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    Done
+                                  </Button>
+                                ) : (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => handleUndo(rep)}
+                                  >
+                                    <RotateCcw className="h-4 w-4 mr-1" />
+                                    Undo
+                                  </Button>
+                                )}
                                 <Button
                                   variant="ghost"
                                   size="sm"
