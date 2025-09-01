@@ -33,7 +33,6 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
   const [errors, setErrors] = useState({});
   const [users, setUsers] = useState([]);
   const [companies, setCompanies] = useState([]);
-  const [followUpDate, setFollowUpDate] = useState('');
   const [companySearchQuery, setCompanySearchQuery] = useState('');
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
 
@@ -186,13 +185,14 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
     }
   };
 
-  const addFollowUpDate = () => {
-    if (followUpDate) {
+  const handleFollowUpDateChange = (e) => {
+    const newDate = e.target.value;
+    if (newDate && !formData.follow_up_dates.includes(newDate)) {
       setFormData(prev => ({
         ...prev,
-        follow_up_dates: [...prev.follow_up_dates, followUpDate]
+        follow_up_dates: [...prev.follow_up_dates, newDate].sort((a, b) => new Date(a) - new Date(b))
       }));
-      setFollowUpDate('');
+      e.target.value = '';
     }
   };
 
@@ -391,13 +391,9 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
             <div className="flex gap-2">
               <Input
                 type="date"
-                value={followUpDate}
-                onChange={(e) => setFollowUpDate(e.target.value)}
+                onChange={handleFollowUpDateChange}
                 placeholder="Add follow-up date"
               />
-              <Button type="button" onClick={addFollowUpDate} variant="outline">
-                Add
-              </Button>
             </div>
             {formData.follow_up_dates.length > 0 && (
               <div className="space-y-1">
