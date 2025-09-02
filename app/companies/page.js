@@ -335,11 +335,11 @@ export default function CompaniesPage() {
 
   const handleStatusChange = async (companyId, newStatus) => {
     const statusValue = newStatus === 'No Status' ? null : newStatus;
-    const { error } = await updateCompany(companyId, { status: statusValue }, currentUser.id);
+    const { error } = await updateCompany(companyId, { status: statusValue, mark_unread: false }, currentUser.id);
     if (!error) {
       // Update local state
       setCompanies(prev => prev.map(company =>
-        company.id === companyId ? { ...company, status: statusValue } : company
+        company.id === companyId ? { ...company, status: statusValue, mark_unread: false } : company
       ));
     }
   };
