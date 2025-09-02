@@ -90,7 +90,8 @@ export default function RepresentativeDetailModal({ isOpen, onClose, representat
           company:company_id(company_name, status, industry, location, website, linkedin_url),
           assigned_user:assigned_to(first_name, last_name, email),
           contacted_user:contacted_by(first_name, last_name, email),
-          created_user:created_by(first_name, last_name, email)
+          created_user:created_by(first_name, last_name, email),
+          updated_user:updated_by(first_name, last_name, email)
         `)
         .eq('id', representativeId)
         .single();
@@ -286,6 +287,18 @@ export default function RepresentativeDetailModal({ isOpen, onClose, representat
                       {representative.created_user && (
                         <span className="text-sm text-gray-500 ml-2">
                           by {representative.created_user.first_name} {representative.created_user.last_name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Last Activity</label>
+                    <div className="mt-1 text-gray-900">
+                      {formatDate(representative.updated_at)}
+                      {representative.updated_user && (
+                        <span className="text-sm text-gray-500 ml-2">
+                          by {representative.updated_user.first_name} {representative.updated_user.last_name}
                         </span>
                       )}
                     </div>
