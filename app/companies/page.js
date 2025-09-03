@@ -105,7 +105,6 @@ export default function CompaniesPage() {
   });
 
   useEffect(() => {
-    fetchData();
     fetchUsers();
     getCurrentUser();
 
@@ -128,7 +127,14 @@ export default function CompaniesPage() {
         unsubscribeFromChannel(subscription);
       }
     };
-  }, [currentPage, filters]);
+  }, []);
+
+  // Fetch data when currentUser is loaded or filters/pagination changes
+  useEffect(() => {
+    if (currentUser) {
+      fetchData();
+    }
+  }, [currentUser, currentPage, filters]);
 
   const getCurrentUser = async () => {
     const user = await getCurrentUserWithRole();

@@ -202,7 +202,6 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    fetchData();
     fetchCompanies();
     fetchUsers();
     getCurrentUser();
@@ -231,8 +230,10 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [currentPage, filters]);
+    if (currentUser) { // Only fetch data when currentUser is loaded
+      fetchData();
+    }
+  }, [currentPage, filters, currentUser]);
 
   const fetchStats = async () => {
     try {
