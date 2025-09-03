@@ -62,6 +62,7 @@ import {
   bulkAssignRepresentativesToUser,
 } from '@/lib/representatives';
 import { bulkMarkRepresentativesReadUnread } from '@/lib/representatives';
+import { markRepresentativeAsRead as markRepresentativeReadUserSpecific } from '@/lib/userReads';
 import {
   getActivityStats,
   getCompanyStatusStats,
@@ -466,12 +467,17 @@ export default function Dashboard() {
 
   const handleStatusChange = async (representativeId, newStatus) => {
     const statusValue = newStatus === 'No Status' ? null : newStatus;
-    const { error } = await updateRepresentative(
+    // Update status only, don't change global mark_unread
+    const { error: statusError } = await updateRepresentative(
       representativeId,
-      { status: statusValue, mark_unread: false },
+      { status: statusValue },
       currentUser.id,
     );
-    if (!error) {
+    
+    // Also mark as read for this user specifically
+    const { error: readError } = await markRepresentativeReadUserSpecific(currentUser.id, representativeId);
+    
+    if (!statusError && !readError) {
       // Update local state to reflect the change immediately
       setRepresentatives((prev) =>
         prev.map((rep) =>
@@ -556,11 +562,7 @@ export default function Dashboard() {
   };
 
   const markRepresentativeAsRead = async (repId) => {
-    const { error } = await updateRepresentative(
-      repId,
-      { mark_unread: false },
-      currentUser.id,
-    );
+    const { error } = await markRepresentativeReadUserSpecific(currentUser.id, repId);
     if (!error) {
       // Update local state to reflect the change
       setRepresentatives((prev) =>

@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies, bulkAssignCompaniesToMe, bulkAssignCompaniesToUser, bulkMarkCompaniesReadUnread } from '@/lib/companies';
+import { markCompanyAsRead as markCompanyReadUserSpecific } from '@/lib/userReads';
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } from '@/lib/realtime';
@@ -142,7 +143,12 @@ export default function CompaniesPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { data, count } = await getCompanies(currentPage, 50, filters);
+      // Include current user ID for user-specific read status
+      const filtersWithUser = {
+        ...filters,
+        current_user_id: currentUser?.id
+      };
+      const { data, count } = await getCompanies(currentPage, 50, filtersWithUser);
       setCompanies(data || []);
       setTotalCount(count || 0);
       setTotalPages(Math.ceil((count || 0) / 50));
@@ -317,7 +323,7 @@ export default function CompaniesPage() {
   };
 
   const markCompanyAsRead = async (companyId) => {
-    const { error } = await updateCompany(companyId, { mark_unread: false }, currentUser.id);
+    const { error } = await markCompanyReadUserSpecific(currentUser.id, companyId);
     if (!error) {
       // Update local state to reflect the change
       setCompanies(prev => prev.map(company =>
@@ -335,8 +341,13 @@ export default function CompaniesPage() {
 
   const handleStatusChange = async (companyId, newStatus) => {
     const statusValue = newStatus === 'No Status' ? null : newStatus;
-    const { error } = await updateCompany(companyId, { status: statusValue, mark_unread: false }, currentUser.id);
-    if (!error) {
+    // Update status only, don't change global mark_unread
+    const { error: statusError } = await updateCompany(companyId, { status: statusValue }, currentUser.id);
+    
+    // Also mark as read for this user specifically
+    const { error: readError } = await markCompanyReadUserSpecific(currentUser.id, companyId);
+    
+    if (!statusError && !readError) {
       // Update local state
       setCompanies(prev => prev.map(company =>
         company.id === companyId ? { ...company, status: statusValue, mark_unread: false } : company
