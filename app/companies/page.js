@@ -391,7 +391,7 @@ export default function CompaniesPage() {
 
   const canEdit = currentUser?.role === 'Admin' || currentUser?.role === 'Editor';
   const canDelete = currentUser?.role === 'Admin';
-console.log(companies,'ccc');
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
