@@ -468,14 +468,14 @@ export default function Dashboard() {
     const statusValue = newStatus === 'No Status' ? null : newStatus;
     const { error } = await updateRepresentative(
       representativeId,
-      { status: statusValue },
+      { status: statusValue, mark_unread: false },
       currentUser.id,
     );
     if (!error) {
       // Update local state to reflect the change immediately
       setRepresentatives((prev) =>
         prev.map((rep) =>
-          rep.id === representativeId ? { ...rep, status: statusValue } : rep,
+          rep.id === representativeId ? { ...rep, status: statusValue, mark_unread: false } : rep,
         ),
       );
     }
