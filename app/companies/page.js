@@ -17,7 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies, bulkAssignCompaniesToMe, bulkAssignCompaniesToUser, bulkMarkCompaniesReadUnread } from '@/lib/companies';
-import { markCompanyAsRead as markCompanyReadUserSpecific } from '@/lib/userReads';
+import { markCompanyAsRead as markCompanyReadUserSpecific, setUserReadStatus } from '@/lib/userReads';
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } from '@/lib/realtime';
@@ -246,7 +246,7 @@ export default function CompaniesPage() {
     }
   };
 
-  const handleSaveCompany = async (companyData) => {
+  const handleSaveCompany = async (companyData, userReadStatus = null) => {
     setSaving(true);
     try {
       let result;
@@ -272,6 +272,11 @@ export default function CompaniesPage() {
           variant: "destructive",
         });
       } else {
+        // Handle user-specific read status if provided
+        if (userReadStatus && userReadStatus.isUserSpecific && result.data) {
+          await setUserReadStatus(currentUser.id, 'company', result.data.id, userReadStatus.mark_unread);
+        }
+        
         setDialogOpen(false);
         fetchData();
         // Show success message

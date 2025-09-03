@@ -62,7 +62,7 @@ import {
   bulkAssignRepresentativesToUser,
 } from '@/lib/representatives';
 import { bulkMarkRepresentativesReadUnread } from '@/lib/representatives';
-import { markRepresentativeAsRead as markRepresentativeReadUserSpecific } from '@/lib/userReads';
+import { markRepresentativeAsRead as markRepresentativeReadUserSpecific, setUserReadStatus } from '@/lib/userReads';
 import {
   getActivityStats,
   getCompanyStatusStats,
@@ -506,7 +506,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleSaveRepresentative = async (repData) => {
+  const handleSaveRepresentative = async (repData, userReadStatus = null) => {
     setSaving(true);
     setRepErrorMessage(null); // Clear any previous errors
     try {
@@ -522,6 +522,11 @@ export default function Dashboard() {
       }
 
       if (!result.error) {
+        // Handle user-specific read status if provided
+        if (userReadStatus && userReadStatus.isUserSpecific && result.data) {
+          await setUserReadStatus(currentUser.id, 'representative', result.data.id, userReadStatus.mark_unread);
+        }
+        
         setDialogOpen(false);
         setRepErrorMessage(null);
         fetchData();

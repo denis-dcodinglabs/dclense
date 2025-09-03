@@ -14,6 +14,7 @@ import RepresentativeDetailModal from './RepresentativeDetailModal';
 import RepresentativeDialog from './RepresentativeDialog';
 import { createRepresentative } from '@/lib/representatives';
 import { getCurrentUserWithRole } from '@/lib/auth';
+import { setUserReadStatus } from '@/lib/userReads';
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -159,13 +160,18 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
     setRepModalOpen(true);
   };
 
-  const handleSaveRepresentative = async (repData) => {
+  const handleSaveRepresentative = async (repData, userReadStatus = null) => {
     if (!currentUser) return;
     setSavingRep(true);
     setRepErrorMessage(null); // Clear any previous errors
     try {
       const result = await createRepresentative(repData, currentUser.id);
       if (!result.error) {
+        // Handle user-specific read status if provided
+        if (userReadStatus && userReadStatus.isUserSpecific && result.data) {
+          await setUserReadStatus(currentUser.id, 'representative', result.data.id, userReadStatus.mark_unread);
+        }
+        
         setRepFormOpen(false);
         setRepErrorMessage(null);
         // Refresh company details to include the new representative with joined fields
