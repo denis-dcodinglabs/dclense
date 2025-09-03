@@ -335,11 +335,11 @@ export default function CompaniesPage() {
 
   const handleStatusChange = async (companyId, newStatus) => {
     const statusValue = newStatus === 'No Status' ? null : newStatus;
-    const { error } = await updateCompany(companyId, { status: statusValue }, currentUser.id);
+    const { error } = await updateCompany(companyId, { status: statusValue, mark_unread: false }, currentUser.id);
     if (!error) {
       // Update local state
       setCompanies(prev => prev.map(company =>
-        company.id === companyId ? { ...company, status: statusValue } : company
+        company.id === companyId ? { ...company, status: statusValue, mark_unread: false } : company
       ));
     }
   };
@@ -369,7 +369,7 @@ export default function CompaniesPage() {
 
   const canEdit = currentUser?.role === 'Admin' || currentUser?.role === 'Editor';
   const canDelete = currentUser?.role === 'Admin';
-
+console.log(companies,'ccc');
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
@@ -951,7 +951,7 @@ export default function CompaniesPage() {
                           )}
                           {visibleColumns.representatives && (
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 group-hover:bg-gray-50">
-                              {company.representatives?.length || 0} reps
+                              {company.representatives?.filter(rep => !rep.is_deleted).length || 0} reps
                             </td>
                           )}
                           {visibleColumns.created_at && (
