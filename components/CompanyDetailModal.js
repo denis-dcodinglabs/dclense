@@ -337,13 +337,13 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
                   <CardTitle className="text-lg">Activity Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
+                  {/* <div>
                     <label className="text-sm font-medium text-gray-500">Last Activity</label>
                     <div className="mt-1 flex items-center text-gray-900">
                       <Calendar className="h-4 w-4 mr-2" />
                       {formatDate(company.last_activity_date)}
                     </div>
-                  </div>
+                  </div> */}
 
                   <div>
                     <label className="text-sm font-medium text-gray-500">Created</label>
@@ -358,7 +358,7 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Last Updated</label>
+                    <label className="text-sm font-medium text-gray-500">Last Activity</label>
                     <div className="mt-1 text-gray-900">
                       {formatDateTime(company.updated_at)}
                       {company.updated_user && (
