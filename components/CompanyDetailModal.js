@@ -21,6 +21,12 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString();
 };
 
+const formatDateTime = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  return `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+};
+
 const getStatusBadgeColor = (status) => {
   switch (status) {
     case 'Client':
@@ -354,7 +360,12 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
                   <div>
                     <label className="text-sm font-medium text-gray-500">Last Updated</label>
                     <div className="mt-1 text-gray-900">
-                      {formatDate(company.updated_at)}
+                      {formatDateTime(company.updated_at)}
+                      {company.updated_user && (
+                        <span className="text-sm text-gray-500 ml-2">
+                          by {company.updated_user.first_name} {company.updated_user.last_name}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </CardContent>
