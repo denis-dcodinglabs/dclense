@@ -288,7 +288,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="last_activity_date">Last Activity Date</Label>
               <Input
                 id="last_activity_date"
@@ -296,7 +296,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
                 value={formData.last_activity_date}
                 onChange={(e) => handleInputChange('last_activity_date', e.target.value)}
               />
-            </div>
+            </div> */}
             
             <div className="space-y-2">
               <Label htmlFor="assigned_to">Assigned To</Label>

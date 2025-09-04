@@ -13,6 +13,11 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString();
 };
 
+const formatDateTime = (dateString) => {
+  if (!dateString) return 'N/A';
+  return new Date(dateString).toLocaleString();
+};
+
 const getStatusBadgeColor = (status) => {
   switch (status) {
     case 'Client':
@@ -294,8 +299,8 @@ export default function RepresentativeDetailModal({ isOpen, onClose, representat
 
                   <div>
                     <label className="text-sm font-medium text-gray-500">Last Activity</label>
-                    <div className="mt-1 text-gray-900">
-                      {formatDate(representative.updated_at)}
+                    <div className="mt-1 text-gray-900 flex flex-col">
+                      {formatDateTime(representative.updated_at)}
                       {representative.updated_user && (
                         <span className="text-sm text-gray-500 ml-2">
                           by {representative.updated_user.first_name} {representative.updated_user.last_name}
