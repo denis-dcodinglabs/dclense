@@ -130,6 +130,7 @@ const TABLE_COLUMNS = [
   { key: 'assigned_to', label: 'Assigned To', required: false },
   { key: 'notes', label: 'Notes', required: false },
   { key: 'created_at', label: 'Created At', required: false },
+  { key: 'updated_at', label: 'Last Activity', required: false },
 ];
 
 const READ_STATUS_OPTIONS = [
@@ -186,6 +187,7 @@ export default function Dashboard() {
     assigned_to: true,
     notes: false,
     created_at: false,
+    updated_at: true,
   });
   const [filters, setFilters] = useState({
     search: '',
@@ -1243,6 +1245,7 @@ export default function Dashboard() {
                                 assigned_to: true,
                                 notes: true,
                                 created_at: true,
+                                updated_at: true,
                               })
                             }
                             className="w-full"
@@ -1499,6 +1502,11 @@ export default function Dashboard() {
                         {visibleColumns.created_at && (
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                             Created At
+                          </th>
+                        )}
+                        {visibleColumns.updated_at && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            Last Activity
                           </th>
                         )}
                       </tr>
@@ -1822,6 +1830,11 @@ export default function Dashboard() {
                           {visibleColumns.created_at && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
                               {new Date(rep.created_at).toLocaleDateString()}
+                            </td>
+                          )}
+                          {visibleColumns.updated_at && (
+                            <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
+                              {rep.updated_at ? new Date(rep.updated_at).toLocaleDateString() : 'N/A'}
                             </td>
                           )}
                         </tr>

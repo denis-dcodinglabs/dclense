@@ -960,7 +960,7 @@ export default function CompaniesPage() {
                           )}
                           {visibleColumns.last_activity_date && (
                             <td className="px-4 py-4 text-sm text-gray-900 truncate max-w-32 group-hover:bg-gray-50">
-                              {company.last_activity_date ? new Date(company.last_activity_date).toLocaleDateString() : 'N/A'}
+                              {company.updated_at ? new Date(company.updated_at).toLocaleDateString() : 'N/A'}
                             </td>
                           )}
                           {visibleColumns.assigned_to && (
