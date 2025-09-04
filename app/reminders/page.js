@@ -16,6 +16,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { getCurrentUserWithRole } from '@/lib/auth';
 import { getUserReminders, getUserNotifications, markNotificationAsRead, markNotificationAsUnread, deleteNotification, markAllNotificationsAsRead } from '@/lib/reminders';
 import { updateRepresentative } from '@/lib/representatives';
+import { setUserReadStatus } from '@/lib/userReads';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 const formatDate = (dateString) => {
@@ -240,7 +241,7 @@ export default function RemindersPage() {
     setEditErrorMessage(null);
   };
 
-  const handleSaveRepresentative = async (repData) => {
+  const handleSaveRepresentative = async (repData, userReadStatus = null) => {
     if (!editingRepresentative || !currentUser) return;
 
     setEditLoading(true);
@@ -249,6 +250,11 @@ export default function RemindersPage() {
       const result = await updateRepresentative(editingRepresentative.id, repData, currentUser.id);
       
       if (!result.error) {
+        // Handle user-specific read status if provided
+        if (userReadStatus && userReadStatus.isUserSpecific && result.data) {
+          await setUserReadStatus(currentUser.id, 'representative', result.data.id, userReadStatus.mark_unread);
+        }
+        
         toast.success('Representative updated successfully');
         setEditErrorMessage(null);
         // Refresh the reminders to show updated data

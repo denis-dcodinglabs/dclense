@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { getUsers } from '@/lib/users';
 import { checkCompanyNameExists } from '@/lib/companies';
+import { setUserReadStatus, getUserReadStatus } from '@/lib/userReads';
+import { getCurrentUserWithRole } from '@/lib/auth';
 import CompanyDetailModal from './CompanyDetailModal';
 
 const STATUS_OPTIONS = [
@@ -40,46 +42,63 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
   const [users, setUsers] = useState([]);
   const [existingCompany, setExistingCompany] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     fetchUsers();
+    fetchCurrentUser();
   }, []);
 
+  const fetchCurrentUser = async () => {
+    const user = await getCurrentUserWithRole();
+    setCurrentUser(user);
+  };
+
   useEffect(() => {
-    if (company) {
-      setFormData({
-        company_name: company.company_name || '',
-        industry: company.industry || '',
-        location: company.location || '',
-        linkedin_url: company.linkedin_url || '',
-        website: company.website || '',
-        source: company.source || '',
-        number_of_employees: company.number_of_employees || '',
-        status: company.status || 'No Status',
-        notes: company.notes || '',
-        last_activity_date: company.last_activity_date ? company.last_activity_date.split('T')[0] : '',
-        assigned_to: company.assigned_to || 'unassigned',
-        mark_unread: false
-      });
-    } else {
-      setFormData({
-        company_name: '',
-        industry: '',
-        location: '',
-        linkedin_url: '',
-        website: '',
-        source: '',
-        number_of_employees: '',
-        status: 'No Status',
-        notes: '',
-        last_activity_date: new Date().toISOString().split('T')[0],
-        assigned_to: 'unassigned',
-        mark_unread: true
-      });
+    const loadFormData = async () => {
+      if (company && currentUser) {
+        // Get user-specific read status first, fallback to global if not found
+        const { data: userReadData } = await getUserReadStatus(currentUser.id, 'company', company.id);
+        const markUnread = userReadData ? userReadData.mark_unread : (company.mark_unread !== undefined ? company.mark_unread : false);
+        
+        setFormData({
+          company_name: company.company_name || '',
+          industry: company.industry || '',
+          location: company.location || '',
+          linkedin_url: company.linkedin_url || '',
+          website: company.website || '',
+          source: company.source || '',
+          number_of_employees: company.number_of_employees || '',
+          status: company.status || 'No Status',
+          notes: company.notes || '',
+          last_activity_date: company.last_activity_date ? company.last_activity_date.split('T')[0] : '',
+          assigned_to: company.assigned_to || 'unassigned',
+          mark_unread: markUnread
+        });
+      } else if (!company) {
+        setFormData({
+          company_name: '',
+          industry: '',
+          location: '',
+          linkedin_url: '',
+          website: '',
+          source: '',
+          number_of_employees: '',
+          status: 'No Status',
+          notes: '',
+          last_activity_date: new Date().toISOString().split('T')[0],
+          assigned_to: 'unassigned',
+          mark_unread: true
+        });
+      }
+      setErrors({});
+      setExistingCompany(null); // Reset existing company when dialog opens/closes
+    };
+
+    if (isOpen) {
+      loadFormData();
     }
-    setErrors({});
-    setExistingCompany(null); // Reset existing company when dialog opens/closes
-  }, [company, isOpen]);
+  }, [company, isOpen, currentUser]);
 
   const fetchUsers = async () => {
     const { data } = await getUsers();
@@ -115,14 +134,19 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
     e.preventDefault();
     const isValid = await validateForm();
     if (isValid) {
+      // Separate mark_unread from the main company data
+      const { mark_unread, ...companyData } = formData;
+      
       const submitData = {
-        ...formData,
+        ...companyData,
         status: formData.status === 'No Status' ? null : formData.status,
         number_of_employees: formData.number_of_employees || null,
         last_activity_date: formData.last_activity_date || null,
         assigned_to: formData.assigned_to === 'unassigned' ? null : formData.assigned_to
       };
-      onSave(submitData);
+      
+      // Pass both the company data and the user-specific read status
+      onSave(submitData, { mark_unread, isUserSpecific: true });
     }
   };
 

@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getUsers } from '@/lib/users';
 import { getCompanies } from '@/lib/companies';
+import { setUserReadStatus, getUserReadStatus } from '@/lib/userReads';
+import { getCurrentUserWithRole } from '@/lib/auth';
 
 export default function RepresentativeDialog({ isOpen, onClose, onSave, representative = null, loading = false, preselectedCompanyId = null, preselectedAssignedTo = null, errorMessage = null, onClearError = null }) {
   const [formData, setFormData] = useState({
@@ -35,69 +37,88 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
   const [companies, setCompanies] = useState([]);
   const [companySearchQuery, setCompanySearchQuery] = useState('');
   const [isCompanyDropdownOpen, setIsCompanyDropdownOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     fetchUsers();
     fetchCompanies();
+    fetchCurrentUser();
   }, []);
 
+  const fetchCurrentUser = async () => {
+    const user = await getCurrentUserWithRole();
+    setCurrentUser(user);
+  };
+
   useEffect(() => {
-    if (representative) {
-      setFormData({
-        company_id: representative.company_id || '',
-        first_name: representative.first_name || '',
-        last_name: representative.last_name || '',
-        role: representative.role || '',
-        linkedin_profile_url: representative.linkedin_profile_url || '',
-        method_of_contact: representative.method_of_contact || '',
-        contact_source: representative.contact_source || '',
-        status: representative.status || '',
-        contact_date: representative.contact_date ? representative.contact_date.split('T')[0] : '',
-        follow_up_dates: representative.follow_up_dates || [],
-        reminder_date: representative.reminder_date ? representative.reminder_date.split('T')[0] : '',
-        outcome: representative.outcome || '',
-        notes: representative.notes || '',
-        contacted_by: representative.contacted_by || '',
-        assigned_to: representative.assigned_to || '',
-        mark_unread: false
-      });
-      // Set company search query for editing
-      if (representative.company_id && companies.length > 0) {
-        const selectedCompany = companies.find(company => company.id === representative.company_id);
-        setCompanySearchQuery(selectedCompany ? selectedCompany.company_name : '');
-      } else {
-        setCompanySearchQuery('');
+    const loadFormData = async () => {
+      if (representative && currentUser) {
+        // Get user-specific read status first, fallback to global if not found
+        const { data: userReadData } = await getUserReadStatus(currentUser.id, 'representative', representative.id);
+        const markUnread = userReadData ? userReadData.mark_unread : (representative.mark_unread !== undefined ? representative.mark_unread : false);
+        
+        setFormData({
+          company_id: representative.company_id || '',
+          first_name: representative.first_name || '',
+          last_name: representative.last_name || '',
+          role: representative.role || '',
+          linkedin_profile_url: representative.linkedin_profile_url || '',
+          method_of_contact: representative.method_of_contact || '',
+          contact_source: representative.contact_source || '',
+          status: representative.status || '',
+          contact_date: representative.contact_date ? representative.contact_date.split('T')[0] : '',
+          follow_up_dates: representative.follow_up_dates || [],
+          reminder_date: representative.reminder_date ? representative.reminder_date.split('T')[0] : '',
+          outcome: representative.outcome || '',
+          notes: representative.notes || '',
+          contacted_by: representative.contacted_by || '',
+          assigned_to: representative.assigned_to || '',
+          mark_unread: markUnread
+        });
+        
+        // Set company search query for editing
+        if (representative.company_id && companies.length > 0) {
+          const selectedCompany = companies.find(company => company.id === representative.company_id);
+          setCompanySearchQuery(selectedCompany ? selectedCompany.company_name : '');
+        } else {
+          setCompanySearchQuery('');
+        }
+      } else if (!representative) {
+        setFormData({
+          company_id: preselectedCompanyId || '',
+          first_name: '',
+          last_name: '',
+          role: '',
+          linkedin_profile_url: '',
+          method_of_contact: '',
+          contact_source: '',
+          status: '',
+          contact_date: '',
+          follow_up_dates: [],
+          reminder_date: '',
+          outcome: '',
+          notes: '',
+          contacted_by: '',
+          assigned_to: preselectedAssignedTo || '',
+          mark_unread: true
+        });
+        
+        // Set company search query for preselected company
+        if (preselectedCompanyId && companies.length > 0) {
+          const selectedCompany = companies.find(company => company.id === preselectedCompanyId);
+          setCompanySearchQuery(selectedCompany ? selectedCompany.company_name : '');
+        } else {
+          setCompanySearchQuery('');
+        }
       }
-    } else {
-      setFormData({
-        company_id: preselectedCompanyId || '',
-        first_name: '',
-        last_name: '',
-        role: '',
-        linkedin_profile_url: '',
-        method_of_contact: '',
-        contact_source: '',
-      status: '',
-        contact_date: '',
-        follow_up_dates: [],
-        reminder_date: '',
-        outcome: '',
-        notes: '',
-        contacted_by: '',
-        assigned_to: preselectedAssignedTo || '',
-        mark_unread: true
-      });
-      // Set company search query for preselected company
-      if (preselectedCompanyId && companies.length > 0) {
-        const selectedCompany = companies.find(company => company.id === preselectedCompanyId);
-        setCompanySearchQuery(selectedCompany ? selectedCompany.company_name : '');
-      } else {
-        setCompanySearchQuery('');
-      }
+      setErrors({});
+      setIsCompanyDropdownOpen(false);
+    };
+
+    if (isOpen) {
+      loadFormData();
     }
-    setErrors({});
-    setIsCompanyDropdownOpen(false);
-  }, [representative, isOpen, preselectedCompanyId, preselectedAssignedTo, companies]);
+  }, [representative, isOpen, preselectedCompanyId, preselectedAssignedTo, companies, currentUser]);
   
   const fetchUsers = async () => {
     const { data } = await getUsers();
@@ -152,19 +173,24 @@ export default function RepresentativeDialog({ isOpen, onClose, onSave, represen
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
+      // Separate mark_unread from the main representative data
+      const { mark_unread, ...representativeData } = formData;
+      
       // Construct full_name from first_name and last_name
-      const fullName = `${formData.first_name} ${formData.last_name}`.trim();
+      const fullName = `${representativeData.first_name} ${representativeData.last_name}`.trim();
       
       const submitData = {
-        ...formData,
+        ...representativeData,
         full_name: fullName,
-        company_id: formData.company_id || null,
-        contact_date: formData.contact_date || null,
-        reminder_date: formData.reminder_date || null,
-        contacted_by: formData.contacted_by || null,
-        assigned_to: formData.assigned_to || null
+        company_id: representativeData.company_id || null,
+        contact_date: representativeData.contact_date || null,
+        reminder_date: representativeData.reminder_date || null,
+        contacted_by: representativeData.contacted_by || null,
+        assigned_to: representativeData.assigned_to || null
       };
-      onSave(submitData);
+      
+      // Pass both the representative data and the user-specific read status
+      onSave(submitData, { mark_unread, isUserSpecific: true });
     }
   };
 
