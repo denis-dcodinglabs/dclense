@@ -368,7 +368,7 @@ export default function CompaniesPage() {
 
   const handleCompanyUpdated = (companyId, newStatus) => {
     setCompanies(prev => prev.map(company =>
-      company.id === companyId ? { ...company, status: newStatus } : company
+      company.id === companyId ? { ...company, status: newStatus, mark_unread: false } : company
     ));
   };
 
