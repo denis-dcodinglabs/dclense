@@ -264,8 +264,8 @@ export default function CreationStatsSection() {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {/* Date Range Selector */}
-          <div className="flex flex-col sm:flex-row gap-4">
+          {/* Date Range, Category and Status Selectors */}
+          <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <Label className="text-sm font-medium">
                 Date Range
@@ -305,12 +305,12 @@ export default function CreationStatsSection() {
               
               {/* Date Range Presets */}
               <div className="mt-2">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex gap-1">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="text-xs h-7"
+                    className="text-xs h-6 px-2 py-0"
                     onClick={() => setPresetDateRange('today')}
                   >
                     Today
@@ -319,7 +319,7 @@ export default function CreationStatsSection() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="text-xs h-7"
+                    className="text-xs h-6 px-2 py-0"
                     onClick={() => setPresetDateRange('lastWeek')}
                   >
                     Last Week
@@ -328,7 +328,7 @@ export default function CreationStatsSection() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="text-xs h-7"
+                    className="text-xs h-6 px-2 py-0"
                     onClick={() => setPresetDateRange('last30Days')}
                   >
                     Last 30 Days
@@ -337,7 +337,7 @@ export default function CreationStatsSection() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="text-xs h-7"
+                    className="text-xs h-6 px-2 py-0"
                     onClick={() => setPresetDateRange('last90Days')}
                   >
                     Last 90 Days
@@ -346,7 +346,7 @@ export default function CreationStatsSection() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="text-xs h-7"
+                    className="text-xs h-6 px-2 py-0"
                     onClick={() => setPresetDateRange('lastYear')}
                   >
                     Last Year
@@ -354,13 +354,6 @@ export default function CreationStatsSection() {
                 </div>
               </div>
             </div>
-            <div className="flex-1">
-              {/* Empty space for layout balance */}
-            </div>
-          </div>
-
-          {/* Category and Status Selectors */}
-          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <Label htmlFor="category" className="text-sm font-medium">
                 Category
@@ -430,9 +423,6 @@ export default function CreationStatsSection() {
                   </PopoverContent>
                 </Popover>
               </div>
-            </div>
-            <div className="flex-1">
-              {/* Empty space to maintain layout consistency */}
             </div>
           </div>
 
