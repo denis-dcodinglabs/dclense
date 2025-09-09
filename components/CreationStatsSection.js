@@ -191,10 +191,10 @@ export default function CreationStatsSection() {
       return "Pick a date range";
     }
     if (dateRange.from && !dateRange.to) {
-      return formatDate(dateRange.from.toISOString());
+      return `From ${formatDate(dateRange.from.toISOString())}`;
     }
     if (dateRange.from && dateRange.to) {
-      return `${formatDate(dateRange.from.toISOString())} - ${formatDate(dateRange.to.toISOString())}`;
+      return `From ${formatDate(dateRange.from.toISOString())} To ${formatDate(dateRange.to.toISOString())}`;
     }
     return "Pick a date range";
   };
