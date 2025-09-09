@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarDays, BarChart3, Users, Building2, Phone, ChevronDown } from 'lucide-react';
+import { CalendarDays, BarChart3, Users, Building2, Phone, ChevronDown, Calendar as CalendarIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar } from '@/components/ui/calendar';
 import { getCreationStats, getContactedStats, getStatusCounts } from '@/lib/statistics';
 
 // Status options for representatives
@@ -42,15 +43,17 @@ export default function CreationStatsSection() {
   const [contactedStats, setContactedStats] = useState(null);
   const [statusCountsData, setStatusCountsData] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState([]);
 
   const fetchAllStats = async () => {
-    if (!startDate || !endDate) {
+    if (!dateRange?.from || !dateRange?.to) {
       return;
     }
+
+    const startDate = dateRange.from.toISOString().split('T')[0];
+    const endDate = dateRange.to.toISOString().split('T')[0];
 
     setStatsLoading(true);
     try {
@@ -110,8 +113,7 @@ export default function CreationStatsSection() {
     setCreationStats(null);
     setContactedStats(null);
     setStatusCountsData(null);
-    setStartDate('');
-    setEndDate('');
+    setDateRange({ from: undefined, to: undefined });
     setSelectedCategory('');
     setSelectedStatuses([]);
   };
@@ -183,6 +185,26 @@ export default function CreationStatsSection() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  // Format date range display
+  const formatDateRange = () => {
+    if (!dateRange?.from) {
+      return "Pick a date range";
+    }
+    if (dateRange.from && !dateRange.to) {
+      return formatDate(dateRange.from.toISOString());
+    }
+    if (dateRange.from && dateRange.to) {
+      return `${formatDate(dateRange.from.toISOString())} - ${formatDate(dateRange.to.toISOString())}`;
+    }
+    return "Pick a date range";
+  };
+
+  // Clear date range
+  const clearDateRange = (e) => {
+    e.stopPropagation(); // Prevent popover from opening
+    setDateRange({ from: undefined, to: undefined });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -196,28 +218,44 @@ export default function CreationStatsSection() {
           {/* Date Range Selector */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <Label htmlFor="start-date" className="text-sm font-medium">
-                Start Date
+              <Label className="text-sm font-medium">
+                Date Range
               </Label>
-              <Input
-                id="start-date"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="mt-1"
-              />
+              <div className="relative">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full mt-1 justify-start text-left font-normal pr-10"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formatDateRange()}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="range"
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      numberOfMonths={2}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {(dateRange?.from || dateRange?.to) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100"
+                    onClick={clearDateRange}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="flex-1">
-              <Label htmlFor="end-date" className="text-sm font-medium">
-                End Date
-              </Label>
-              <Input
-                id="end-date"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="mt-1"
-              />
+              {/* Empty space for layout balance */}
             </div>
           </div>
 
@@ -302,7 +340,7 @@ export default function CreationStatsSection() {
           <div className="flex justify-end gap-4 pt-4">
             <Button
               onClick={handleFetchStats}
-              disabled={!startDate || !endDate || statsLoading}
+              disabled={!dateRange?.from || !dateRange?.to || statsLoading}
               className="flex items-center space-x-2 min-w-[120px]"
             >
               {statsLoading ? (
