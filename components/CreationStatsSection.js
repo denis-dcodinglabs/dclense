@@ -1,12 +1,41 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarDays, BarChart3, Users, Building2, Phone } from 'lucide-react';
+import { CalendarDays, BarChart3, Users, Building2, Phone, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 import { getCreationStats, getContactedStats } from '@/lib/statistics';
+
+// Status options for representatives
+const REPRESENTATIVE_STATUS_OPTIONS = [
+  { value: 'No Status', label: 'No Status' },
+  { value: 'No Reply', label: 'No Reply' },
+  { value: 'Not Interested', label: 'Not Interested' },
+  { value: 'Contacted', label: 'Contacted' },
+  { value: 'Connected', label: 'Connected' },
+  { value: 'In Communication', label: 'In Communication' },
+  { value: 'Not a Fit', label: 'Not a Fit' },
+  { value: 'Asked to Reach Out Later', label: 'Asked to Reach Out Later' },
+  { value: 'Declined', label: 'Declined' },
+  { value: 'Client', label: 'Client' },
+  { value: 'Pending Connection', label: 'Pending Connection' },
+];
+
+// Status options for companies
+const COMPANY_STATUS_OPTIONS = [
+  { value: 'No Status', label: 'No Status' },
+  { value: 'Declined', label: 'Declined' },
+  { value: 'Company Not a Fit', label: 'Company Not a Fit' },
+  { value: 'In Progress', label: 'In Progress' },
+  { value: 'Client', label: 'Client' },
+  { value: 'Revisit Later', label: 'Revisit Later' },
+  { value: 'No Reply', label: 'No Reply' }
+];
 
 export default function CreationStatsSection() {
   const [creationStats, setCreationStats] = useState(null);
@@ -14,6 +43,8 @@ export default function CreationStatsSection() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
 
   const fetchAllStats = async () => {
     if (!startDate || !endDate) {
@@ -58,6 +89,52 @@ export default function CreationStatsSection() {
     setContactedStats(null);
     setStartDate('');
     setEndDate('');
+    setSelectedCategory('');
+    setSelectedStatuses([]);
+  };
+
+  // Handle category change and reset status
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value);
+    setSelectedStatuses([]); // Reset status when category changes
+  };
+
+  // Handle status selection/deselection
+  const handleStatusToggle = (statusValue) => {
+    setSelectedStatuses(prev => {
+      if (prev.includes(statusValue)) {
+        return prev.filter(status => status !== statusValue);
+      } else {
+        return [...prev, statusValue];
+      }
+    });
+  };
+
+  // Remove a specific status
+  const removeStatus = (statusValue) => {
+    setSelectedStatuses(prev => prev.filter(status => status !== statusValue));
+  };
+
+  // Get display text for selected statuses
+  const getSelectedStatusesDisplay = () => {
+    if (selectedStatuses.length === 0) {
+      return selectedCategory ? "Select statuses" : "Select category first";
+    } else if (selectedStatuses.length === 1) {
+      const option = getStatusOptions().find(opt => opt.value === selectedStatuses[0]);
+      return option ? option.label : selectedStatuses[0];
+    } else {
+      return `${selectedStatuses.length} statuses selected`;
+    }
+  };
+
+  // Get status options based on selected category
+  const getStatusOptions = () => {
+    if (selectedCategory === 'Representatives') {
+      return REPRESENTATIVE_STATUS_OPTIONS;
+    } else if (selectedCategory === 'Companies') {
+      return COMPANY_STATUS_OPTIONS;
+    }
+    return [];
   };
 
   const formatDate = (dateString) => {
@@ -123,6 +200,92 @@ export default function CreationStatsSection() {
                   <span>Reset</span>
                 </Button>
               )}
+            </div>
+          </div>
+
+          {/* Category and Status Selectors */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Label htmlFor="category" className="text-sm font-medium">
+                Category
+              </Label>
+              <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Representatives">Representatives</SelectItem>
+                  <SelectItem value="Companies">Companies</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex-1">
+              <Label htmlFor="status" className="text-sm font-medium">
+                Status
+              </Label>
+              <div className="mt-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between text-left font-normal"
+                      disabled={!selectedCategory}
+                    >
+                      <span className="truncate">{getSelectedStatusesDisplay()}</span>
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <div className="max-h-60 overflow-auto">
+                      <div className="p-2">
+                        {getStatusOptions().map((option) => (
+                          <div
+                            key={option.value}
+                            className="flex items-center space-x-2 rounded-md p-2 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => handleStatusToggle(option.value)}
+                          >
+                            <Checkbox
+                              checked={selectedStatuses.includes(option.value)}
+                              onChange={() => {}} // Handled by onClick above
+                            />
+                            <label className="text-sm font-medium cursor-pointer flex-1">
+                              {option.label}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                
+                {/* Selected Status Tags */}
+                {selectedStatuses.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedStatuses.map((statusValue) => {
+                      const option = getStatusOptions().find(opt => opt.value === statusValue);
+                      return (
+                        <div
+                          key={statusValue}
+                          className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-700 border-blue-200"
+                        >
+                          {option ? option.label : statusValue}
+                          <button
+                            type="button"
+                            className="ml-1 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-blue-200"
+                            onClick={() => removeStatus(statusValue)}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex-1">
+              {/* Empty space to maintain layout consistency */}
             </div>
           </div>
 
