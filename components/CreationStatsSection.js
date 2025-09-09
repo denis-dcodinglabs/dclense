@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarDays, BarChart3, Users, Building2, Phone, ChevronDown, X } from 'lucide-react';
+import { CalendarDays, BarChart3, Users, Building2, Phone, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -110,10 +110,6 @@ export default function CreationStatsSection() {
     });
   };
 
-  // Remove a specific status
-  const removeStatus = (statusValue) => {
-    setSelectedStatuses(prev => prev.filter(status => status !== statusValue));
-  };
 
   // Get display text for selected statuses
   const getSelectedStatusesDisplay = () => {
@@ -258,30 +254,6 @@ export default function CreationStatsSection() {
                     </div>
                   </PopoverContent>
                 </Popover>
-                
-                {/* Selected Status Tags */}
-                {selectedStatuses.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {selectedStatuses.map((statusValue) => {
-                      const option = getStatusOptions().find(opt => opt.value === statusValue);
-                      return (
-                        <div
-                          key={statusValue}
-                          className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-700 border-blue-200"
-                        >
-                          {option ? option.label : statusValue}
-                          <button
-                            type="button"
-                            className="ml-1 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-blue-200"
-                            onClick={() => removeStatus(statusValue)}
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             </div>
             <div className="flex-1">
