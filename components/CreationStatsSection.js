@@ -133,11 +133,33 @@ export default function CreationStatsSection() {
     });
   };
 
+  // Handle select all / deselect all
+  const handleSelectAll = () => {
+    const allStatuses = getStatusOptions().map(option => option.value);
+    const allSelected = allStatuses.every(status => selectedStatuses.includes(status));
+    
+    if (allSelected) {
+      // Deselect all
+      setSelectedStatuses([]);
+    } else {
+      // Select all
+      setSelectedStatuses(allStatuses);
+    }
+  };
+
+  // Check if all statuses are selected
+  const areAllStatusesSelected = () => {
+    const allStatuses = getStatusOptions().map(option => option.value);
+    return allStatuses.length > 0 && allStatuses.every(status => selectedStatuses.includes(status));
+  };
+
 
   // Get display text for selected statuses
   const getSelectedStatusesDisplay = () => {
     if (selectedStatuses.length === 0) {
       return selectedCategory ? "Select statuses" : "Select category first";
+    } else if (areAllStatusesSelected()) {
+      return "All statuses selected";
     } else if (selectedStatuses.length === 1) {
       const option = getStatusOptions().find(opt => opt.value === selectedStatuses[0]);
       return option ? option.label : selectedStatuses[0];
@@ -258,6 +280,21 @@ export default function CreationStatsSection() {
                   <PopoverContent className="w-full p-0" align="start">
                     <div className="max-h-60 overflow-auto">
                       <div className="p-2">
+                        {/* Select All Option */}
+                        <div
+                          className="flex items-center space-x-2 rounded-md p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-200 mb-1"
+                          onClick={handleSelectAll}
+                        >
+                          <Checkbox
+                            checked={areAllStatusesSelected()}
+                            onChange={() => {}} // Handled by onClick above
+                          />
+                          <label className="text-sm font-medium cursor-pointer flex-1 text-blue-600">
+                            Select All
+                          </label>
+                        </div>
+                        
+                        {/* Individual Status Options */}
                         {getStatusOptions().map((option) => (
                           <div
                             key={option.value}
