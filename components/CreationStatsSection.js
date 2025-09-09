@@ -219,29 +219,6 @@ export default function CreationStatsSection() {
                 className="mt-1"
               />
             </div>
-            <div className="flex items-end gap-2">
-              <Button
-                onClick={handleFetchStats}
-                disabled={!startDate || !endDate || statsLoading}
-                className="flex items-center space-x-2"
-              >
-                {statsLoading ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                ) : (
-                  <BarChart3 className="h-4 w-4" />
-                )}
-                <span>Search</span>
-              </Button>
-              {(creationStats || contactedStats || statusCountsData) && (
-                <Button
-                  variant="outline"
-                  onClick={resetStats}
-                  className="flex items-center space-x-2"
-                >
-                  <span>Reset</span>
-                </Button>
-              )}
-            </div>
           </div>
 
           {/* Category and Status Selectors */}
@@ -319,6 +296,31 @@ export default function CreationStatsSection() {
             <div className="flex-1">
               {/* Empty space to maintain layout consistency */}
             </div>
+          </div>
+
+          {/* Search and Reset Buttons */}
+          <div className="flex justify-end gap-4 pt-4">
+            <Button
+              onClick={handleFetchStats}
+              disabled={!startDate || !endDate || statsLoading}
+              className="flex items-center space-x-2 min-w-[120px]"
+            >
+              {statsLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                <BarChart3 className="h-4 w-4" />
+              )}
+              <span>Search</span>
+            </Button>
+            {(creationStats || contactedStats || statusCountsData) && (
+              <Button
+                variant="outline"
+                onClick={resetStats}
+                className="flex items-center space-x-2 min-w-[120px]"
+              >
+                <span>Reset</span>
+              </Button>
+            )}
           </div>
 
           {/* Results Display */}
