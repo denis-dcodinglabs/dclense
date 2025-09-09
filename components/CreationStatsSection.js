@@ -205,6 +205,55 @@ export default function CreationStatsSection() {
     setDateRange({ from: undefined, to: undefined });
   };
 
+  // Set preset date ranges
+  const setPresetDateRange = (preset) => {
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    switch (preset) {
+      case 'today':
+        setDateRange({ 
+          from: startOfToday, 
+          to: startOfToday 
+        });
+        break;
+      case 'lastWeek':
+        const weekAgo = new Date(startOfToday);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        setDateRange({ 
+          from: weekAgo, 
+          to: startOfToday 
+        });
+        break;
+      case 'last30Days':
+        const thirtyDaysAgo = new Date(startOfToday);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        setDateRange({ 
+          from: thirtyDaysAgo, 
+          to: startOfToday 
+        });
+        break;
+      case 'last90Days':
+        const ninetyDaysAgo = new Date(startOfToday);
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+        setDateRange({ 
+          from: ninetyDaysAgo, 
+          to: startOfToday 
+        });
+        break;
+      case 'lastYear':
+        const oneYearAgo = new Date(startOfToday);
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        setDateRange({ 
+          from: oneYearAgo, 
+          to: startOfToday 
+        });
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -252,6 +301,57 @@ export default function CreationStatsSection() {
                     <X className="h-3 w-3" />
                   </Button>
                 )}
+              </div>
+              
+              {/* Date Range Presets */}
+              <div className="mt-2">
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setPresetDateRange('today')}
+                  >
+                    Today
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setPresetDateRange('lastWeek')}
+                  >
+                    Last Week
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setPresetDateRange('last30Days')}
+                  >
+                    Last 30 Days
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setPresetDateRange('last90Days')}
+                  >
+                    Last 90 Days
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setPresetDateRange('lastYear')}
+                  >
+                    Last Year
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="flex-1">
