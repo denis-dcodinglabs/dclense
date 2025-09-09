@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getContactMethodStats, getAgentStats } from '@/lib/statistics';
+import CreationStatsSection from '@/components/CreationStatsSection';
 
 export default function StatisticsPage() {
   const [contactMethodData, setContactMethodData] = useState([]);
@@ -267,7 +268,7 @@ export default function StatisticsPage() {
           </Card>
 
           {/* Agent Stats Table */}
-          <Card>
+          <Card className="mb-8">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center">
@@ -423,6 +424,9 @@ export default function StatisticsPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Creation Statistics Section */}
+          <CreationStatsSection />
         </main>
       </div>
     </AdminProtectedRoute>
