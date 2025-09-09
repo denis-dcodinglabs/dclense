@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getCreationStats, getContactedStats } from '@/lib/statistics';
+import { getCreationStats, getContactedStats, getStatusCounts } from '@/lib/statistics';
 
 // Status options for representatives
 const REPRESENTATIVE_STATUS_OPTIONS = [
@@ -40,6 +40,7 @@ const COMPANY_STATUS_OPTIONS = [
 export default function CreationStatsSection() {
   const [creationStats, setCreationStats] = useState(null);
   const [contactedStats, setContactedStats] = useState(null);
+  const [statusCountsData, setStatusCountsData] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -53,10 +54,18 @@ export default function CreationStatsSection() {
 
     setStatsLoading(true);
     try {
-      const [creationResult, contactedResult] = await Promise.all([
+      const promises = [
         getCreationStats(startDate, endDate),
         getContactedStats(startDate, endDate)
-      ]);
+      ];
+
+      // Add status counts query if category and statuses are selected
+      if (selectedCategory && selectedStatuses.length > 0) {
+        promises.push(getStatusCounts(startDate, endDate, selectedCategory, selectedStatuses));
+      }
+
+      const results = await Promise.all(promises);
+      const [creationResult, contactedResult, statusCountsResult] = results;
 
       if (!creationResult.error) {
         setCreationStats(creationResult.data);
@@ -71,10 +80,23 @@ export default function CreationStatsSection() {
         console.error('Error fetching contacted stats:', contactedResult.error);
         setContactedStats(null);
       }
+
+      // Handle status counts result if it exists
+      if (statusCountsResult) {
+        if (!statusCountsResult.error) {
+          setStatusCountsData(statusCountsResult.data);
+        } else {
+          console.error('Error fetching status counts:', statusCountsResult.error);
+          setStatusCountsData(null);
+        }
+      } else {
+        setStatusCountsData(null);
+      }
     } catch (error) {
       console.error('Error fetching stats:', error);
       setCreationStats(null);
       setContactedStats(null);
+      setStatusCountsData(null);
     } finally {
       setStatsLoading(false);
     }
@@ -87,6 +109,7 @@ export default function CreationStatsSection() {
   const resetStats = () => {
     setCreationStats(null);
     setContactedStats(null);
+    setStatusCountsData(null);
     setStartDate('');
     setEndDate('');
     setSelectedCategory('');
@@ -143,7 +166,7 @@ export default function CreationStatsSection() {
       <CardHeader>
         <CardTitle className="flex items-center">
           <CalendarDays className="h-5 w-5 mr-2" />
-          Creation & Contact Statistics
+          Contact Statistics
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -187,7 +210,7 @@ export default function CreationStatsSection() {
                 )}
                 <span>Search</span>
               </Button>
-              {(creationStats || contactedStats) && (
+              {(creationStats || contactedStats || statusCountsData) && (
                 <Button
                   variant="outline"
                   onClick={resetStats}
@@ -262,11 +285,11 @@ export default function CreationStatsSection() {
           </div>
 
           {/* Results Display */}
-          {(creationStats || contactedStats) && (
+          {(creationStats || contactedStats || statusCountsData) && (
             <div className="mt-6">
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Results from {formatDate(creationStats?.start_date || contactedStats?.start_date)} to {formatDate(creationStats?.end_date || contactedStats?.end_date)}
+                  Results from {formatDate(creationStats?.start_date || contactedStats?.start_date || statusCountsData?.start_date)} to {formatDate(creationStats?.end_date || contactedStats?.end_date || statusCountsData?.end_date)}
                 </h3>
               </div>
               
@@ -353,11 +376,71 @@ export default function CreationStatsSection() {
                   </div>
                 </div>
               )}
+
+              {/* Status Counts Table */}
+              {statusCountsData && (
+                <div className="mb-8">
+                  <h4 className="text-md font-medium text-gray-800 mb-4 flex items-center">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    {statusCountsData.category} by Status ({statusCountsData.totalRecords} total)
+                  </h4>
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Count
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Percentage
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {statusCountsData.statusCounts.map((item, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {item.status}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900 font-semibold">
+                                  {item.count.toLocaleString()}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="text-sm text-gray-900">
+                                    {item.percentage}%
+                                  </div>
+                                  <div className="ml-3 w-16 bg-gray-200 rounded-full h-2">
+                                    <div
+                                      className="bg-blue-600 h-2 rounded-full"
+                                      style={{ width: `${Math.min(parseFloat(item.percentage), 100)}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Empty State */}
-          {!creationStats && !contactedStats && !statsLoading && (
+          {!creationStats && !contactedStats && !statusCountsData && !statsLoading && (
             <div className="text-center py-12">
               <CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Select Date Range</h3>
