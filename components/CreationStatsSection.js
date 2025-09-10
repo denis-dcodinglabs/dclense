@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarDays, BarChart3, Users, Building2, Phone, ChevronDown } from 'lucide-react';
+import { CalendarDays, BarChart3, Users, Building2, Phone, ChevronDown, Calendar as CalendarIcon, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar } from '@/components/ui/calendar';
 import { getCreationStats, getContactedStats, getStatusCounts } from '@/lib/statistics';
 
 // Status options for representatives
@@ -42,15 +43,17 @@ export default function CreationStatsSection() {
   const [contactedStats, setContactedStats] = useState(null);
   const [statusCountsData, setStatusCountsData] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState([]);
 
   const fetchAllStats = async () => {
-    if (!startDate || !endDate) {
+    if (!dateRange?.from || !dateRange?.to) {
       return;
     }
+
+    const startDate = dateRange.from.toISOString().split('T')[0];
+    const endDate = dateRange.to.toISOString().split('T')[0];
 
     setStatsLoading(true);
     try {
@@ -110,8 +113,7 @@ export default function CreationStatsSection() {
     setCreationStats(null);
     setContactedStats(null);
     setStatusCountsData(null);
-    setStartDate('');
-    setEndDate('');
+    setDateRange({ from: undefined, to: undefined });
     setSelectedCategory('');
     setSelectedStatuses([]);
   };
@@ -183,6 +185,75 @@ export default function CreationStatsSection() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  // Format date range display
+  const formatDateRange = () => {
+    if (!dateRange?.from) {
+      return "Pick a date range";
+    }
+    if (dateRange.from && !dateRange.to) {
+      return `From ${formatDate(dateRange.from.toISOString())}`;
+    }
+    if (dateRange.from && dateRange.to) {
+      return `From ${formatDate(dateRange.from.toISOString())} To ${formatDate(dateRange.to.toISOString())}`;
+    }
+    return "Pick a date range";
+  };
+
+  // Clear date range
+  const clearDateRange = (e) => {
+    e.stopPropagation(); // Prevent popover from opening
+    setDateRange({ from: undefined, to: undefined });
+  };
+
+  // Set preset date ranges
+  const setPresetDateRange = (preset) => {
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    switch (preset) {
+      case 'today':
+        setDateRange({ 
+          from: startOfToday, 
+          to: startOfToday 
+        });
+        break;
+      case 'lastWeek':
+        const weekAgo = new Date(startOfToday);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        setDateRange({ 
+          from: weekAgo, 
+          to: startOfToday 
+        });
+        break;
+      case 'last30Days':
+        const thirtyDaysAgo = new Date(startOfToday);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        setDateRange({ 
+          from: thirtyDaysAgo, 
+          to: startOfToday 
+        });
+        break;
+      case 'last90Days':
+        const ninetyDaysAgo = new Date(startOfToday);
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+        setDateRange({ 
+          from: ninetyDaysAgo, 
+          to: startOfToday 
+        });
+        break;
+      case 'lastYear':
+        const oneYearAgo = new Date(startOfToday);
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        setDateRange({ 
+          from: oneYearAgo, 
+          to: startOfToday 
+        });
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -193,36 +264,96 @@ export default function CreationStatsSection() {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {/* Date Range Selector */}
-          <div className="flex flex-col sm:flex-row gap-4">
+          {/* Date Range, Category and Status Selectors */}
+          <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
-              <Label htmlFor="start-date" className="text-sm font-medium">
-                Start Date
+              <Label className="text-sm font-medium">
+                Date Range
               </Label>
-              <Input
-                id="start-date"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="mt-1"
-              />
+              <div className="relative">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full mt-1 justify-start text-left font-normal pr-10"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formatDateRange()}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="range"
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      numberOfMonths={2}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {(dateRange?.from || dateRange?.to) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100"
+                    onClick={clearDateRange}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              
+              {/* Date Range Presets */}
+              <div className="mt-2">
+                <div className="flex gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-6 px-2 py-0"
+                    onClick={() => setPresetDateRange('today')}
+                  >
+                    Today
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-6 px-2 py-0"
+                    onClick={() => setPresetDateRange('lastWeek')}
+                  >
+                    Last Week
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-6 px-2 py-0"
+                    onClick={() => setPresetDateRange('last30Days')}
+                  >
+                    Last 30 Days
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-6 px-2 py-0"
+                    onClick={() => setPresetDateRange('last90Days')}
+                  >
+                    Last 90 Days
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-6 px-2 py-0"
+                    onClick={() => setPresetDateRange('lastYear')}
+                  >
+                    Last Year
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
-              <Label htmlFor="end-date" className="text-sm font-medium">
-                End Date
-              </Label>
-              <Input
-                id="end-date"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-
-          {/* Category and Status Selectors */}
-          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <Label htmlFor="category" className="text-sm font-medium">
                 Category
@@ -293,16 +424,13 @@ export default function CreationStatsSection() {
                 </Popover>
               </div>
             </div>
-            <div className="flex-1">
-              {/* Empty space to maintain layout consistency */}
-            </div>
           </div>
 
           {/* Search and Reset Buttons */}
           <div className="flex justify-end gap-4 pt-4">
             <Button
               onClick={handleFetchStats}
-              disabled={!startDate || !endDate || statsLoading}
+              disabled={!dateRange?.from || !dateRange?.to || statsLoading}
               className="flex items-center space-x-2 min-w-[120px]"
             >
               {statsLoading ? (
