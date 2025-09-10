@@ -128,23 +128,29 @@ export default function StatisticsPage() {
                   Analyze contact method performance and agent statistics
                 </p>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <Select value={dateRange} onValueChange={setDateRange}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7">Last 7 days</SelectItem>
-                      <SelectItem value="30">Last 30 days</SelectItem>
-                      <SelectItem value="90">Last 90 days</SelectItem>
-                      <SelectItem value="365">Last year</SelectItem>
-                      <SelectItem value="all">All time</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+            </div>
+          </div>
+
+          {/* Creation Statistics Section */}
+          <div className="mb-8">
+            <CreationStatsSection />
+          </div>
+
+          <div className="flex justify-end mb-8">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4 text-gray-500" />
+              <Select value={dateRange} onValueChange={setDateRange}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">Last 7 days</SelectItem>
+                  <SelectItem value="30">Last 30 days</SelectItem>
+                  <SelectItem value="90">Last 90 days</SelectItem>
+                  <SelectItem value="365">Last year</SelectItem>
+                  <SelectItem value="all">All time</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -425,8 +431,6 @@ export default function StatisticsPage() {
             </CardContent>
           </Card>
 
-          {/* Creation Statistics Section */}
-          <CreationStatsSection />
         </main>
       </div>
     </AdminProtectedRoute>
