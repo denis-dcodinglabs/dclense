@@ -44,6 +44,21 @@ export default function CreationStatsSection() {
   const [statusCountsData, setStatusCountsData] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [dateRange, setDateRange] = useState({ from: undefined, to: undefined });
+  
+  // Helper function to format date in local timezone (YYYY-MM-DD)
+  const formatDateToLocal = (date) => {
+    if (!date) return undefined;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  console.log('dateRange:', {
+    from: formatDateToLocal(dateRange?.from),
+    to: formatDateToLocal(dateRange?.to),
+    raw: dateRange
+  });
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState([]);
 
@@ -52,8 +67,8 @@ export default function CreationStatsSection() {
       return;
     }
 
-    const startDate = dateRange.from.toISOString().split('T')[0];
-    const endDate = dateRange.to.toISOString().split('T')[0];
+    const startDate = formatDateToLocal(dateRange.from);
+    const endDate = formatDateToLocal(dateRange.to);
 
     setStatsLoading(true);
     try {
@@ -191,10 +206,10 @@ export default function CreationStatsSection() {
       return "Pick a date range";
     }
     if (dateRange.from && !dateRange.to) {
-      return `From ${formatDate(dateRange.from.toISOString())}`;
+      return `From ${formatDate(formatDateToLocal(dateRange.from))}`;
     }
     if (dateRange.from && dateRange.to) {
-      return `From ${formatDate(dateRange.from.toISOString())} To ${formatDate(dateRange.to.toISOString())}`;
+      return `From ${formatDate(formatDateToLocal(dateRange.from))} To ${formatDate(formatDateToLocal(dateRange.to))}`;
     }
     return "Pick a date range";
   };
