@@ -14,7 +14,7 @@ import RepresentativeDetailModal from './RepresentativeDetailModal';
 import RepresentativeDialog from './RepresentativeDialog';
 import { createRepresentative } from '@/lib/representatives';
 import { getCurrentUserWithRole } from '@/lib/auth';
-import { setUserReadStatus } from '@/lib/userReads';
+import { setUserReadStatus, markCompanyAsRead } from '@/lib/userReads';
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -101,10 +101,10 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
   ];
 
   useEffect(() => {
-    if (isOpen && companyId) {
+    if (isOpen && companyId && currentUser) {
       fetchCompanyDetails();
     }
-  }, [isOpen, companyId]);
+  }, [isOpen, companyId, currentUser]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -124,6 +124,11 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
         console.error('Error fetching company:', error);
       } else {
         setCompany(data);
+        
+        // Mark company as read when modal opens and data is loaded
+        if (currentUser) {
+          await markCompanyAsRead(currentUser.id, companyId);
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred');
@@ -150,6 +155,10 @@ export default function CompanyDetailModal({ isOpen, onClose, companyId, onCompa
     setSavingStatus(true);
     try {
       await updateCompany(company.id, { status: newStatus }, currentUser.id);
+      
+      // Mark company as read when status is changed
+      await markCompanyAsRead(currentUser.id, company.id);
+      
       setCompany((prev) => ({ ...prev, status: newStatus }));
       if (onCompanyUpdated) {
         onCompanyUpdated(company.id, newStatus);
