@@ -141,17 +141,15 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
     setEnriching(true);
     try {
       const enrichedData = await enrichCompanyData(formData.linkedin_url.trim());
-      console.log('Received enriched data in CompanyDialog:', enrichedData);
       
-      // Update form fields only if they're currently empty
-      console.log('Current form data before update:', formData);
-      console.log('Form field checks:', {
-        company_name_empty: !formData.company_name.trim(),
-        location_empty: !formData.location.trim(),
-        industry_empty: !formData.industry.trim(),
-        number_of_employees_empty: !formData.number_of_employees.trim(),
-        website_empty: !formData.website.trim()
-      });
+      // Display token usage information if available
+      if (enrichedData.tokenUsage) {
+        const { totalTokens, promptTokens, candidatesTokens } = enrichedData.tokenUsage;
+        
+        // Optional: Show user notification about token usage
+        // alert(`Company enriched successfully! Tokens used: ${totalTokens}`);
+      }
+      
       
       const updatedData = {
         ...formData,
@@ -162,7 +160,6 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
         website: !formData.website.trim() && enrichedData.website ? enrichedData.website : formData.website
       };
       
-      console.log('Updated form data:', updatedData);
       setFormData(updatedData);
     } catch (error) {
       console.error('Error enriching company data:', error);
