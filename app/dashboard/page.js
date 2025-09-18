@@ -55,6 +55,7 @@ import {
   getRepresentatives,
   deleteRepresentative,
   assignToMe,
+  getPaginatedRepresentatives,
 } from '@/lib/representatives';
 import {
   bulkDeleteRepresentatives,
@@ -168,6 +169,8 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [filteredTotalCount, setFilteredTotalCount] = useState(0);
+  const [filteredTotalPages, setFilteredTotalPages] = useState(1);
   const [companyCount, setCompanyCount] = useState(0);
   const ITEMS_PER_PAGE = 50;
   const [realtimeSubscription, setRealtimeSubscription] = useState(null);
@@ -203,6 +206,10 @@ export default function Dashboard() {
     sort_order: 'desc',
   });
 
+  const areFiltersActive = () => {
+    return filters.search || filters.company_ids.length > 0 || filters.assigned_to || filters.status || filters.contacted_by.length > 0 || filters.exported_filter || filters.unread_filter || filters.rep_position;
+  };
+
   useEffect(() => {
     fetchCompanies();
     fetchUsers();
@@ -233,7 +240,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (currentUser) { // Only fetch data when currentUser is loaded
-      fetchData();
+      if (areFiltersActive()) {
+        fetchFilteredData();
+      } else {
+        fetchData();
+      }
     }
   }, [currentPage, filters, currentUser]);
 
@@ -282,14 +293,8 @@ export default function Dashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Add current user ID to filters for user-specific export tracking
-      const filtersWithUser = {
-        ...filters,
-        current_user_id: currentUser?.id
-      };
-
       const [repsResult] = await Promise.all([
-        getRepresentatives(currentPage, ITEMS_PER_PAGE, filtersWithUser),
+        getRepresentatives(currentPage, ITEMS_PER_PAGE, { current_user_id: currentUser?.id }),
       ]);
 
       setRepresentatives(repsResult.data || []);
@@ -300,6 +305,24 @@ export default function Dashboard() {
       await fetchStats();
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchFilteredData = async () => {
+    setLoading(true);
+    try {
+      const filtersWithUser = {
+        ...filters,
+        current_user_id: currentUser?.id
+      };
+      const { data, count } = await getPaginatedRepresentatives(currentPage, ITEMS_PER_PAGE, filtersWithUser);
+      setRepresentatives(data || []);
+      setFilteredTotalCount(count || 0);
+      setFilteredTotalPages(Math.ceil((count || 0) / ITEMS_PER_PAGE));
+    } catch (error) {
+      console.error('Error fetching filtered representatives:', error);
     } finally {
       setLoading(false);
     }
@@ -379,7 +402,11 @@ export default function Dashboard() {
     if (window.confirm(`Are you sure you want to delete ${rep.full_name}?`)) {
       const { error } = await deleteRepresentative(rep.id, currentUser.id);
       if (!error) {
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
       }
     }
   };
@@ -398,7 +425,11 @@ export default function Dashboard() {
       );
       if (!error) {
         setSelectedRepresentatives([]);
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
       }
     }
   };
@@ -417,7 +448,11 @@ export default function Dashboard() {
       );
       if (!error) {
         setSelectedRepresentatives([]);
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
       }
     }
   };
@@ -442,7 +477,11 @@ export default function Dashboard() {
       if (!error) {
         setSelectedRepresentatives([]);
         setSelectedAssigneeUser('');
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
       }
     }
   };
@@ -463,7 +502,11 @@ export default function Dashboard() {
       );
       if (!error) {
         setSelectedRepresentatives([]);
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
       }
     }
   };
@@ -531,7 +574,11 @@ export default function Dashboard() {
         
         setDialogOpen(false);
         setRepErrorMessage(null);
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
         toast.success('Representative saved successfully');
       } else {
         // Handle duplicate error or other errors
@@ -557,7 +604,11 @@ export default function Dashboard() {
   const handleAssignToMe = async (repId) => {
     const { error } = await assignToMe(repId, currentUser.id);
     if (!error) {
-      fetchData();
+      if (areFiltersActive()) {
+        fetchFilteredData();
+      } else {
+        fetchData();
+      }
     }
   };
 
@@ -582,7 +633,11 @@ export default function Dashboard() {
   };
 
   const handleImportComplete = (importedCount) => {
-    fetchData();
+    if (areFiltersActive()) {
+      fetchFilteredData();
+    } else {
+      fetchData();
+    }
     // Show success message or toast
     console.log(`Successfully imported ${importedCount} representatives`);
   };
@@ -1381,15 +1436,32 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Representatives</span>
-                <span className="text-sm font-normal text-gray-500">
-                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
-                  {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{' '}
-                  {totalCount}
-                </span>
+                {areFiltersActive() ? (
+                  <span className="text-sm font-normal text-gray-500">
+                    Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredTotalCount)} of{' '}
+                    {filteredTotalCount}
+                  </span>
+                ) : (
+                  <span className="text-sm font-normal text-gray-500">
+                    Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                    {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{' '}
+                    {totalCount}
+                  </span>
+                )}
               </CardTitle>
               <CardDescription>
-                Representative contacts and their status (Page {currentPage} of{' '}
-                {totalPages})
+                {areFiltersActive() ? (
+                  <span>
+                    Filtered representatives (Page {currentPage} of{' '}
+                    {filteredTotalPages})
+                  </span>
+                ) : (
+                  <span>
+                    Representative contacts and their status (Page {currentPage} of{' '}
+                    {totalPages})
+                  </span>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -1847,32 +1919,72 @@ export default function Dashboard() {
           </Card>
 
           {/* Pagination Controls at Bottom */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
-                {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{' '}
-                {totalCount} representatives
+          {areFiltersActive() ? (
+            filteredTotalPages > 1 && (
+              <div className="mt-6 flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                  {Math.min(currentPage * ITEMS_PER_PAGE, filteredTotalCount)} of{' '}
+                  {filteredTotalCount} representatives
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span className="flex items-center px-3 py-2 text-sm text-gray-700">
+                    Page {currentPage} of {filteredTotalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    onClick={handleNextPage}
+                    disabled={currentPage === filteredTotalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </Button>
-                <span className="flex items-center px-3 py-2 text-sm text-gray-700">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </Button>
+            )
+          ) : (
+            totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                  {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of{' '}
+                  {totalCount} representatives
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span className="flex items-center px-3 py-2 text-sm text-gray-700">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
+            )
+          )}
+
+          {/* Filter results summary */}
+          {areFiltersActive()&&filteredTotalPages === 1 && !loading && (
+            <div className="my-4 text-sm text-gray-700">
+              <p>
+                Found <strong>{filteredTotalCount}</strong> {filteredTotalCount === 1 ? 'representative' : 'representatives'} matching your filters, on <strong>{filteredTotalPages}</strong> {filteredTotalPages === 1 ? 'page' : 'pages'}.
+              </p>
             </div>
           )}
 
