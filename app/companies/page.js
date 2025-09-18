@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies, bulkAssignCompaniesToMe, bulkAssignCompaniesToUser, bulkMarkCompaniesReadUnread } from '@/lib/companies';
+import { getCompanies, createCompany, updateCompany, deleteCompany, bulkDeleteCompanies, bulkAssignCompaniesToMe, bulkAssignCompaniesToUser, bulkMarkCompaniesReadUnread, getPaginatedCompanies } from '@/lib/companies';
 import { markCompanyAsRead as markCompanyReadUserSpecific, setUserReadStatus } from '@/lib/userReads';
 import { getUsers } from '@/lib/users';
 import { getCurrentUserWithRole } from '@/lib/auth';
@@ -64,6 +64,7 @@ export default function CompaniesPage() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const [companies, setCompanies] = useState([]);
+  const [filteredCompanies, setFilteredCompanies] = useState(null);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -75,6 +76,8 @@ export default function CompaniesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [filteredTotalCount, setFilteredTotalCount] = useState(0);
+  const [filteredTotalPages, setFilteredTotalPages] = useState(1);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importMode, setImportMode] = useState('import'); // 'import' | 'modify'
   const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -104,6 +107,10 @@ export default function CompaniesPage() {
     sort_order: 'desc'
   });
 
+  const areFiltersActive = () => {
+    return filters.search || filters.status || filters.assigned_to || filters.unread_filter;
+  };
+
   useEffect(() => {
     fetchUsers();
     getCurrentUser();
@@ -132,7 +139,11 @@ export default function CompaniesPage() {
   // Fetch data when currentUser is loaded or filters/pagination changes
   useEffect(() => {
     if (currentUser) {
-      fetchData();
+      if (areFiltersActive()) {
+        fetchFilteredData();
+      } else {
+        fetchData();
+      }
     }
   }, [currentUser, currentPage, filters]);
 
@@ -148,18 +159,32 @@ export default function CompaniesPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    setFilteredCompanies(null);
     try {
-      // Include current user ID for user-specific read status
-      const filtersWithUser = {
-        ...filters,
-        current_user_id: currentUser?.id
-      };
-      const { data, count } = await getCompanies(currentPage, 50, filtersWithUser);
+      const { data, count } = await getCompanies(currentPage, 50, { current_user_id: currentUser?.id });
       setCompanies(data || []);
       setTotalCount(count || 0);
       setTotalPages(Math.ceil((count || 0) / 50));
     } catch (error) {
       console.error('Error fetching companies:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchFilteredData = async () => {
+    setLoading(true);
+    try {
+      const filtersWithUser = {
+        ...filters,
+        current_user_id: currentUser?.id
+      };
+      const { data, count } = await getPaginatedCompanies(currentPage, 50, filtersWithUser);
+      setFilteredCompanies(data || []);
+      setFilteredTotalCount(count || 0);
+      setFilteredTotalPages(Math.ceil((count || 0) / 50));
+    } catch (error) {
+      console.error('Error fetching filtered companies:', error);
     } finally {
       setLoading(false);
     }
@@ -179,7 +204,11 @@ export default function CompaniesPage() {
     if (window.confirm(`Are you sure you want to delete ${company.company_name}?`)) {
       const { error } = await deleteCompany(company.id, currentUser.id);
       if (!error) {
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
       }
     }
   };
@@ -191,7 +220,11 @@ export default function CompaniesPage() {
       const { error } = await bulkDeleteCompanies(selectedCompanies, currentUser.id);
       if (!error) {
         setSelectedCompanies([]);
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
       }
     }
   };
@@ -203,7 +236,11 @@ export default function CompaniesPage() {
       const { error } = await bulkAssignCompaniesToMe(selectedCompanies, currentUser.id);
       if (!error) {
         setSelectedCompanies([]);
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
       }
     }
   };
@@ -228,7 +265,11 @@ export default function CompaniesPage() {
       if (!error) {
         setSelectedCompanies([]);
         setSelectedAssigneeUser('');
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
       }
     }
   };
@@ -241,7 +282,11 @@ export default function CompaniesPage() {
       const { error } = await bulkMarkCompaniesReadUnread(selectedCompanies, markUnread, currentUser.id);
       if (!error) {
         setSelectedCompanies([]);
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
       }
     }
   };
@@ -278,7 +323,11 @@ export default function CompaniesPage() {
         }
         
         setDialogOpen(false);
-        fetchData();
+        if (areFiltersActive()) {
+          fetchFilteredData();
+        } else {
+          fetchData();
+        }
         // Show success message
         toast({
           title: "Success",
@@ -307,7 +356,7 @@ export default function CompaniesPage() {
 
   const handleSelectAll = (checked) => {
     if (checked) {
-      setSelectedCompanies(companies.map(c => c.id));
+      setSelectedCompanies(filteredCompanies || companies.map(c => c.id));
     } else {
       setSelectedCompanies([]);
     }
@@ -320,7 +369,11 @@ export default function CompaniesPage() {
   };
 
   const handleImportComplete = (importedCount) => {
-    fetchData();
+    if (areFiltersActive()) {
+      fetchFilteredData();
+    } else {
+      fetchData();
+    }
     // Show success message or toast
     console.log(`Successfully imported ${importedCount} companies`);
   };
@@ -336,8 +389,11 @@ export default function CompaniesPage() {
   const markCompanyAsRead = async (companyId) => {
     const { error } = await markCompanyReadUserSpecific(currentUser.id, companyId);
     if (!error) {
+      const listToUpdate = filteredCompanies ? filteredCompanies : companies;
+      const setter = filteredCompanies ? setFilteredCompanies : setCompanies;
+
       // Update local state to reflect the change
-      setCompanies(prev => prev.map(company =>
+      setter(prev => prev.map(company =>
         company.id === companyId ? { ...company, mark_unread: false } : company
       ));
     }
@@ -359,15 +415,19 @@ export default function CompaniesPage() {
     const { error: readError } = await markCompanyReadUserSpecific(currentUser.id, companyId);
     
     if (!statusError && !readError) {
+      const listToUpdate = filteredCompanies ? filteredCompanies : companies;
+      const setter = filteredCompanies ? setFilteredCompanies : setCompanies;
       // Update local state
-      setCompanies(prev => prev.map(company =>
+      setter(prev => prev.map(company =>
         company.id === companyId ? { ...company, status: statusValue, mark_unread: false } : company
       ));
     }
   };
 
   const handleCompanyUpdated = (companyId, newStatus) => {
-    setCompanies(prev => prev.map(company =>
+    const listToUpdate = filteredCompanies ? filteredCompanies : companies;
+    const setter = filteredCompanies ? setFilteredCompanies : setCompanies;
+    setter(prev => prev.map(company =>
       company.id === companyId ? { ...company, status: newStatus, mark_unread: false } : company
     ));
   };
@@ -700,7 +760,7 @@ export default function CompaniesPage() {
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
-              ) : companies.length === 0 ? (
+              ) : (filteredCompanies === null && companies.length === 0) || (filteredCompanies && filteredCompanies.length === 0) ? (
                 <div className="text-center py-8">
                   <div className="text-gray-400 text-4xl mb-4">🏢</div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No companies found</h3>
@@ -720,7 +780,7 @@ export default function CompaniesPage() {
                         {canEdit && (
                           <th className="px-6 py-3 text-left sticky left-0 bg-gray-50 z-10">
                             <Checkbox
-                              checked={selectedCompanies.length === companies.length}
+                              checked={selectedCompanies.length === (filteredCompanies || companies).length && (filteredCompanies || companies).length > 0}
                               onCheckedChange={handleSelectAll}
                             />
                           </th>
@@ -786,7 +846,7 @@ export default function CompaniesPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {companies.map((company) => (
+                      {(filteredCompanies || companies).map((company) => (
                         <tr key={company.id} className={`group hover:bg-gray-50 ${company.mark_unread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}>
                           {canEdit && (
                             <td className={`px-6 py-4 sticky left-0 z-10 ${company.mark_unread ? 'bg-blue-50 group-hover:bg-gray-50' : 'bg-white group-hover:bg-gray-50'}`}>
@@ -991,31 +1051,69 @@ export default function CompaniesPage() {
           </Card>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Showing {((currentPage - 1) * 50) + 1}-{Math.min(currentPage * 50, totalCount)} of {totalCount} companies
+          {areFiltersActive() ? (
+            filteredTotalPages > 1 && (
+              <div className="mt-6 flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Showing {((currentPage - 1) * 50) + 1}-{Math.min(currentPage * 50, filteredTotalCount)} of {filteredTotalCount} companies
+                </div>
+                <div className="text-sm text-gray-700">
+                  Page {currentPage} of {filteredTotalPages}
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, filteredTotalPages))}
+                    disabled={currentPage === filteredTotalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
+            )
+          ) : (
+            totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Showing {((currentPage - 1) * 50) + 1}-{Math.min(currentPage * 50, totalCount)} of {totalCount} companies
+                </div>
 
-              <div className="text-sm text-gray-700">
-                Page {currentPage} of {totalPages}
+                <div className="text-sm text-gray-700">
+                  Page {currentPage} of {totalPages}
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
               </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </Button>
-              </div>
+            )
+          )}
+
+          {/* Filter results summary */}
+          {areFiltersActive()&&filteredTotalPages === 1 && !loading && (
+            <div className="my-4 text-sm text-gray-700">
+              <p>
+                Found <strong>{filteredTotalCount}</strong> {filteredTotalCount === 1 ? 'company' : 'companies'} matching your filters, on <strong>{filteredTotalPages}</strong> {filteredTotalPages === 1 ? 'page' : 'pages'}.
+              </p>
             </div>
           )}
 
