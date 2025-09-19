@@ -81,6 +81,7 @@ import {
   handleRepresentativeUpdate,
   unsubscribeFromChannel,
 } from '@/lib/realtime';
+import { doesRepresentativeMatchFilters } from '../candidates/candidatesHelpers';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },
@@ -224,7 +225,7 @@ export default function Dashboard() {
 
     // Set up real-time subscription
     const subscription = subscribeToRepresentatives((payload) => {
-      handleRepresentativeUpdate(payload, representatives, setRepresentatives);
+      handleRepresentativeUpdate(payload, representatives, setRepresentatives, filters);
       // Also refresh stats when data changes
       fetchStats();
     });
@@ -237,6 +238,19 @@ export default function Dashboard() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    // This effect ensures the subscription callback always has the latest filters
+    // without re-subscribing every time filters change.
+    const subscription = subscribeToRepresentatives((payload) => {
+      handleRepresentativeUpdate(payload, representatives, setRepresentatives, filters);
+      fetchStats(); // Keep stats fresh
+    });
+
+    return () => {
+      unsubscribeFromChannel(subscription);
+    };
+  }, [filters, representatives]); // Dependency array includes filters and representatives
 
   useEffect(() => {
     if (currentUser) { // Only fetch data when currentUser is loaded
