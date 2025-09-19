@@ -226,3 +226,69 @@ export const removeCandidateCV = async (id) => {
     throw error;
   }
 };
+
+export function doesRepresentativeMatchFilters(rep, filters) {
+  if (!rep) return false;
+
+  const {
+    search,
+    company_ids,
+    assigned_to,
+    status,
+    contacted_by,
+    rep_position,
+    unread_filter,
+  } = filters;
+
+  // Search filter (name, company name, role)
+  if (search) {
+    const searchTerm = search.toLowerCase();
+    const fullName = `${rep.first_name || ''} ${rep.last_name || ''}`.toLowerCase();
+    const companyName = rep.company?.company_name?.toLowerCase() || '';
+    const role = rep.role?.toLowerCase() || '';
+    if (
+      !fullName.includes(searchTerm) &&
+      !companyName.includes(searchTerm) &&
+      !role.includes(searchTerm)
+    ) {
+      return false;
+    }
+  }
+
+  // Company filter
+  if (company_ids && company_ids.length > 0) {
+    if (!rep.company_id || !company_ids.includes(rep.company_id)) {
+      return false;
+    }
+  }
+
+  // Assignee filter
+  if (assigned_to) {
+    if (assigned_to === 'unassigned') {
+      if (rep.assigned_to) return false;
+    } else if (rep.assigned_to !== assigned_to) {
+      return false;
+    }
+  }
+
+  // Status filter
+  if (status && status !== 'all') {
+    if (status === 'No Status') {
+      if (rep.status) return false;
+    } else if (rep.status !== status) {
+      return false;
+    }
+  }
+
+  // Contacted by filter
+  if (contacted_by && contacted_by.length > 0) {
+    if (!rep.contacted_by || !contacted_by.includes(rep.contacted_by)) {
+      return false;
+    }
+  }
+
+  // Unread filter is handled by the initial fetch and cannot be reliably checked on client-side real-time updates without user-specific context.
+  // rep_position is also excluded as it likely depends on ordering and relations not available in the realtime payload.
+
+  return true;
+}

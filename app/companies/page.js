@@ -23,6 +23,37 @@ import { getCurrentUserWithRole } from '@/lib/auth';
 import { subscribeToCompanies, handleCompanyUpdate, unsubscribeFromChannel } from '@/lib/realtime';
 import { useToast } from '@/hooks/use-toast';
 
+function doesCompanyMatchFilters(company, filters) {
+  if (!company) return false;
+
+  const { search, status, assigned_to } = filters;
+
+  if (search) {
+    const searchTerm = search.toLowerCase();
+    if (!company.company_name?.toLowerCase().includes(searchTerm)) {
+      return false;
+    }
+  }
+
+  if (status && status !== 'all') {
+    if (status === 'No Status') {
+      if (company.status) return false;
+    } else if (company.status !== status) {
+      return false;
+    }
+  }
+
+  if (assigned_to) {
+    if (assigned_to === 'unassigned') {
+      if (company.assigned_to) return false;
+    } else if (company.assigned_to !== assigned_to) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Statuses' },
   { value: 'No Status', label: 'No Status' },
@@ -121,20 +152,19 @@ export default function CompaniesPage() {
       setSelectedCompanyId(companyId);
       setDetailModalOpen(true);
     }
+  }, []);
 
-    // Set up real-time subscription
+  useEffect(() => {
     const subscription = subscribeToCompanies((payload) => {
-      handleCompanyUpdate(payload, companies, setCompanies);
+      handleCompanyUpdate(payload, companies, setCompanies, filters, doesCompanyMatchFilters);
     });
-    setRealtimeSubscription(subscription);
 
-    // Cleanup subscription on unmount
     return () => {
       if (subscription) {
         unsubscribeFromChannel(subscription);
       }
     };
-  }, []);
+  }, [filters, companies]);
 
   // Fetch data when currentUser is loaded or filters/pagination changes
   useEffect(() => {
