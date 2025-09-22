@@ -386,7 +386,7 @@ export default function CompaniesPage() {
 
   const handleSelectAll = (checked) => {
     if (checked) {
-      setSelectedCompanies(filteredCompanies || companies.map(c => c.id));
+      setSelectedCompanies((filteredCompanies || companies).map(c => c.id));
     } else {
       setSelectedCompanies([]);
     }
