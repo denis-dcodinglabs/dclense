@@ -11,6 +11,7 @@ import { getUsers } from '@/lib/users';
 import { checkCompanyNameExists } from '@/lib/companies';
 import { setUserReadStatus, getUserReadStatus } from '@/lib/userReads';
 import { getCurrentUserWithRole } from '@/lib/auth';
+import { enrichCompanyData } from '@/lib/enrichCompany';
 import CompanyDetailModal from './CompanyDetailModal';
 
 const STATUS_OPTIONS = [
@@ -43,6 +44,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
   const [existingCompany, setExistingCompany] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [enriching, setEnriching] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -128,6 +130,43 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleEnrichCompanyData = async () => {
+    if (!formData.linkedin_url.trim()) {
+      alert('Please enter a LinkedIn URL first');
+      return;
+    }
+
+    setEnriching(true);
+    try {
+      const enrichedData = await enrichCompanyData(formData.linkedin_url.trim());
+      
+      // Display token usage information if available
+      if (enrichedData.tokenUsage) {
+        const { totalTokens, promptTokens, candidatesTokens } = enrichedData.tokenUsage;
+        
+        // Optional: Show user notification about token usage
+        // alert(`Company enriched successfully! Tokens used: ${totalTokens}`);
+      }
+      
+      
+      const updatedData = {
+        ...formData,
+        company_name: !formData.company_name.trim() && enrichedData.company_name ? enrichedData.company_name : formData.company_name,
+        location: !formData.location.trim() && enrichedData.location ? enrichedData.location : formData.location,
+        industry: !formData.industry.trim() && enrichedData.industry ? enrichedData.industry : formData.industry,
+        number_of_employees: !formData.number_of_employees.trim() && enrichedData.number_of_employees ? enrichedData.number_of_employees : formData.number_of_employees,
+        website: !formData.website.trim() && enrichedData.website ? enrichedData.website : formData.website
+      };
+      
+      setFormData(updatedData);
+    } catch (error) {
+      console.error('Error enriching company data:', error);
+      alert(error.message || 'Failed to enrich company data. Please try again.');
+    } finally {
+      setEnriching(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -235,12 +274,24 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="linkedin_url">LinkedIn URL</Label>
-              <Input
-                id="linkedin_url"
-                value={formData.linkedin_url}
-                onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
-                placeholder="Enter LinkedIn URL"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="linkedin_url"
+                  value={formData.linkedin_url}
+                  onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+                  placeholder="Enter LinkedIn URL"
+                  className="flex-1"
+                />
+                {/* <Button
+                  type="button"
+                  onClick={handleEnrichCompanyData}
+                  disabled={enriching || !formData.linkedin_url.trim()}
+                  variant="outline"
+                  className="px-3 py-2 whitespace-nowrap"
+                >
+                  {enriching ? 'Enriching...' : 'Enrich'}
+                </Button> */}
+              </div>
             </div>
             
             <div className="space-y-2">
