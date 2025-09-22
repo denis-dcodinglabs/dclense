@@ -282,7 +282,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
                   placeholder="Enter LinkedIn URL"
                   className="flex-1"
                 />
-                <Button
+                {/* <Button
                   type="button"
                   onClick={handleEnrichCompanyData}
                   disabled={enriching || !formData.linkedin_url.trim()}
@@ -290,7 +290,7 @@ export default function CompanyDialog({ isOpen, onClose, onSave, company = null,
                   className="px-3 py-2 whitespace-nowrap"
                 >
                   {enriching ? 'Enriching...' : 'Enrich'}
-                </Button>
+                </Button> */}
               </div>
             </div>
             
