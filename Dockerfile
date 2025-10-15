@@ -9,6 +9,19 @@ RUN npm install
 # Copy all files
 COPY . .
 
+# Debug: Log environment variables during build
+RUN echo "=== BUILD TIME ENVIRONMENT VARIABLES ===" && \
+    echo "NODE_ENV: $NODE_ENV" && \
+    echo "NEXT_PUBLIC_SUPABASE_URL: $NEXT_PUBLIC_SUPABASE_URL" && \
+    echo "NEXT_PUBLIC_SUPABASE_ANON_KEY: $NEXT_PUBLIC_SUPABASE_ANON_KEY" && \
+    echo "SUPABASE_SERVICE_ROLE_KEY: $SUPABASE_SERVICE_ROLE_KEY" && \
+    echo "RESEND_API_KEY: $RESEND_API_KEY" && \
+    echo "GEMINI_API_KEY: $GEMINI_API_KEY" && \
+    echo "NEXT_PUBLIC_BASE_URL: $NEXT_PUBLIC_BASE_URL" && \
+    echo "CAPROVER_APP_NAME: $CAPROVER_APP_NAME" && \
+    echo "CAPROVER_APP_VERSION: $CAPROVER_APP_VERSION" && \
+    echo "========================================="
+
 # Build the app
 RUN npm run build
 
@@ -22,8 +35,24 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
+# Debug: Log environment variables at runtime startup
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'echo "=== RUNTIME ENVIRONMENT VARIABLES ==="' >> /app/start.sh && \
+    echo 'echo "NODE_ENV: $NODE_ENV"' >> /app/start.sh && \
+    echo 'echo "NEXT_PUBLIC_SUPABASE_URL: $NEXT_PUBLIC_SUPABASE_URL"' >> /app/start.sh && \
+    echo 'echo "NEXT_PUBLIC_SUPABASE_ANON_KEY: $NEXT_PUBLIC_SUPABASE_ANON_KEY"' >> /app/start.sh && \
+    echo 'echo "SUPABASE_SERVICE_ROLE_KEY: $SUPABASE_SERVICE_ROLE_KEY"' >> /app/start.sh && \
+    echo 'echo "RESEND_API_KEY: $RESEND_API_KEY"' >> /app/start.sh && \
+    echo 'echo "GEMINI_API_KEY: $GEMINI_API_KEY"' >> /app/start.sh && \
+    echo 'echo "NEXT_PUBLIC_BASE_URL: $NEXT_PUBLIC_BASE_URL"' >> /app/start.sh && \
+    echo 'echo "CAPROVER_APP_NAME: $CAPROVER_APP_NAME"' >> /app/start.sh && \
+    echo 'echo "CAPROVER_APP_VERSION: $CAPROVER_APP_VERSION"' >> /app/start.sh && \
+    echo 'echo "====================================="' >> /app/start.sh && \
+    echo 'npm start' >> /app/start.sh && \
+    chmod +x /app/start.sh
+
 # Expose port
 EXPOSE 3000
 
-# Run the app
-CMD ["npm", "start"]
+# Run the app with environment variable logging
+CMD ["/app/start.sh"]
