@@ -1,24 +1,29 @@
-FROM node:20-alpine
+# Stage 1: Build
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies
-COPY package.json package-lock.json* ./
-RUN npm ci --no-audit --no-fund
+COPY package*.json ./
+RUN npm install
 
-# Copy source (optional) and the pre-built Next.js output
+# Copy all files
 COPY . .
 
-# Copy pre-built Next.js output from local build
-COPY .next ./.next
-COPY public ./public
-COPY next.config.js ./
+# Build the app
+RUN npm run build
 
-# Set runtime env only
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+# Stage 2: Production image
+FROM node:20-alpine
+WORKDIR /app
+
+# Only copy necessary files from builder
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
 
 # Expose port
 EXPOSE 3000
 
-# Start server
+# Run the app
 CMD ["npm", "start"]
