@@ -1,117 +1,119 @@
-import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
-import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from "next/server";
+import { Resend } from "resend";
+// import { createClient } from '@supabase/supabase-js';
 
-export const revalidate=0
+export const revalidate = 0;
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role for cron jobs
-);
+// const supabase = createClient(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL,
+//   process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role for cron jobs
+// );
+const supabase = null;
 
 export async function GET(request) {
   try {
     // Get today's date in Kosovo timezone (CET/CEST)
-    const kosovoDate = new Date().toLocaleDateString('en-CA', { 
-      timeZone: 'Europe/Belgrade' // Kosovo uses same timezone as Belgrade
+    const kosovoDate = new Date().toLocaleDateString("en-CA", {
+      timeZone: "Europe/Belgrade", // Kosovo uses same timezone as Belgrade
     });
 
-    console.log('Checking reminders for date:', kosovoDate);
+    console.log("Checking reminders for date:", kosovoDate);
 
     // Get all representatives with reminder_date = today
-    const { data: representatives, error } = await supabase
-      .from('representatives')
-      .select(`
-        id,
-        first_name,
-        last_name,
-        role,
-        reminder_date,
-        notes,
-        company:company_id(company_name),
-        assigned_user:assigned_to(id, first_name, last_name, email)
-      `)
-      .eq('reminder_date', kosovoDate)
-      .not('assigned_to', 'is', null)
-      .eq('is_deleted', false);
+    const { data: representatives, error } = { data: [], error: null };
 
     if (error) {
-      console.error('Database error:', error);
+      console.error("Database error:", error);
       throw error;
     }
 
-    console.log(`Found ${representatives?.length || 0} representatives with reminders for today`);
+    console.log(
+      `Found ${representatives?.length || 0} representatives with reminders for today`
+    );
 
     if (!representatives || representatives.length === 0) {
-      return NextResponse.json({ 
-        success: true, 
-        message: 'No reminders found for today' 
+      return NextResponse.json({
+        success: true,
+        message: "No reminders found for today",
       });
     }
 
     // Group representatives by assigned user
     const userReminders = {};
-    representatives.forEach(rep => {
+    representatives.forEach((rep) => {
       const userId = rep.assigned_user.id;
       if (!userReminders[userId]) {
         userReminders[userId] = {
           user: rep.assigned_user,
-          representatives: []
+          representatives: [],
         };
       }
       userReminders[userId].representatives.push(rep);
     });
 
-    console.log(`Sending reminders to ${Object.keys(userReminders).length} users`);
+    console.log(
+      `Sending reminders to ${Object.keys(userReminders).length} users`
+    );
 
     // Send emails to each user
     const emailResults = [];
     for (const { user, representatives } of Object.values(userReminders)) {
       try {
         const emailHtml = generateReminderEmail(user, representatives);
-        
+
         const result = await resend.emails.send({
-          from: 'DCLense Reminders <onboarding@resend.dev>',
+          from: "DCLense Reminders <onboarding@resend.dev>",
           to: [user.email],
-          subject: `Daily Reminders - ${representatives.length} representative${representatives.length > 1 ? 's' : ''} to follow up`,
-          html: emailHtml
+          subject: `Daily Reminders - ${representatives.length} representative${representatives.length > 1 ? "s" : ""} to follow up`,
+          html: emailHtml,
         });
 
-        emailResults.push({ user: user.email, success: true, id: result.data?.id });
+        emailResults.push({
+          user: user.email,
+          success: true,
+          id: result.data?.id,
+        });
         console.log(`Email sent successfully to ${user.email}`);
       } catch (emailError) {
         console.error(`Failed to send email to ${user.email}:`, emailError);
-        emailResults.push({ user: user.email, success: false, error: emailError.message });
+        emailResults.push({
+          user: user.email,
+          success: false,
+          error: emailError.message,
+        });
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: `Processed reminders for ${representatives.length} representatives`,
       emailResults,
-      date: kosovoDate
+      date: kosovoDate,
     });
-
   } catch (error) {
-    console.error('Cron job error:', error);
-    return NextResponse.json({ 
-      error: error.message,
-      stack: error.stack 
-    }, { status: 500 });
+    console.error("Cron job error:", error);
+    return NextResponse.json(
+      {
+        error: error.message,
+        stack: error.stack,
+      },
+      { status: 500 }
+    );
   }
 }
 
 function generateReminderEmail(user, representatives) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dclense1.vercel.app';
-  const today = new Date().toLocaleDateString('en-US', { 
-    timeZone: 'Europe/Belgrade',
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://dclense1.vercel.app";
+  const today = new Date().toLocaleDateString("en-US", {
+    timeZone: "Europe/Belgrade",
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
-  
+
   return `
     <!DOCTYPE html>
     <html>
@@ -133,22 +135,24 @@ function generateReminderEmail(user, representatives) {
         <div style="padding: 30px 20px;">
           <h2 style="color: #1f2937; margin: 0 0 10px 0; font-size: 24px;">Good morning, ${user.first_name}!</h2>
           <p style="color: #6b7280; margin: 0 0 20px 0; font-size: 16px; line-height: 1.5;">
-            Today is ${today}. You have ${representatives.length} representative${representatives.length > 1 ? 's' : ''} to follow up with:
+            Today is ${today}. You have ${representatives.length} representative${representatives.length > 1 ? "s" : ""} to follow up with:
           </p>
           
           <!-- Representatives List -->
           <div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            ${representatives.map((rep, index) => `
-              <div style="border-bottom: ${index < representatives.length - 1 ? '1px solid #e5e7eb' : 'none'}; padding: ${index > 0 ? '20px 0' : '0 0 20px 0'}; margin-bottom: ${index < representatives.length - 1 ? '20px' : '0'};">
+            ${representatives
+              .map(
+                (rep, index) => `
+              <div style="border-bottom: ${index < representatives.length - 1 ? "1px solid #e5e7eb" : "none"}; padding: ${index > 0 ? "20px 0" : "0 0 20px 0"}; margin-bottom: ${index < representatives.length - 1 ? "20px" : "0"};">
                 <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap;">
                   <div style="flex: 1; min-width: 250px;">
                     <h3 style="margin: 0 0 8px 0; color: #1f2937; font-size: 18px; font-weight: 600;">
                       ${rep.first_name} ${rep.last_name}
                     </h3>
-                    ${rep.role ? `<p style="margin: 0 0 5px 0; color: #6b7280; font-size: 14px;"><strong>Role:</strong> ${rep.role}</p>` : ''}
-                    ${rep.company?.company_name ? `<p style="margin: 0 0 5px 0; color: #6b7280; font-size: 14px;"><strong>Company:</strong> ${rep.company.company_name}</p>` : ''}
+                    ${rep.role ? `<p style="margin: 0 0 5px 0; color: #6b7280; font-size: 14px;"><strong>Role:</strong> ${rep.role}</p>` : ""}
+                    ${rep.company?.company_name ? `<p style="margin: 0 0 5px 0; color: #6b7280; font-size: 14px;"><strong>Company:</strong> ${rep.company.company_name}</p>` : ""}
                     <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;"><strong>Reminder Date:</strong> ${new Date(rep.reminder_date).toLocaleDateString()}</p>
-                    ${rep.notes ? `<p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px; font-style: italic;">"${rep.notes}"</p>` : ''}
+                    ${rep.notes ? `<p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px; font-style: italic;">"${rep.notes}"</p>` : ""}
                   </div>
                   <div style="margin-top: 10px;">
                     <a href="${baseUrl}/dashboard?repId=${rep.id}" 
@@ -158,7 +162,9 @@ function generateReminderEmail(user, representatives) {
                   </div>
                 </div>
               </div>
-            `).join('')}
+            `
+              )
+              .join("")}
           </div>
           
           <!-- Action Buttons -->
