@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-// import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export const revalidate = 0;
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-// const supabase = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL,
-//   process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role for cron jobs
-// );
-const supabase = null;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role for cron jobs
+);
 
 export async function GET(request) {
   try {
@@ -21,7 +20,23 @@ export async function GET(request) {
     console.log("Checking reminders for date:", kosovoDate);
 
     // Get all representatives with reminder_date = today
-    const { data: representatives, error } = { data: [], error: null };
+    const { data: representatives, error } = await supabase
+      .from("representatives")
+      .select(
+        `
+        id,
+        first_name,
+        last_name,
+        role,
+        reminder_date,
+        notes,
+        company:company_id(company_name),
+        assigned_user:assigned_to(id, first_name, last_name, email)
+      `
+      )
+      .eq("reminder_date", kosovoDate)
+      .not("assigned_to", "is", null)
+      .eq("is_deleted", false);
 
     if (error) {
       console.error("Database error:", error);

@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-// import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-// const supabaseAdmin = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL,
-//   process.env.SUPABASE_SERVICE_ROLE_KEY
-// );
-const supabaseAdmin = null;
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export async function DELETE(request) {
   try {
@@ -19,10 +18,11 @@ export async function DELETE(request) {
     }
 
     // First, get the candidate to check if they have a CV
-    const { data: candidate, error: fetchError } = {
-      data: { cv_url: null },
-      error: null,
-    };
+    const { data: candidate, error: fetchError } = await supabaseAdmin
+      .from("candidates")
+      .select("cv_url")
+      .eq("id", id)
+      .single();
 
     if (fetchError) {
       return NextResponse.json(
@@ -47,7 +47,9 @@ export async function DELETE(request) {
 
         console.log(`Attempting to delete CV file: ${fileName}`);
 
-        const { error: storageError } = { error: null };
+        const { error: storageError } = await supabaseAdmin.storage
+          .from("cv")
+          .remove([fileName]);
 
         if (storageError) {
           console.error("Error deleting CV from storage:", storageError);
@@ -62,7 +64,10 @@ export async function DELETE(request) {
     }
 
     // Delete the candidate from the database
-    const { error: deleteError } = { error: null };
+    const { error: deleteError } = await supabaseAdmin
+      .from("candidates")
+      .delete()
+      .eq("id", id);
 
     if (deleteError) {
       return NextResponse.json(

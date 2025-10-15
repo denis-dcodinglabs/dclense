@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-// import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-// const supabaseAdmin = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL,
-//   process.env.SUPABASE_SERVICE_ROLE_KEY
-// );
-const supabaseAdmin = null;
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export async function POST(request) {
   try {
@@ -28,7 +27,9 @@ export async function POST(request) {
     const fileName = `${Date.now()}_${file.name}`;
 
     // Upload to Supabase storage
-    const { data, error } = { data: { path: fileName }, error: null };
+    const { data, error } = await supabaseAdmin.storage
+      .from("cv")
+      .upload(fileName, file);
 
     if (error) {
       console.error("Storage upload error:", error);
@@ -39,9 +40,9 @@ export async function POST(request) {
     }
 
     // Get public URL for the uploaded file
-    const { data: urlData } = {
-      data: { publicUrl: `https://example.com/${data.path}` },
-    };
+    const { data: urlData } = supabaseAdmin.storage
+      .from("cv")
+      .getPublicUrl(data.path);
 
     return NextResponse.json({
       success: true,
