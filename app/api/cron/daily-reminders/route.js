@@ -4,13 +4,13 @@ import { createClient } from "@supabase/supabase-js";
 
 export const revalidate = 0;
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role for cron jobs
-);
-
 export async function GET(request) {
+  // Initialize clients inside the function to avoid build-time issues
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role for cron jobs
+  );
   try {
     // Get today's date in Kosovo timezone (CET/CEST)
     const kosovoDate = new Date().toLocaleDateString("en-CA", {

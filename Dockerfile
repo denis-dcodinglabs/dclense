@@ -9,18 +9,8 @@ RUN npm install
 # Copy all files
 COPY . .
 
-# Debug: Log environment variables during build
-RUN echo "=== BUILD TIME ENVIRONMENT VARIABLES ===" && \
-    echo "NODE_ENV: $NODE_ENV" && \
-    echo "NEXT_PUBLIC_SUPABASE_URL: $NEXT_PUBLIC_SUPABASE_URL" && \
-    echo "NEXT_PUBLIC_SUPABASE_ANON_KEY: $NEXT_PUBLIC_SUPABASE_ANON_KEY" && \
-    echo "SUPABASE_SERVICE_ROLE_KEY: $SUPABASE_SERVICE_ROLE_KEY" && \
-    echo "RESEND_API_KEY: $RESEND_API_KEY" && \
-    echo "GEMINI_API_KEY: $GEMINI_API_KEY" && \
-    echo "NEXT_PUBLIC_BASE_URL: $NEXT_PUBLIC_BASE_URL" && \
-    echo "CAPROVER_APP_NAME: $CAPROVER_APP_NAME" && \
-    echo "CAPROVER_APP_VERSION: $CAPROVER_APP_VERSION" && \
-    echo "========================================="
+# Note: Environment variables are not available during build in CapRover
+# They are only available at runtime, which is why we initialize clients inside functions
 
 # Build the app
 RUN npm run build
