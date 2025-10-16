@@ -9,6 +9,15 @@ RUN npm install
 # Copy all files
 COPY . .
 
+# Accept CapRover build args for client-exposed env vars and export as ENV
+# These are needed at build time so Next.js bakes correct values into the client bundle
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_BASE_URL
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
+    NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
+
 # Note: Environment variables are not available during build in CapRover
 # They are only available at runtime, which is why we initialize clients inside functions
 
